@@ -1,0 +1,2 @@
+# GrinGoldMiner
+Cuckoo Miner
