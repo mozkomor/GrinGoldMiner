@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Theta": {
+      "commandName": "Project",
+      "commandLineArgs": "-n 0 -r 1"
+    }
+  }
+}
