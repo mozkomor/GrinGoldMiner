@@ -38,18 +38,17 @@ This launches 100 iterations and at the end prints total time that you simply di
 
 **A:** Not at this moment. We would like to create a TCP/IP bridge between the miner and grin node so both are separate. Also possibly add support for local network pools or something similar that would keep complexity on grin node side at minimum. 
 
-
 **Q:** Can it use multiple GPUs?
 
-**A:** Yes in theory, but this is not enabled yet. 
+**A:** Yes in theory, but this is not enabled yet. Cycle detection is on CPU side so it may not be possible to run 6 GPUs on el cheapo Celeron as it is with Ethereum or Monero. 
 
 **Q:** Does it run on AMD Vega?
 
-**A:** OpenCL version is planned. There is no technological limitation or lack of the ability, it is purely the question of time allocation.
+**A:** OpenCL version is planned. There is no technological limitation or lack of skill, it is purely the question of free time.
 
 **Q:** Will it get any faster?
 
-**A:** For GPUs with GRRD5X (GTX 1080+Ti ) and GDDR6 (future) and large number of compute units at the same time, special modifications can be, in theory, made to utilize those cards better, however I do not own any at this time. Other GPUs may see additional boost of 20-30% as well. This would significantly increase complexity of the miner so it will come later.
+**A:** For GPUs with GDDR5X (GTX 1080+Ti ) and GDDR6 (future) and large number of compute units at the same time, special modifications can be, in theory, made to utilize those cards better, however I do not own any at this time. Other GPUs may see additional boost of 20-30% as well. This would significantly increase complexity of the miner so it will come later.
 
 **Q:** Can you explain the license?
 
