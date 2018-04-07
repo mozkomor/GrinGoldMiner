@@ -11,6 +11,8 @@ There is binary release, but because it does not actually mine yet and can only 
 
 Based on great work of John Tromp, the inventor of Cuckoo cycle PoW  https://github.com/tromp/cuckoo
 
+And designed for https://github.com/mimblewimble/grin
+
 ## How to compile on Windows
 You need Visual Studio 2017 with dotnet core 2.0 and CUDA 9.1 SDK installed on your system. Simply open the solution and build Release target for x64 architecture. Grab both executables and their libraries and put them in a single folder somewhere else. Open windows power shell in that folder and run ./Theta -r 100 -n 0
 
