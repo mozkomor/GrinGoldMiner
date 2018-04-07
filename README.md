@@ -1,9 +1,9 @@
 # GPU Miner for Cuckoo Cycle PoW
 This miner currently runs on windows and linux and exist only as a proof of concept for bounty claim. It does not actually interface with grin software yet (see below). It only works on nvidia GPUs (for now, see below) with at least 8GB of RAM. 
 
-50% bounty here (Photon): 3MRRCuFmS3GciugRRawkuAbLLcpNVXSJqm
+50% bounty here - btc (Photon): 3MRRCuFmS3GciugRRawkuAbLLcpNVXSJqm
 
-50% bounty here (Urza): 3AcRFwqKx6P8rBngUz4hRTG2QEwodLqAVE
+50% bounty here - btc (Urza): 3AcRFwqKx6P8rBngUz4hRTG2QEwodLqAVE
 
 Please confirm this by sending an email to mozkomorkaban@gmail.com and a copy to photonek@gmail.com (for notification, do not accept responses from this one).
 
