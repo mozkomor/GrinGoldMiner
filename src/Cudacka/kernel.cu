@@ -259,6 +259,8 @@ __global__  void FluffySeed2B(const  uint2 * source, ulonglong4 * destination, c
 		if (edgeIndex < bucketEdges)
 		{
 			uint2 edge = source[offsetMem + (myBucket * DUCK_A_EDGES_64) + edgeIndex];
+			
+			if (edge.x == 0 && edge.y == 0) continue;
 
 			int bucket = (edge.x >> 6) & (64 - 1);
 
