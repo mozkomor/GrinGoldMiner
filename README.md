@@ -9,6 +9,8 @@ Please confirm this by sending an email to mozkomorkaban@gmail.com and a copy to
 
 There is binary release, but because it does not actually mine yet and can only run on GTX 1070, GTX 1070 Ti, GTX 1080, GTX 1080 Ti and Titans with minimum 8GB of VRAM, use it only as a last resort if you can’t compile yourself and have an exotic GPU to test (like nvidia TITAN V).
 
+Based on great work of John Tromp, the inventor of Cuckoo cycle PoW  https://github.com/tromp/cuckoo
+
 ## How to compile on Windows
 You need Visual Studio 2017 with dotnet core 2.0 and CUDA 9.1 SDK installed on your system. Simply open the solution and build Release target for x64 architecture. Grab both executables and their libraries and put them in a single folder somewhere else. Open windows power shell in that folder and run ./Theta -r 100 -n 0
 
@@ -57,4 +59,5 @@ This launches 100 iterations and at the end prints total time that you simply di
 **Q:** What GPU will be the best for power efficiency or performace per dollar?
 
 **A:** This miner is not bottlenecked by memory like more usual eth and other miners, I only have GTX 1070, so hard to draw any conclusions - the code is currently only optimized for GTX 1070. Do your own benchmarks or send us new GPUs :)
+
 
