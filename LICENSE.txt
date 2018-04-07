@@ -16,7 +16,8 @@ Any derived miner that charges a developer fee for mining a fair coin
 ---one with no premine or other form of developer compensation---
 shall offer to share half the fee revenue with the coin developers and
 original developers of this software. Derived miner keeps 50% of the total fee,
-coin developers receive 25% and authors of this work receive final 25%. 
+coin developers receive 25% and authors of github.com/mozkomor/GrinGoldMiner
+software receive final 25%. 
 
 Permission granted by publishing compatible mining pool endpoint in the bottom
 section of the this project's GitHub page. 
