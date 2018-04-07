@@ -22,6 +22,10 @@ software receive final 25%.
 Permission granted by publishing compatible mining pool endpoint in the bottom
 section of the this project's GitHub page. 
 
+ALTERNATIVELY, this software may be distributed under the terms of the
+GNU General Public License ("GPL") version 2 or later, as published by
+the Free Software Foundation.
+
 The above copyright notice, FAIR MINING 2.1.1 condition, and this permission notice
 shall be included in all copies or substantial portions of the Software.
 
