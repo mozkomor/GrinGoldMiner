@@ -54,7 +54,7 @@ This launches 100 iterations and at the end prints total time that you simply di
 
 **A:** This work is not derived from original John Tromp solvers. However, we still request that portion of the fee goes to main grin developers no matter what. Our own releases (source code defaults and binary) will use 1% fee for grin developers and 1% fee for miner developers (us). Any further derived work must honour 2:1:1 fee distribution. So for example 1% to the derived work developer, 0.5% to grin developers and 0.5% to original miner developers (us).
 
-**Q:** 
+**Q:** What GPU will be the best for power efficiency or performace per dollar?
 
-**A:** 
+**A:** This miner is not bottlenecked by memory like more usual eth and other miners, I only have GTX 1070, so hard to draw any conclusions - the code is currently only optimized for GTX 1070. Do your own benchmarks or send us new GPUs :)
 
