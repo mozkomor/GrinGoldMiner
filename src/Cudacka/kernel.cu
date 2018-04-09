@@ -20,8 +20,7 @@
 #include <math.h>
 
 // ------ OPTIONS ---------------------------------------------------
-// highly experimental, not tested, but try to set to 0 on GTX 1080 Ti or any other card with 11GB RAM+
-// will save 25-40 ms or so, if it doesn't crash :)
+// Do not change, reported as not working
 #define VRAMSMALL 1
 
 // ------------------------------------------------------------------
