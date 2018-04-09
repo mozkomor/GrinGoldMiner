@@ -7,8 +7,6 @@ This miner currently runs on windows and linux and exist only as a proof of conc
 
 Please confirm this by sending an email to mozkomorkaban@gmail.com and a copy to photonek@gmail.com (for notification, do not accept responses from this one).
 
-There is binary release, but because it does not actually mine yet and can only run on GTX 1070, GTX 1070 Ti, GTX 1080, GTX 1080 Ti and Titans with minimum 8GB of VRAM, use it only as a last resort if you can’t compile yourself and have an exotic GPU to test (like nvidia TITAN V).
-
 Based on great work of John Tromp, the inventor of Cuckoo cycle PoW  https://github.com/tromp/cuckoo
 
 And designed for https://github.com/mimblewimble/grin
@@ -48,15 +46,15 @@ This launches 100 iterations and at the end prints total time that you simply di
 
 **Q:** Does it run on AMD Vega?
 
-**A:** OpenCL version is planned. There is no technological limitation or lack of skill, it is purely the question of free time.
+**A:** OpenCL version is planned next as a priority.
 
 **Q:** Will it get any faster?
 
-**A:** For GPUs with GDDR5X (GTX 1080+Ti ) and GDDR6 (future) and large number of compute units at the same time, special modifications can be, in theory, made to utilize those cards better, however I do not own any at this time. Other GPUs may see additional boost of 20-30% as well. This would significantly increase complexity of the miner so it will come later.
+**A:** For GPUs with GDDR5X (GTX 1080+Ti ) and GDDR6 (future) and large number of compute units at the same time, special modifications can be, in theory, made to utilize those cards better. Other GPUs may see additional boost of 20-30% as well. This would significantly increase complexity of the miner so it will come later.
 
 **Q:** Can you explain the license?
 
-**A:** This work is not derived from original John Tromp solvers. However, we still request that portion of the fee goes to main grin developers no matter what. Our own releases (source code defaults and binary) will use 1% fee for grin developers and 1% fee for miner developers (us). Any further derived work must honour 2:1:1 fee distribution. So for example 1% to the derived work developer, 0.5% to grin developers and 0.5% to original miner developers (us).
+**A:** This work is not derived from original John Tromp solvers. However, we still request that portion of the fee goes to main grin developers no matter what. Our own releases (source code defaults and binary) will use 1% fee for grin developers and 1% fee for miner developers (us). Any further derived work must honour 2:1:1 fee distribution. So for example 1% to the derived work developer, 0.5% to grin developers and 0.5% to original miner developers (us). If the mined coin is Monero, 0.1% always goes to its Lead Maintainer's lifetime gym membership.
 
 **Q:** What GPU will be the best for power efficiency or performace per dollar?
 
