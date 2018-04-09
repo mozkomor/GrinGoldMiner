@@ -5,7 +5,7 @@ This miner currently runs on windows and linux and exist only as a proof of conc
 
 50% bounty here - btc (Urza): 3AcRFwqKx6P8rBngUz4hRTG2QEwodLqAVE
 
-Please confirm this by sending an email to mozkomorkaban@gmail.com and a copy to photonek@gmail.com (for notification, do not accept responses from this one).
+Contact us at mozkomorkaban@gmail.com
 
 Based on great work of John Tromp, the inventor of Cuckoo cycle PoW  https://github.com/tromp/cuckoo
 
@@ -46,7 +46,7 @@ This launches 100 iterations and at the end prints total time that you simply di
 
 **Q:** Does it run on AMD Vega?
 
-**A:** OpenCL version is planned next as a priority.
+**A:** OpenCL version is planned next as time allows.
 
 **Q:** Will it get any faster?
 
