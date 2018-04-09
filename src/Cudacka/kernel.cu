@@ -621,9 +621,10 @@ int main()
 			FluffyRound<DUCK_B_EDGES, DUCK_B_EDGES> << < 4096, 1024 >> > ((const uint2 *)bufferB, (uint2 *)bufferA, (const int *)indexesE2, (int *)indexesE);
 			cudaMemset(indexesE2, 0, indexesSize);
 			FluffyRound<DUCK_B_EDGES, DUCK_B_EDGES> << < 4096, 1024 >> > ((const uint2 *)bufferA, (uint2 *)bufferB, (const int *)indexesE, (int *)indexesE2);
-			cudaMemset(indexesE, 0, indexesSize);
+			
 		}
-
+		
+		cudaMemset(indexesE, 0, indexesSize);
 		cudaDeviceSynchronize();
 
 		FluffyTail << < 4096, 1024 >> > ((const uint2 *)bufferB, (uint2 *)bufferA, (const int *)indexesE2, (int *)indexesE);
