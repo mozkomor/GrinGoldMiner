@@ -601,7 +601,7 @@ int main()
 		FluffySeed2A << < 512, 64 >> > (k0, k1, k2, k3, (ulonglong4 *)bufferA, (int *)indexesE);
 
 		FluffySeed2B << < 32 * BKTGRAN, 64 >> > ((const uint2 *)bufferA, (ulonglong4 *)bufferB, (const int *)indexesE, (int *)indexesE2, 0);
-		FluffySeed2B << < 32 * BKTGRAN, 64 >> > ((const uint2 *)bufferA, (ulonglong4 *)bufferB, (const int *)indexesE, (int *)indexesE2, 32);
+		FluffySeed2B << < 32 * BKTGRAN, 64 >> > ((const uint2 *)bufferA, ((ulonglong4 *)bufferB) + (bufferSize2 / 8 / 4 / 2), (const int *)indexesE, (int *)indexesE2, 32);
 
 		cudaStatus = cudaGetLastError();
 		if (cudaStatus != cudaSuccess)
