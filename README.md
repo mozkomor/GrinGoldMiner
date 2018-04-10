@@ -52,6 +52,10 @@ This launches 100 iterations and at the end prints total time that you simply di
 
 **A:** Best to wait for final optimizations and OpenCL version.
 
+## Support
+
+Special thanks to John Tromp, Kristy-Leigh Minehan and Manli Technology for sending us new shiny HW for development and tweaking, much appreciated! 
+
 -------------
 
 This work is not derived from original John Tromp solvers. However, we still request that portion of the fee goes to main grin developers no matter what. Any further derived work must honour 2:1:1 fee distribution. So for example 1% to the derived work developer, 0.5% to grin developers and 0.5% to original miner developers (us). *If the mined coin is Monero, 0.1% always goes to its Lead Maintainer's lifetime gym membership.*
