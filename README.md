@@ -34,6 +34,11 @@ Run it
     
 This launches 100 iterations and at the end prints total time that you simply divide by 100 to get single graph time.
 
+## Current Perfomance (overclocked core and memory)
+
+    GTX 1070    - up to 2.4 Graphs/s
+    GTX 1080 Ti - up to 4.2 Graphs/s
+
 ## Questions
 
 **Q:** Can I use this to mine grin?
@@ -58,6 +63,6 @@ Special thanks to John Tromp, Kristy-Leigh Minehan and Manli Technology for send
 
 -------------
 
-This work is not derived from original John Tromp solvers. However, we still request that portion of the fee goes to main grin developers no matter what. Any further derived work must honour 2:1:1 fee distribution. So for example 1% to the derived work developer, 0.5% to grin developers and 0.5% to original miner developers (us). *If the mined coin is Monero, 0.1% always goes to its Lead Maintainer's lifetime gym membership.*
+This work is not derived from original John Tromp solvers. However, we still ask that portion of the fee goes to main grin developers no matter what. Any further derived work must honour 2:1:1 fee distribution if it choses to use fees. So for example 1% to the derived work developer, 0.5% to grin developers and 0.5% to original miner developers (us). Alternatively, license allows usage under GPLv2 and higher.
 
 
