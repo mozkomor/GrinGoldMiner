@@ -19,13 +19,6 @@
 #include <string.h>
 #include <math.h>
 
-// ------ OPTIONS ---------------------------------------------------
-// Do not change, reported as not working
-#define VRAMSMALL 1
-
-// ------------------------------------------------------------------
-
-
 #ifdef _WIN32
 #  define WINDOWS_LEAN_AND_MEAN
 #  define NOMINMAX
@@ -45,23 +38,15 @@ typedef struct uint10
 	uint2 edges[5];
 } uint10;
 
-#ifdef VRAMSMALL
+
 	#ifdef _WIN32
 	#define DUCK_SIZE_A 129LL
-	#define DUCK_SIZE_B 83LL
+	#define DUCK_SIZE_B 82LL
 	#else
 	#define DUCK_SIZE_A 130LL
 	#define DUCK_SIZE_B 85LL
 	#endif
-#else
-	#ifdef _WIN32
-	#define DUCK_SIZE_A 130LL
-	#define DUCK_SIZE_B 85LL
-	#else
-	#define DUCK_SIZE_A 130LL
-	#define DUCK_SIZE_B 85LL
-	#endif
-#endif
+
 
 #define DUCK_A_EDGES (DUCK_SIZE_A * 1024LL)
 #define DUCK_A_EDGES_64 (DUCK_A_EDGES * 64LL)
@@ -152,7 +137,7 @@ __global__  void FluffySeed2A(const u64 v0i, const u64 v1i, const u64 v2i, const
 	const int gid = blockDim.x * blockIdx.x + threadIdx.x;
 	const int lid = threadIdx.x;
 
-	__shared__ uint2 tmp[64][16];
+	__shared__ uint2 tmp[64][15];
 	__shared__ int counters[64];
 
 	counters[lid] = 0;
@@ -171,18 +156,16 @@ __global__  void FluffySeed2A(const u64 v0i, const u64 v1i, const u64 v2i, const
 
 		__syncthreads();
 
-		int counter = min((int)atomicAdd(counters + bucket, 1), (int)15);
+		int counter = min((int)atomicAdd(counters + bucket, 1), (int)14);
 
 		hash.y = dipnode(v0i, v1i, v2i, v3i, nonce, 1);
-
-		if (hash.x == 0 && hash.y == 0) continue;
 
 		tmp[bucket][counter] = hash;
 
 		__syncthreads();
 
 		{
-			int localIdx = min(16, counters[lid]);
+			int localIdx = min(15, counters[lid]);
 
 			if (localIdx >= 8)
 			{
@@ -212,10 +195,14 @@ __global__  void FluffySeed2A(const u64 v0i, const u64 v1i, const u64 v2i, const
 	{
 		int localIdx = min(16, counters[lid]);
 
-		if (localIdx >= 4)
+		if (localIdx > 0)
 		{
 			int cnt = min((int)atomicAdd(indexes + lid, 4), (int)(DUCK_A_EDGES_64 - 4));
-			buffer[(lid * DUCK_A_EDGES_64 + cnt) / 4] = Pack4edges(tmp[lid][0], tmp[lid][1], tmp[lid][2], tmp[lid][3]);
+			buffer[(lid * DUCK_A_EDGES_64 + cnt) / 4] = Pack4edges(
+				tmp[lid][0],
+				localIdx > 1 ? tmp[lid][1] : make_uint2(0, 0),
+				localIdx > 2 ? tmp[lid][2] : make_uint2(0, 0),
+				localIdx > 3 ? tmp[lid][3] : make_uint2(0, 0));
 		}
 		if (localIdx > 4)
 		{
@@ -237,7 +224,7 @@ __global__  void FluffySeed2B(const  uint2 * source, ulonglong4 * destination, c
 	const int lid = threadIdx.x;
 	const int group = blockIdx.x;
 
-	__shared__ uint2 tmp[64][16];
+	__shared__ uint2 tmp[64][15];
 	__shared__ int counters[64];
 
 	counters[lid] = 0;
@@ -258,20 +245,20 @@ __global__  void FluffySeed2B(const  uint2 * source, ulonglong4 * destination, c
 		if (edgeIndex < bucketEdges)
 		{
 			uint2 edge = source[offsetMem + (myBucket * DUCK_A_EDGES_64) + edgeIndex];
-			
+
 			if (edge.x == 0 && edge.y == 0) continue;
 
 			int bucket = (edge.x >> 6) & (64 - 1);
 
 			__syncthreads();
 
-			int counter = min((int)atomicAdd(counters + bucket, 1), (int)15);
+			int counter = min((int)atomicAdd(counters + bucket, 1), (int)14);
 
 			tmp[bucket][counter] = edge;
 
 			__syncthreads();
 
-			int localIdx = min(16, counters[lid]);
+			int localIdx = min(15, counters[lid]);
 
 			if (localIdx >= 8)
 			{
@@ -301,10 +288,14 @@ __global__  void FluffySeed2B(const  uint2 * source, ulonglong4 * destination, c
 	{
 		int localIdx = min(16, counters[lid]);
 
-		if (localIdx >= 4)
+		if (localIdx > 0)
 		{
 			int cnt = min((int)atomicAdd(destinationIndexes + startBlock * 64 + myBucket * 64 + lid, 4), (int)(DUCK_A_EDGES - 4));
-			destination[((myBucket * 64 + lid) * DUCK_A_EDGES + cnt) / 4] = Pack4edges(tmp[lid][0], tmp[lid][1], tmp[lid][2], tmp[lid][3]);
+			destination[((myBucket * 64 + lid) * DUCK_A_EDGES + cnt) / 4] = Pack4edges(
+				tmp[lid][0],
+				localIdx > 1 ? tmp[lid][1] : make_uint2(0, 0),
+				localIdx > 2 ? tmp[lid][2] : make_uint2(0, 0),
+				localIdx > 3 ? tmp[lid][3] : make_uint2(0, 0));
 		}
 		if (localIdx > 4)
 		{
@@ -405,6 +396,12 @@ __global__   void FluffyRound(const uint2 * source, uint2 * destination, const i
 
 template __global__ void FluffyRound<DUCK_A_EDGES, DUCK_B_EDGES>(const uint2 * source, uint2 * destination, const int * sourceIndexes, int * destinationIndexes);
 template __global__ void FluffyRound<DUCK_B_EDGES, DUCK_B_EDGES>(const uint2 * source, uint2 * destination, const int * sourceIndexes, int * destinationIndexes);
+template __global__ void FluffyRound<DUCK_B_EDGES, DUCK_B_EDGES / 2>(const uint2 * source, uint2 * destination, const int * sourceIndexes, int * destinationIndexes);
+template __global__ void FluffyRound<DUCK_B_EDGES / 2, DUCK_B_EDGES / 2>(const uint2 * source, uint2 * destination, const int * sourceIndexes, int * destinationIndexes);
+template __global__ void FluffyRound<DUCK_B_EDGES / 2, DUCK_B_EDGES / 4>(const uint2 * source, uint2 * destination, const int * sourceIndexes, int * destinationIndexes);
+template __global__ void FluffyRound<DUCK_B_EDGES / 4, DUCK_B_EDGES / 4>(const uint2 * source, uint2 * destination, const int * sourceIndexes, int * destinationIndexes);
+
+
 
 __global__   void /*Magical*/FluffyTail/*Pony*/(const uint2 * source, uint2 * destination, const int * sourceIndexes, int * destinationIndexes)
 {
@@ -421,7 +418,7 @@ __global__   void /*Magical*/FluffyTail/*Pony*/(const uint2 * source, uint2 * de
 
 	if (lid < myEdges)
 	{
-		destination[destIdx + lid] = source[group * DUCK_B_EDGES + lid];
+		destination[destIdx + lid] = source[group * DUCK_B_EDGES / 4 + lid];
 	}
 }
 
@@ -577,9 +574,7 @@ int main()
 
 		cudaDeviceSynchronize();
 
-		
 
-#ifdef VRAMSMALL
 		FluffySeed2A << < 512, 64 >> > (k0, k1, k2, k3, (ulonglong4 *)bufferA, (int *)indexesE2);
 
 		FluffySeed2B << < 32 * BKTGRAN, 64 >> > ((const uint2 *)bufferA, (ulonglong4 *)bufferB, (const int *)indexesE2, (int *)indexesE, 0);
@@ -595,34 +590,27 @@ int main()
 
 		cudaMemset(indexesE2, 0, indexesSize);
 		FluffyRound<DUCK_A_EDGES, DUCK_B_EDGES> << < 4096, 1024 >> > ((const uint2 *)bufferA, (uint2 *)bufferB, (const int *)indexesE, (int *)indexesE2);
-
-#else
-		FluffySeed2A << < 512, 64 >> > (k0, k1, k2, k3, (ulonglong4 *)bufferA, (int *)indexesE);
-
-		FluffySeed2B << < 32 * BKTGRAN, 64 >> > ((const uint2 *)bufferA, (ulonglong4 *)bufferB, (const int *)indexesE, (int *)indexesE2, 0);
-		FluffySeed2B << < 32 * BKTGRAN, 64 >> > ((const uint2 *)bufferA, ((ulonglong4 *)bufferB) + (bufferSize2 / 8 / 4 / 2), (const int *)indexesE, (int *)indexesE2, 32);
-
-		cudaStatus = cudaGetLastError();
-		if (cudaStatus != cudaSuccess)
-			fprintf(stderr, "status memcpy: %s\n", cudaGetErrorString(cudaStatus));
-
 		cudaMemset(indexesE, 0, indexesSize);
-		FluffyRound<DUCK_A_EDGES, DUCK_B_EDGES> << < 4096, 1024 >> > ((const uint2 *)bufferB, (uint2 *)bufferA, (const int *)indexesE2, (int *)indexesE);
+		FluffyRound<DUCK_B_EDGES, DUCK_B_EDGES / 2> << < 4096, 1024 >> > ((const uint2 *)bufferB, (uint2 *)bufferA, (const int *)indexesE2, (int *)indexesE);
 		cudaMemset(indexesE2, 0, indexesSize);
-		FluffyRound<DUCK_B_EDGES, DUCK_B_EDGES> << < 4096, 1024 >> > ((const uint2 *)bufferA, (uint2 *)bufferB, (const int *)indexesE, (int *)indexesE2);
-#endif
+		FluffyRound<DUCK_B_EDGES / 2, DUCK_B_EDGES / 2> << < 4096, 1024 >> > ((const uint2 *)bufferA, (uint2 *)bufferB, (const int *)indexesE, (int *)indexesE2);
+		cudaMemset(indexesE, 0, indexesSize);
+		FluffyRound<DUCK_B_EDGES / 2, DUCK_B_EDGES / 2> << < 4096, 1024 >> > ((const uint2 *)bufferB, (uint2 *)bufferA, (const int *)indexesE2, (int *)indexesE);
+		cudaMemset(indexesE2, 0, indexesSize);
+		FluffyRound<DUCK_B_EDGES / 2, DUCK_B_EDGES / 4> << < 4096, 1024 >> > ((const uint2 *)bufferA, (uint2 *)bufferB, (const int *)indexesE, (int *)indexesE2);
+
 
 		cudaDeviceSynchronize();
 
 		for (int i = 0; i < 80; i++)
 		{
 			cudaMemset(indexesE, 0, indexesSize);
-			FluffyRound<DUCK_B_EDGES, DUCK_B_EDGES> << < 4096, 1024 >> > ((const uint2 *)bufferB, (uint2 *)bufferA, (const int *)indexesE2, (int *)indexesE);
+			FluffyRound<DUCK_B_EDGES / 4, DUCK_B_EDGES / 4> << < 4096, 1024 >> > ((const uint2 *)bufferB, (uint2 *)bufferA, (const int *)indexesE2, (int *)indexesE);
 			cudaMemset(indexesE2, 0, indexesSize);
-			FluffyRound<DUCK_B_EDGES, DUCK_B_EDGES> << < 4096, 1024 >> > ((const uint2 *)bufferA, (uint2 *)bufferB, (const int *)indexesE, (int *)indexesE2);
-			
+			FluffyRound<DUCK_B_EDGES / 4, DUCK_B_EDGES / 4> << < 4096, 1024 >> > ((const uint2 *)bufferA, (uint2 *)bufferB, (const int *)indexesE, (int *)indexesE2);
+
 		}
-		
+
 		cudaMemset(indexesE, 0, indexesSize);
 		cudaDeviceSynchronize();
 

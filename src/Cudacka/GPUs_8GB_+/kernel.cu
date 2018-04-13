@@ -160,8 +160,6 @@ __global__  void FluffySeed2A(const u64 v0i, const u64 v1i, const u64 v2i, const
 
 		hash.y = dipnode(v0i, v1i, v2i, v3i, nonce, 1);
 
-		if (hash.x == 0 && hash.y == 0) continue;
-
 		tmp[bucket][counter] = hash;
 
 		__syncthreads();
@@ -197,10 +195,14 @@ __global__  void FluffySeed2A(const u64 v0i, const u64 v1i, const u64 v2i, const
 	{
 		int localIdx = min(15, counters[lid]);
 
-		if (localIdx >= 4)
+		if (localIdx > 0)
 		{
 			int cnt = min((int)atomicAdd(indexes + lid, 4), (int)(DUCK_A_EDGES_64 - 4));
-			buffer[(lid * DUCK_A_EDGES_64 + cnt) / 4] = Pack4edges(tmp[lid][0], tmp[lid][1], tmp[lid][2], tmp[lid][3]);
+			buffer[(lid * DUCK_A_EDGES_64 + cnt) / 4] = Pack4edges(
+				tmp[lid][0],
+				localIdx > 1 ? tmp[lid][1] : make_uint2(0, 0),
+				localIdx > 2 ? tmp[lid][2] : make_uint2(0, 0),
+				localIdx > 3 ? tmp[lid][3] : make_uint2(0, 0));
 		}
 		if (localIdx > 4)
 		{
@@ -286,10 +288,14 @@ __global__  void FluffySeed2B(const  uint2 * source, ulonglong4 * destination, c
 	{
 		int localIdx = min(15, counters[lid]);
 
-		if (localIdx >= 4)
+		if (localIdx > 0)
 		{
 			int cnt = min((int)atomicAdd(destinationIndexes + startBlock * 64 + myBucket * 64 + lid, 4), (int)(DUCK_A_EDGES - 4));
-			destination[((myBucket * 64 + lid) * DUCK_A_EDGES + cnt) / 4] = Pack4edges(tmp[lid][0], tmp[lid][1], tmp[lid][2], tmp[lid][3]);
+			destination[((myBucket * 64 + lid) * DUCK_A_EDGES + cnt) / 4] = Pack4edges(
+				tmp[lid][0],
+				localIdx > 1 ? tmp[lid][1] : make_uint2(0, 0),
+				localIdx > 2 ? tmp[lid][2] : make_uint2(0, 0),
+				localIdx > 3 ? tmp[lid][3] : make_uint2(0, 0));
 		}
 		if (localIdx > 4)
 		{
