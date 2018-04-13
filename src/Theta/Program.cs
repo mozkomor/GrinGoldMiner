@@ -258,8 +258,14 @@ namespace Theta
 
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.WriteLine(string.Format("Solution: nonce:{0:X} k0:{1:X} k1:{2:X} k2:{3:X} k3:{4:X}", so.nonce, so.k0, so.k1, so.k2, so.k3));
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Task.Delay(100).Wait();
+                    Console.ForegroundColor = ConsoleColor.White;
+
+                    int max = 2000;
+                    while (tstate != TrimmerState.Ready)
+                    {
+                        if (--max < 0) break;
+                        Task.Delay(1).Wait();
+                    }
                 }
             }
         }
