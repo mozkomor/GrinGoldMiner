@@ -14,6 +14,8 @@ And designed for https://github.com/mimblewimble/grin
 ## How to compile on Windows
 You need Visual Studio 2017 with dotnet core 2.0 and CUDA 9.1 SDK installed on your system. Simply open the solution and build Release target for x64 architecture. Grab both executables and their libraries and put them in a single folder somewhere else. Open windows power shell in that folder and run ./Theta -r 100 -n 0
 
+CUDA 9.1 needs specific maximum version of VS2017, it may not work with the latest VC++ compiler version!
+
 ## How to compile on Linux
 You need latest nvidia drivers, CUDA SDK 9.1 and g++ compiler it is happy with. You can execute my cuda Makefile I copied from cuda samples. This will produce Cudacka.exe file (same name as in windows as this is executed from dotnet master process).
 
@@ -37,7 +39,10 @@ This launches 100 iterations and at the end prints total time that you simply di
 ## Current Perfomance (overclocked core and memory)
 
     GTX 1070    - up to 2.4 Graphs/s
-    GTX 1080 Ti - up to 4.2 Graphs/s
+    GTX 1080 Ti - up to 4.2 Graphs/s @ ~200W
+    GTX 1080 Ti - up to 3.3 Graphs/s @ ~100W
+    
+Note 1080 Ti uses another .cu file optimized for GPUs with over 8GB VRAM.
 
 ## Questions
 
