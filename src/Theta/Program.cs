@@ -111,7 +111,7 @@ namespace Theta
 
                             cuda.StandardInput.WriteLine(string.Format("#t {0} {1} {2} {3} {4}", k0, k1, k2, k3, 0));
                             
-                            for (int w = 0; w < 20; w++)
+                            for (int w = 0; w < 50; w++)
                                 if (tstate != TrimmerState.Trimming)
                                     Task.Delay(1).Wait();
 
@@ -261,6 +261,7 @@ namespace Theta
                     Console.ForegroundColor = ConsoleColor.White;
 
                     int max = 2000;
+                    Task.Delay(40);
                     while (tstate != TrimmerState.Ready)
                     {
                         if (--max < 0) break;
