@@ -36,11 +36,11 @@ Run it
     
 This launches 100 iterations and at the end prints total time that you simply divide by 100 to get single graph time.
 
-## Current Perfomance (overclocked core and memory)
+## Current Perfomance
 
-    GTX 1070    - up to 2.4 Graphs/s
-    GTX 1080 Ti - up to 4.2 Graphs/s @ ~200W
-    GTX 1080 Ti - up to 3.3 Graphs/s @ ~100W
+    GTX 1070    - up to 2.5 Graphs/s @ ~75W       - overclocked core +150 mem +400
+    GTX 1080 Ti - up to 4.2 Graphs/s @ ~210W      - overclocked core +200 mem +400
+    GTX 1080 Ti - up to 3.3 Graphs/s @ ~100W      - power limit 50%
     
 Note 1080 Ti uses another .cu file optimized for GPUs with over 8GB VRAM.
 
