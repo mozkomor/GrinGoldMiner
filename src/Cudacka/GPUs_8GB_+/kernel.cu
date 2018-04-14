@@ -598,7 +598,7 @@ int main()
 		FluffyRound<DUCK_B_EDGES / 2, DUCK_B_EDGES / 4> << < 4096, 1024 >> > ((const uint2 *)bufferA, (uint2 *)bufferB, (const int *)indexesE, (int *)indexesE2);
 
 
-		for (int i = 0; i < 70; i++)
+		for (int i = 0; i < 80; i++)
 		{
 			cudaMemset(indexesE, 0, indexesSize);
 			FluffyRound<DUCK_B_EDGES / 4, DUCK_B_EDGES / 4> << < 4096, 1024 >> > ((const uint2 *)bufferB, (uint2 *)bufferA, (const int *)indexesE2, (int *)indexesE);
@@ -638,14 +638,20 @@ int main()
 		}
 #else
 		{
-			auto myfile = std::fstream("edges/data.bin", std::ios::out | std::ios::binary);
-			myfile.write((const char *)&pos, 4);
-			myfile.write((const char *)buffer, pos * 8);
-			myfile.close();
+			try
+			{
+				auto myfile = std::fstream("edges/data.bin", std::ios::out | std::ios::binary);
+				myfile.write((const char *)&pos, 4);
+				myfile.write((const char *)buffer, pos * 8);
+				myfile.close();
+			}
+			catch (std::exception e)
+			{
+				fprintf(stderr, "Error writing edges to file %s!\n", e.what());
+			}
 		}
 #endif
 		fprintf(stderr, "#e %d \n", pos);
-
 
 	}
 

@@ -110,10 +110,21 @@ namespace Theta
                             k3 = BitConverter.ToUInt64(blaked, 24);
 
                             cuda.StandardInput.WriteLine(string.Format("#t {0} {1} {2} {3} {4}", k0, k1, k2, k3, 0));
-                            
-                            for (int w = 0; w < 50; w++)
+
+                            bool notify = false;
+                            for (int w = 0; w < 500; w++)
+                            {
                                 if (tstate != TrimmerState.Trimming)
                                     Task.Delay(1).Wait();
+                                else
+                                    break;
+
+                                if (w > 100 && !notify)
+                                {
+                                    notify = true;
+                                    Console.WriteLine("Warning: No response from trimmer to trim command for > 100ms");
+                                }
+                            }
 
                             if (tstate == TrimmerState.Trimming)
                             {
@@ -184,6 +195,18 @@ namespace Theta
                             else
                             {
                                 Console.WriteLine("CUDA trimmer not responding");
+
+                                try
+                                {
+                                    if (cuda.HasExited)
+                                        Console.WriteLine("CUDA trimmer thread terminated itself with code " + cuda.ExitCode.ToString() );
+                                    else
+                                    {
+                                        Console.WriteLine("CUDA trimmer stuck in " + tstate.ToString());
+                                    }
+                                }
+                                catch { }
+
                                 break;
                             }
 
@@ -251,6 +274,8 @@ namespace Theta
                 var so = solutions.Dequeue();
                 if (so.nonces.Count == 42)
                 {
+                    tstate = TrimmerState.Solving;
+
                     cuda.StandardInput.Write(string.Format("#s {0} {1} {2} {3} {4}", so.k0, so.k1, so.k2, so.k3, 0));
                     foreach (var n in so.nonces)
                         cuda.StandardInput.Write(" " + ((UInt64)n.Item1 | ((UInt64)n.Item2 << 32)).ToString());
@@ -261,7 +286,7 @@ namespace Theta
                     Console.ForegroundColor = ConsoleColor.White;
 
                     int max = 2000;
-                    Task.Delay(40);
+                    Task.Delay(50);
                     while (tstate != TrimmerState.Ready)
                     {
                         if (--max < 0) break;
@@ -287,6 +312,7 @@ namespace Theta
                             tstate = TrimmerState.Ready;
                             break;
                         case 'e':
+                            tstate = TrimmerState.SendingEdges;
                             if (cycler != null && !cycler.IsCompleted)
                             {
                                 Console.WriteLine("Warning, CPU bottleneck detected");
@@ -344,7 +370,7 @@ namespace Theta
                                 }
                             }
 
-                            tstate = TrimmerState.SendingEdges;
+                            
                             break;
                         case 'x':
                             tstate = TrimmerState.Terminated;
@@ -401,7 +427,8 @@ namespace Theta
         Ready,
         Trimming,
         SendingEdges,
-        Terminated
+        Terminated,
+        Solving
     }
 
     public class CGraph

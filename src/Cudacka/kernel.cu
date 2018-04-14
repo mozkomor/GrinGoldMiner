@@ -642,10 +642,17 @@ int main()
 		}
 #else
 		{
-			auto myfile = std::fstream("edges/data.bin", std::ios::out | std::ios::binary);
-			myfile.write((const char *)&pos, 4);
-			myfile.write((const char *)buffer, pos * 8);
-			myfile.close();
+			try
+			{
+				auto myfile = std::fstream("edges/data.bin", std::ios::out | std::ios::binary);
+				myfile.write((const char *)&pos, 4);
+				myfile.write((const char *)buffer, pos * 8);
+				myfile.close();
+			}
+			catch (std::exception e)
+			{
+				fprintf(stderr, "Error writing edges to file %s!\n", e.what());
+			}
 		}
 #endif
 		fprintf(stderr, "#e %d \n", pos);
