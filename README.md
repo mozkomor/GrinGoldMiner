@@ -39,6 +39,7 @@ This launches 100 iterations and at the end prints total time that you simply di
 ## Current Perfomance
 
     GTX 1070    - up to 2.5 Graphs/s @ ~75W       - overclocked core +150 mem +400
+    GTX 1070 Ti - up to 2.8 Graphs/s @ ~80W       - overclocked core +150 mem +400 [estimated]
     GTX 1080 Ti - up to 4.2 Graphs/s @ ~210W      - overclocked core +200 mem +400
     GTX 1080 Ti - up to 3.3 Graphs/s @ ~100W      - power limit 50%
     
