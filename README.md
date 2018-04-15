@@ -65,10 +65,5 @@ Note 1080 Ti uses another .cu file optimized for GPUs with over 8GB VRAM.
 
 ## Support
 
-Special thanks to John Tromp, Kristy-Leigh Minehan and Manli Technology for sending us new shiny HW for development and tweaking, much appreciated! 
-
--------------
-
-This work is not derived from original John Tromp solvers. However, we still ask that portion of the fee goes to main grin developers no matter what. Any further derived work must honour 2:1:1 fee distribution if it choses to use fees. So for example 1% to the derived work developer, 0.5% to grin developers and 0.5% to original miner developers (us). Alternatively, license allows usage under GPLv2 and higher.
-
+Special thanks to John Tromp, Kristy-Leigh Minehan and Manli Technology for sending us new shiny HW for development and tweaking, much appreciated!
 
