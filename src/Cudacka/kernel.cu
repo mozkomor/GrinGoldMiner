@@ -1,6 +1,6 @@
 // Cuckoo Cycle, a memory-hard proof-of-work by John Tromp
 // Copyright (c) 2018 Jiri Vadura - photon
-// This CUDA part of Theta optimized miner is covered by the FAIR MINING license 2.1.1
+// This CUDA part of Theta optimized miner is covered by the FAIR MINING license
 
 #include "cuda_profiler_api.h"
 #include "cuda_runtime.h"
