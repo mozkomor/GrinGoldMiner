@@ -67,3 +67,6 @@ Note 1080 Ti uses another .cu file optimized for GPUs with over 8GB VRAM.
 
 Special thanks to John Tromp, Kristy-Leigh Minehan and Manli Technology for sending us new shiny HW for development and tweaking, much appreciated!
 
+License for the software was changed after publication to be compatible with the bounty. Closed sourced miners based on this work will now be required to pay full 50% of the fee to coin developers and keep the other 50%.
+
+If you want to support development of this cross platform miner, contact us at mozkomorkaban@gmail.com. Happy mining!
