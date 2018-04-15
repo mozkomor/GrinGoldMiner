@@ -1,7 +1,7 @@
 ﻿// Cuckoo Cycle, a memory-hard proof-of-work by John Tromp
 // Copyright (c) 2018 Lukas Kubicek - urza
 // Copyright (c) 2018 Jiri Vadura - photon
-// This management part of Theta optimized miner is covered by the FAIR MINING license 2.1.1
+// This management part of Theta optimized miner is covered by the FAIR MINING license
 
 using System;
 using System.Collections.Generic;
