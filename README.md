@@ -1,6 +1,47 @@
 # GPU Miner for Cuckoo Cycle PoW
 This miner currently runs on windows and linux and exist only as a proof of concept for bounty claim. It does not actually interface with grin software yet (see below). It only works on nvidia GPUs (for now, see below) with at least 8GB of RAM. 
 
+ * Stratum server made it to grin and we are working on grin<->miner communication
+ * OpenCL version is partly finished with extra speedups, algorithm needs modifications for AMD GCN architecture, more testing and tuning
+ * Multiple NV/AMD GPU support with simple config file will be added after that
+
+## Current Perfomance
+
+    GTX 1070    - up to 2.5 Graphs/s @ ~75W       - overclocked core +150 mem +400
+    GTX 1070 Ti - up to 2.8 Graphs/s @ ~80W       - overclocked core +150 mem +400
+    GTX 1080 Ti - up to 4.4 Graphs/s @ ~200W      - overclocked core +200 mem +400 
+    GTX 1080 Ti - up to 3.3 Graphs/s @ ~100W      - power limit 50%
+    
+Note 1080 Ti uses another .cu file optimized for GPUs with over 8GB VRAM.
+
+## Questions
+
+**Q:** Can I use this to mine grin?
+
+**A:** Not at this moment. Stratum connection to grin is being developed.
+
+**Q:** Can it use multiple GPUs?
+
+**A:** Yes, but this is not enabled yet.
+
+**Q:** Does it run on AMD Vega?
+
+**A:** OpenCL port is being developed.
+
+**Q:** What GPU will be the best for power efficiency or performace per dollar?
+
+**A:** Best to wait for final optimizations and OpenCL version.
+
+## Support
+
+Special thanks to John Tromp, Kristy-Leigh Minehan (OhGodACompany) and Manli Technology for sending us new shiny HW (1080 Ti) for development and tweaking, much appreciated!
+
+License for the software was changed after publication to be compatible with the bounty. Closed sourced miners based on this work will now be required to pay full 50% of the fee to coin developers and keep the other 50%.
+
+If you want to support or speedup development of this cross platform miner, contact us at mozkomorkaban@gmail.com. Happy mining!
+
+----------------------------------
+
 50% bounty here - btc (Photon): 3MRRCuFmS3GciugRRawkuAbLLcpNVXSJqm
 
 50% bounty here - btc (Urza): 3AcRFwqKx6P8rBngUz4hRTG2QEwodLqAVE
@@ -10,63 +51,3 @@ Contact us at mozkomorkaban@gmail.com
 Based on great work of John Tromp, the inventor of Cuckoo cycle PoW  https://github.com/tromp/cuckoo
 
 And designed for https://github.com/mimblewimble/grin
-
-## How to compile on Windows
-You need Visual Studio 2017 with dotnet core 2.0 and CUDA 9.1 SDK installed on your system. Simply open the solution and build Release target for x64 architecture. Grab both executables and their libraries and put them in a single folder somewhere else. Open windows power shell in that folder and run ./Theta -r 100 -n 0
-
-CUDA 9.1 needs specific maximum version of VS2017, it may not work with the latest VC++ compiler version!
-
-## How to compile on Linux
-You need latest nvidia drivers, CUDA SDK 9.1 and g++ compiler it is happy with. You can execute my cuda Makefile I copied from cuda samples. This will produce Cudacka.exe file (same name as in windows as this is executed from dotnet master process).
-
-Go into Theta miner master process manager directory. Install dotnet core 2.0 and run
-
-    dotnet publish --self-contained --runtime ubuntu-x64 --configuration "Release"
-    
-but first replace “ubuntu-x64” with your system RID from this catalog https://docs.microsoft.com/en-us/dotnet/core/rid-catalog
-
-This will build the app with all libraries included. Copy Theta and Cudacka and their libraries to a same folder. Create “edges” directory there.
-Now create a 32MB ramdisk of the “edges” subdirectory if you want. I use regular files for communication in linux so you don’t want it to be writing it to mechanical disk. If you don’t have SSD you should do this even for testing. This is temporary solution until better communication system is made for linux.
-
-If you don’t want to install dotnet core package, just use Mono – it is much slower, but it should work too.
-
-Run it
-
-    ./Theta -r 100 -n 0
-    
-This launches 100 iterations and at the end prints total time that you simply divide by 100 to get single graph time.
-
-## Current Perfomance
-
-    GTX 1070    - up to 2.5 Graphs/s @ ~75W       - overclocked core +150 mem +400
-    GTX 1070 Ti - up to 2.8 Graphs/s @ ~80W       - overclocked core +150 mem +400 [estimated]
-    GTX 1080 Ti - up to 4.4 Graphs/s @ ~210W      - overclocked core +200 mem +400 [estimated]
-    GTX 1080 Ti - up to 3.3 Graphs/s @ ~100W      - power limit 50%
-    
-Note 1080 Ti uses another .cu file optimized for GPUs with over 8GB VRAM.
-
-## Questions
-
-**Q:** Can I use this to mine grin?
-
-**A:** Not at this moment. We would like to create a TCP/IP bridge between the miner and grin node so both are separate on local network. 
-
-**Q:** Can it use multiple GPUs?
-
-**A:** Yes in theory, but this is not enabled yet.
-
-**Q:** Does it run on AMD Vega?
-
-**A:** OpenCL version is planned next as time allows.
-
-**Q:** What GPU will be the best for power efficiency or performace per dollar?
-
-**A:** Best to wait for final optimizations and OpenCL version.
-
-## Support
-
-Special thanks to John Tromp, Kristy-Leigh Minehan and Manli Technology for sending us new shiny HW for development and tweaking, much appreciated!
-
-License for the software was changed after publication to be compatible with the bounty. Closed sourced miners based on this work will now be required to pay full 50% of the fee to coin developers and keep the other 50%.
-
-If you want to support development of this cross platform miner, contact us at mozkomorkaban@gmail.com. Happy mining!
