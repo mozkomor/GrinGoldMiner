@@ -12,24 +12,79 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.IO.MemoryMappedFiles;
+using System.Numerics;
 
 namespace Theta
 {
     class Program
     {
+        static GrinConeeect gc;
+
         public static Queue<Solution> solutions = new Queue<Solution>();
         public static List<Tuple<uint, uint>> edges = new List<Tuple<uint, uint>>(150000);
-        public static CGraph g = new CGraph();
-        public static CGraph g2 = new CGraph();
+        //public static CGraph g = new CGraph();
+        //public static CGraph g2 = new CGraph();
         public static Task cycler;
         public static Process cuda;
+        private static Solution ActiveSolution;
         public volatile static TrimmerState tstate = TrimmerState.Starting;
 
-        public static UInt64 k0, k1, k2, k3, nonce, reps;
+        public static UInt64 k0, k1, k2, k3, nonce, reps, device = 0;
+        public static string node = "127.0.0.1";
         private static bool timeout;
+        private static bool Canceled = false;
+
+        static Random rnd = new Random((int)DateTime.Now.Ticks);
 
         static void Main(string[] args)
         {
+            Console.CancelKeyPress += delegate {
+                Console.WriteLine("Ctrl+C - Exitting");
+                if (gc != null && gc.IsConnected)
+                    gc.GrinClose();
+                if (cuda != null && !cuda.HasExited)
+                    cuda.Kill();
+
+                Environment.Exit(0);
+            };
+
+            System.Console.InputEncoding = System.Text.Encoding.ASCII;
+            DateTime s = DateTime.Now;
+            var parser = new SimpleCommandLineParser();
+            parser.Parse(args);
+
+            if (parser.Contains("a"))
+            {
+                gc = new GrinConeeect(parser.Arguments["a"][0], 13416);
+            }
+            else
+            {
+                Console.WriteLine("Please specify options: [-d <cuda device>] -a <node IP>");
+                return;
+            }
+
+            if (gc.IsConnected)
+                Console.WriteLine("Connected to node.");
+            else
+            {
+                Console.WriteLine("Unable to connect to node.");
+                return;
+            }
+
+            Console.Write("Waiting for job");
+            while (true)
+            {
+                if (gc.CurrentJob != null && gc.IsConnected)
+                    break;
+
+                if (Canceled)
+                    return;
+
+                Console.Write(".");
+                Task.Delay(500).Wait();
+            }
+            Console.WriteLine();
+
             try
             {
                 if (!Directory.Exists("edges"))
@@ -37,30 +92,27 @@ namespace Theta
             }
             catch { }
 
-            System.Console.InputEncoding = System.Text.Encoding.ASCII;
-            DateTime s = DateTime.Now;
-            var parser = new SimpleCommandLineParser();
-            parser.Parse(args);
 
-            if (parser.Contains("n") && parser.Contains("r"))
             {
                 try
                 {
-                    nonce = UInt64.Parse(parser.Arguments["n"][0]);
-                    reps = UInt64.Parse(parser.Arguments["r"][0]);
+                    nonce = 0;
+                    reps = 0;
+                    device = UInt64.Parse(parser.Arguments["d"][0]);
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine("Unable to parse arguments: " + ex.Message);
                 }
 
-                Console.WriteLine("Starting CUDA solver process...");
+                Console.WriteLine("Starting CUDA solver process on device " + device.ToString());
 
                 try
                 {
                     cuda = Process.Start(new ProcessStartInfo()
                     {
                         FileName = "Cudacka.exe",
+                        Arguments = device.ToString(),
                         CreateNoWindow = true,
                         RedirectStandardError = true,
                         RedirectStandardInput = true,
@@ -81,28 +133,35 @@ namespace Theta
                     {
                         s = DateTime.Now;
 
-                        for (ulong i = 0; i < reps; i++)
+                        UInt64 height = 0;
+                        UInt64 dif = 0;
+                        byte[] header;
+
+                        //for (ulong i = 0; i < reps; i++)
+                        while (!Canceled)
                         {
-                            Console.WriteLine("Trimming iteration " + i.ToString() + " of " + reps.ToString());
+
                             DateTime a = DateTime.Now;
 
                             GetSols();
 
-                            byte[] header = new byte[80];
-                            Array.Clear(header, 0, header.Length);
-                            UInt32 hnonce = (uint)nonce + (uint)i;
-                            var bytes = BitConverter.GetBytes(hnonce);
-                            Array.Copy(bytes, 0, header, header.Length - 4, 4);
+                            height = (UInt64)gc.CurrentJob.height;
+                            dif = (UInt64)gc.CurrentJob.difficulty;
+                            header = gc.CurrentJob.GetHeader();
+
+                            //string hh = "000100000000000100d3cab77958344e8b143f79f201d805fe2a12aa486c5304c66c9996e68b5bab8436000000005af94f2b0000000000015bf53db905b0d5ad8eb2e521420ea237c1a6096c53987db3d707e66945cda820b8efb36d954aa49eb76d167242e8415058523c4dbd3991d88b17b682c757a15893ca6d776586d14985884ef96d32880caec84259a8ca970718d864db981abe1d3eac4fd21ccaac43ded1c67a51d106b2b52b266784fc9919d46e11bc24afcb702e93";
+                            //header = Enumerable.Range(0, hh.Length)
+                            // .Where(x => x % 2 == 0)
+                            // .Select(x => Convert.ToByte(hh.Substring(x, 2), 16))
+                            // .ToArray();
+
+                            UInt64 hnonce = (UInt64)rnd.Next() | ((UInt64)rnd.Next() << 32);
+                            var bytes = BitConverter.GetBytes(hnonce).Reverse().ToArray();
+                            //Array.Copy(bytes, 0, header, header.Length - 8, 8);
+                            header = header.Concat(bytes).ToArray();
                             var hash = new Crypto.Blake2B(256);
                             byte[] blaked = hash.ComputeHash(header);
-
-                            //UInt64 k0i = BitConverter.ToUInt64(blaked, 0);
-                            //UInt64 k1i = BitConverter.ToUInt64(blaked, 8);
-
-                            //k0 = k0i ^ 0x736f6d6570736575UL;
-                            //k1 = k1i ^ 0x646f72616e646f6dUL;
-                            //k2 = k0i ^ 0x6c7967656e657261UL;
-                            //k3 = k1i ^ 0x7465646279746573UL;
+                            blaked = hash.ComputeHash(blaked);
 
                             k0 = BitConverter.ToUInt64(blaked, 0);
                             k1 = BitConverter.ToUInt64(blaked, 8);
@@ -147,30 +206,23 @@ namespace Theta
                                                 reported = true;
                                                 Console.ForegroundColor = ConsoleColor.Magenta;
                                                 Console.WriteLine("Trimmed in " + Math.Round((DateTime.Now - a).TotalMilliseconds).ToString() + "ms");
-                                                Console.ForegroundColor = ConsoleColor.White;
+                                                Console.ResetColor();
                                             }
 
                                             if (tstate == TrimmerState.Ready)
                                             {
                                                 UInt64 _k0 = k0, _k1 = k1, _k2 = k2, _k3 = k3, _nonce = hnonce;
-                                                if (cycler == null || cycler.IsCompleted)
+                                                
                                                 {
-                                                    cycler = Task.Run(() =>
+                                                    Task.Run(() =>
                                                     {
-                                                        g.SetHeader(_nonce, _k0, _k1, _k2, _k3);
+                                                        CGraph g = new CGraph();
+                                                        g.SetHeader(_nonce, _k0, _k1, _k2, _k3, height, dif);
                                                         g.SetEdges(edges);
                                                         g.FindSolutions(42, solutions);
                                                     });
                                                 }
-                                                else
-                                                {
-                                                    cycler = Task.Run(() =>
-                                                    {
-                                                        g2.SetHeader(_nonce, _k0, _k1, _k2, _k3);
-                                                        g2.SetEdges(edges);
-                                                        g2.FindSolutions(42, solutions);
-                                                    });
-                                                }
+
 
                                                 break;
                                             }
@@ -215,8 +267,8 @@ namespace Theta
 
                         if (cycler != null && !cycler.IsCompleted)
                             cycler.Wait();
-                        if (g != null && g.recovery != null && !g.recovery.IsCompleted)
-                            g.recovery.Wait();
+                        //if (g != null && g.recovery != null && !g.recovery.IsCompleted)
+                        //    g.recovery.Wait();
 
 
                         if (solutions.Count > 0)
@@ -253,18 +305,11 @@ namespace Theta
                 }
 
             }
-            else
-            {
-                Console.WriteLine("Please specify all options: -n <nonce> -r <iterations>");
-            }
-
-
-
 
 
             Console.ForegroundColor = ConsoleColor.Magenta;
             Console.WriteLine("Finished in " + Math.Round((DateTime.Now - s).TotalMilliseconds).ToString() + "ms");
-            Console.ForegroundColor = ConsoleColor.White;
+            Console.ResetColor();
         }
 
         public static void GetSols()
@@ -274,16 +319,18 @@ namespace Theta
                 var so = solutions.Dequeue();
                 if (so.nonces.Count == 42)
                 {
+                    ActiveSolution = so;
+
                     tstate = TrimmerState.Solving;
+
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(string.Format("Recovering solution: nonce:{0:X} k0:{1:X} k1:{2:X} k2:{3:X} k3:{4:X}", so.nonce, so.k0, so.k1, so.k2, so.k3));
+                    Console.ResetColor();
 
                     cuda.StandardInput.Write(string.Format("#s {0} {1} {2} {3} {4}", so.k0, so.k1, so.k2, so.k3, 0));
                     foreach (var n in so.nonces)
                         cuda.StandardInput.Write(" " + ((UInt64)n.Item1 | ((UInt64)n.Item2 << 32)).ToString());
                     cuda.StandardInput.WriteLine();
-
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.WriteLine(string.Format("Solution: nonce:{0:X} k0:{1:X} k1:{2:X} k2:{3:X} k3:{4:X}", so.nonce, so.k0, so.k1, so.k2, so.k3));
-                    Console.ForegroundColor = ConsoleColor.White;
 
                     int max = 2000;
                     Task.Delay(50);
@@ -318,59 +365,61 @@ namespace Theta
                                 Console.WriteLine("Warning, CPU bottleneck detected");
                             }
 
-                            edges.Clear();
-
-                            try
+                            lock (edges)
                             {
-                                using (var mmf = MemoryMappedFile.OpenExisting("CuckoDataSend"))
-                                {
-                                    using (var mmfs = mmf.CreateViewStream(0, 8000000, MemoryMappedFileAccess.Read))
-                                    {
-                                        using (var br = new BinaryReader(mmfs))
-                                        {
-                                            var count = br.ReadUInt32();
+                                edges.Clear();
 
-                                            for (int i = 0; i < count; i++)
-                                            {
-                                                var a = br.ReadUInt32();
-                                                var b = br.ReadUInt32();
-                                                edges.Add(new Tuple<uint, uint>(a, b));
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            catch
-                            {
-                                // error in shared data stuff, lets try secondary solution
                                 try
                                 {
-                                    //edges\\data.bin
-                                    if (File.Exists("edges/data.bin"))
+                                    using (var mmf = MemoryMappedFile.OpenExisting("CuckoDataSend"))
                                     {
-                                        byte[] data =  File.ReadAllBytes("edges/data.bin");
-                                        File.Delete("edges/data.bin");
-                                        using (MemoryStream ms = new MemoryStream(data))
-                                        using (BinaryReader br = new BinaryReader(ms))
+                                        using (var mmfs = mmf.CreateViewStream(0, 8000000, MemoryMappedFileAccess.Read))
                                         {
-                                            var count = br.ReadUInt32();
-
-                                            for (int i = 0; i < count; i++)
+                                            using (var br = new BinaryReader(mmfs))
                                             {
-                                                var a = br.ReadUInt32();
-                                                var b = br.ReadUInt32();
-                                                edges.Add(new Tuple<uint, uint>(a, b));
+                                                var count = br.ReadUInt32();
+
+                                                for (int i = 0; i < count; i++)
+                                                {
+                                                    var a = br.ReadUInt32();
+                                                    var b = br.ReadUInt32();
+                                                    edges.Add(new Tuple<uint, uint>(a, b));
+                                                }
                                             }
                                         }
                                     }
                                 }
                                 catch
                                 {
-                                    Console.WriteLine("Unable to get edges from trimmer!");
+                                    // error in shared data stuff, lets try secondary solution
+                                    try
+                                    {
+                                        //edges\\data.bin
+                                        if (File.Exists("edges/data.bin"))
+                                        {
+                                            byte[] data =  File.ReadAllBytes("edges/data.bin");
+                                            File.Delete("edges/data.bin");
+                                            using (MemoryStream ms = new MemoryStream(data))
+                                            using (BinaryReader br = new BinaryReader(ms))
+                                            {
+                                                var count = br.ReadUInt32();
+
+                                                for (int i = 0; i < count; i++)
+                                                {
+                                                    var a = br.ReadUInt32();
+                                                    var b = br.ReadUInt32();
+                                                    edges.Add(new Tuple<uint, uint>(a, b));
+                                                }
+                                            }
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        Console.WriteLine("Unable to get edges from trimmer!");
+                                    }
                                 }
                             }
 
-                            
                             break;
                         case 'x':
                             tstate = TrimmerState.Terminated;
@@ -378,16 +427,33 @@ namespace Theta
                         case 's':
                             try
                             {
+                                
                                 var nonces = e.Data.Split(' ');
                                 var sols = nonces.Skip(1).Select(n => uint.Parse(n)).OrderBy(n => n).ToList();
 
-                                Console.ForegroundColor = ConsoleColor.Red;
-
-                                if (sols != null && sols.Count > 0)
+                                var diffOk = CheckAdditionalDifficulty(sols, ActiveSolution.difficulty, out ulong diff);
+                                if (diffOk && (ulong)gc.CurrentJob.height == ActiveSolution.height)
                                 {
-                                    Console.WriteLine(sols.Select(s => s.ToString("X")).Aggregate((current, next) => current + ", " + next));
+                                    Console.ForegroundColor = ConsoleColor.Green;
+                                    Console.WriteLine("Solution difficulty at network: " + diff.ToString() + " @ " + ActiveSolution.difficulty);
+                                    Console.ResetColor();
                                 }
-                                Console.ForegroundColor = ConsoleColor.White;
+                                else if ((ulong)gc.CurrentJob.height == ActiveSolution.height)
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Green;
+                                    Console.WriteLine("Solution difficulty below network: " + diff.ToString() + " under " + ActiveSolution.difficulty);
+                                    Console.ResetColor();
+                                }
+
+                                Task.Run(() => { gc.SendSolution(ActiveSolution, sols); });
+
+                                //Console.ForegroundColor = ConsoleColor.Red;
+
+                                //if (sols != null && sols.Count > 0)
+                                //{
+                                //    Console.WriteLine(sols.Select(s => s.ToString("X")).Aggregate((current, next) => current + ", " + next));
+                                //}
+                                //Console.ResetColor();
                             }
                             catch
                             {
@@ -400,13 +466,35 @@ namespace Theta
                 {
                     Console.ForegroundColor = ConsoleColor.Yellow;
                     Console.WriteLine(e.Data);
-                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.ResetColor();
                 }
             }
             catch
             {
 
             }
+        }
+
+        private static bool CheckAdditionalDifficulty(List<uint> sols, ulong target, out ulong diff)
+        {
+            var solB = sols.Select(x => BitConverter.GetBytes(x)).SelectMany(x => x).ToArray<Byte>();
+
+            var hash = new Crypto.Blake2B(256);
+            byte[] blaked = hash.ComputeHash(solB);
+            blaked = blaked.Append<byte>(0).ToArray();
+
+            var blakedBI = new BigInteger(blaked);
+            byte[] maxb = new byte[33];
+            Array.Fill<byte>(maxb, 255);
+            maxb[32] = 0;
+
+            var max256 = new BigInteger(maxb);
+
+            BigInteger div = (max256 / blakedBI);
+
+            diff = (ulong)div;
+
+            return  div >= target;
         }
 
         private static void Cuda_OutputDataReceived(object sender, DataReceivedEventArgs e)
@@ -417,7 +505,7 @@ namespace Theta
 
     public class Solution
     {
-        public UInt64 k0, k1, k2, k3, nonce;
+        public UInt64 k0, k1, k2, k3, nonce, height, difficulty;
         public List<Tuple<uint, uint>> nonces = new List<Tuple<uint, uint>>();
     }
 
@@ -433,29 +521,37 @@ namespace Theta
 
     public class CGraph
     {
-        public Dictionary<uint, uint> graphU = new Dictionary<uint, uint>(150000);
-        public Dictionary<uint, uint> graphV = new Dictionary<uint, uint>(150000);
+        const bool ShowCycles = false;
 
-        private List<Tuple<uint, uint>> edges;
+        public Dictionary<uint, uint> graphU;
+        public Dictionary<uint, uint> graphV;
+
+        private Tuple<uint, uint>[] edges;
         private int maxlength = 8192;
         public Task recovery;
 
-        private UInt64 nonce, k0, k1, k2, k3;
+        private UInt64 nonce, k0, k1, k2, k3, height, diff;
 
         public void SetEdges(List<Tuple<uint, uint>> edges)
         {
-            graphU.Clear();
-            graphV.Clear();
-            this.edges = edges;
+            lock (edges)
+            {
+                this.edges = edges.ToArray();
+            }
+
+            graphU = new Dictionary<uint, uint>(edges.Count);
+            graphV = new Dictionary<uint, uint>(edges.Count);
         }
 
-        public void SetHeader(UInt64 snonce, UInt64 k0, UInt64 k1, UInt64 k2, UInt64 k3)
+        public void SetHeader(UInt64 snonce, UInt64 k0, UInt64 k1, UInt64 k2, UInt64 k3, UInt64 height, UInt64 diff)
         {
             this.nonce = snonce;
             this.k0 = k0;
             this.k1 = k1;
             this.k2 = k2;
             this.k3 = k3;
+            this.height = height;
+            this.diff = diff;
         }
 
         internal void FindSolutions(int cyclen, Queue<Solution> solutions)
@@ -467,13 +563,15 @@ namespace Theta
                 {
                     if (graphU.ContainsKey(e.Item1) && graphU[e.Item1] == e.Item2)
                     {
-                        Console.WriteLine("2-cycle found");
+                        if (ShowCycles)
+                            Console.WriteLine("2-cycle found");
                         continue;
                     }
 
                     if (graphV.ContainsKey(e.Item2) && graphV[e.Item2] == e.Item1)
                     {
-                        Console.WriteLine("2-cycle found");
+                        if (ShowCycles)
+                            Console.WriteLine("2-cycle found");
                         continue;
                     }
 
@@ -501,13 +599,16 @@ namespace Theta
                         long cycle = joinA != -1 ? 1 + joinA + joinB : 0;
 
                         if (cycle >= 4 && cycle != cyclen)
-                            Console.WriteLine(cycle.ToString() + "-cycle found");
+                        {
+                            if (ShowCycles)
+                                Console.WriteLine(cycle.ToString() + "-cycle found");
+                        }
                         else if (cycle == cyclen)
                         {
                             Console.ForegroundColor = ConsoleColor.Red;
                             Console.WriteLine("42-cycle found!");
                             // initiate nonce recovery procedure
-                            Console.ForegroundColor = ConsoleColor.White;
+                            Console.ResetColor();
 
                             List<uint> path1t = path1.Take((int)joinA + 1).ToList();
                             List<uint> path2t = path2.Take((int)joinB + 1).ToList();
@@ -519,7 +620,7 @@ namespace Theta
                             cycleEdges.AddRange(path1t.Zip(path1t.Skip(1), (second, first) => new Tuple<uint, uint>(first, second)));
                             cycleEdges.AddRange(path2t.Zip(path2t.Skip(1), (second, first) => new Tuple<uint, uint>(first, second)));
 
-                            solutions.Enqueue(new Solution() { k0 = k0, k1 = k1, k2 = k2, k3 = k3, nonce = nonce, nonces = cycleEdges });
+                            solutions.Enqueue(new Solution() { k0 = k0, k1 = k1, k2 = k2, k3 = k3, nonce = nonce, nonces = cycleEdges, height = height, difficulty = diff });
                             //recovery = Task.Run(() => { Cucko30.RecoverSolution(cycleEdges, snonce, k0,k1,k2,k3); });
                         }
                         else
@@ -650,112 +751,5 @@ namespace Theta
         }
     }
 
-    public class Cucko30
-    {
-        public static Dictionary<UInt64, Tuple<uint, uint>> lookup = new Dictionary<UInt64, Tuple<uint, uint>>(150);
-        public static Dictionary<UInt64, uint> nonces = new Dictionary<ulong, uint>(150);
 
-        public static List<uint> RecoverSolution(List<Tuple<uint, uint>> edges, UInt64 startingNonce, UInt64 k0, UInt64 k1, UInt64 k2, UInt64 k3)
-        {
-            const uint max = 1 << 29;
-            const uint edgemask = max - 1;
-            uint threads = (uint)Math.Max(Environment.ProcessorCount / 2, 1);
-            uint count = max / threads;
-
-            lookup.Clear();
-            nonces.Clear();
-            for (int i = 0; i < edges.Count; i++)
-            {
-                var e = edges[i];
-                lookup[(UInt64)e.Item1 | ((UInt64)e.Item2 << 32)] = e;
-                lookup[(UInt64)e.Item2 | ((UInt64)e.Item1 << 32)] = e;
-            }
-
-            Parallel.For((uint)0, threads,
-                   index => {
-                       uint start = (uint)index * count;
-                       for (uint i = start; i < (start + count); i++)
-                       {
-                           UInt64 u = (uint)siphash24(k0, k1, k2, k3, (startingNonce + i) * 2) & edgemask;
-                           UInt64 v = (uint)siphash24(k0, k1, k2, k3, (startingNonce + i) * 2 + 1) & edgemask;
-
-                           UInt64 a = u | (v << 32);
-                           UInt64 b = v | (u << 32);
-
-                           if (lookup.ContainsKey(a) || lookup.ContainsKey(b))
-                               nonces[a] = i;
-
-                       }
-                   });
-
-            var sols = nonces.Values.Distinct().OrderBy(n => n).ToList();
-            Console.ForegroundColor = ConsoleColor.Red;
-
-            if (sols != null && sols.Count > 0)
-            {
-                Console.Write("Solution: ");
-                Console.WriteLine(sols.Select(s => s.ToString()).Aggregate((current, next) => current + ", " + next));
-            }
-            Console.ForegroundColor = ConsoleColor.White;
-            return sols;
-        }
-
-        public static UInt64 ROTL(UInt64 x, byte b)
-        {
-            return (((x) << (b)) | ((x) >> (64 - (b))));
-        }
-
-        public static UInt64 siphash24(UInt64 k0, UInt64 k1, UInt64 k2, UInt64 k3, UInt64 nonce)
-        {
-            unchecked
-            {
-                UInt64 v0 = k0, v1 = k1, v2 = k2, v3 = k3 ^ nonce;
-
-                //    SIPROUND; SIPROUND;
-                v0 += v1; v2 += v3; v1 = ROTL(v1, 13);
-                v3 = ROTL(v3, 16); v1 ^= v0; v3 ^= v2;
-                v0 = ROTL(v0, 32); v2 += v1; v0 += v3;
-                v1 = ROTL(v1, 17); v3 = ROTL(v3, 21);
-                v1 ^= v2; v3 ^= v0; v2 = ROTL(v2, 32);
-
-                v0 += v1; v2 += v3; v1 = ROTL(v1, 13);
-                v3 = ROTL(v3, 16); v1 ^= v0; v3 ^= v2;
-                v0 = ROTL(v0, 32); v2 += v1; v0 += v3;
-                v1 = ROTL(v1, 17); v3 = ROTL(v3, 21);
-                v1 ^= v2; v3 ^= v0; v2 = ROTL(v2, 32);
-
-
-                v0 ^= nonce;
-                v2 ^= 0xff;
-                //SIPROUND; SIPROUND; SIPROUND; SIPROUND;
-
-                v0 += v1; v2 += v3; v1 = ROTL(v1, 13);
-                v3 = ROTL(v3, 16); v1 ^= v0; v3 ^= v2;
-                v0 = ROTL(v0, 32); v2 += v1; v0 += v3;
-                v1 = ROTL(v1, 17); v3 = ROTL(v3, 21);
-                v1 ^= v2; v3 ^= v0; v2 = ROTL(v2, 32);
-
-                v0 += v1; v2 += v3; v1 = ROTL(v1, 13);
-                v3 = ROTL(v3, 16); v1 ^= v0; v3 ^= v2;
-                v0 = ROTL(v0, 32); v2 += v1; v0 += v3;
-                v1 = ROTL(v1, 17); v3 = ROTL(v3, 21);
-                v1 ^= v2; v3 ^= v0; v2 = ROTL(v2, 32);
-
-                v0 += v1; v2 += v3; v1 = ROTL(v1, 13);
-                v3 = ROTL(v3, 16); v1 ^= v0; v3 ^= v2;
-                v0 = ROTL(v0, 32); v2 += v1; v0 += v3;
-                v1 = ROTL(v1, 17); v3 = ROTL(v3, 21);
-                v1 ^= v2; v3 ^= v0; v2 = ROTL(v2, 32);
-
-                v0 += v1; v2 += v3; v1 = ROTL(v1, 13);
-                v3 = ROTL(v3, 16); v1 ^= v0; v3 ^= v2;
-                v0 = ROTL(v0, 32); v2 += v1; v0 += v3;
-                v1 = ROTL(v1, 17); v3 = ROTL(v3, 21);
-                v1 ^= v2; v3 ^= v0; v2 = ROTL(v2, 32);
-
-
-                return (v0 ^ v1) ^ (v2 ^ v3);
-            }
-        }
-    }
 }

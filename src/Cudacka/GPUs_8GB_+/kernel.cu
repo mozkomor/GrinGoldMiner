@@ -33,11 +33,6 @@ typedef uint64_t u64;
 typedef u32 node_t;
 typedef u64 nonce_t;
 
-typedef struct uint10
-{
-	uint2 edges[5];
-} uint10;
-
 
 #ifdef _WIN32
 #define DUCK_SIZE_A 129LL
@@ -95,7 +90,7 @@ __device__ ulonglong4 Pack4edges(const uint2 e1, const  uint2 e2, const  uint2 e
 	return make_ulonglong4(r1, r2, r3, r4);
 }
 
-__global__  void FluffyRecovery(const u64 v0i, const u64 v1i, const u64 v2i, const u64 v3i, ulonglong4 * buffer, int * indexes)
+__global__  void FluffyRecovery(const u64 v0i, const u64 v1i, const u64 v2i, const u64 v3i, ulonglong4 * __restrict__  buffer, int * __restrict__  indexes)
 {
 	const int gid = blockDim.x * blockIdx.x + threadIdx.x;
 	const int lid = threadIdx.x;
@@ -132,7 +127,7 @@ __global__  void FluffyRecovery(const u64 v0i, const u64 v1i, const u64 v2i, con
 	}
 }
 
-__global__  void FluffySeed2A(const u64 v0i, const u64 v1i, const u64 v2i, const u64 v3i, ulonglong4 * buffer, int * indexes)
+__global__  void FluffySeed2A(const u64 v0i, const u64 v1i, const u64 v2i, const u64 v3i, ulonglong4 * __restrict__  buffer, int * __restrict__  indexes)
 {
 	const int gid = blockDim.x * blockIdx.x + threadIdx.x;
 	const int lid = threadIdx.x;
@@ -151,14 +146,13 @@ __global__  void FluffySeed2A(const u64 v0i, const u64 v1i, const u64 v2i, const
 		uint2 hash;
 
 		hash.x = dipnode(v0i, v1i, v2i, v3i, nonce, 0);
+		hash.y = dipnode(v0i, v1i, v2i, v3i, nonce, 1);
 
 		int bucket = hash.x & (64 - 1);
 
 		__syncthreads();
 
 		int counter = min((int)atomicAdd(counters + bucket, 1), (int)14);
-
-		hash.y = dipnode(v0i, v1i, v2i, v3i, nonce, 1);
 
 		tmp[bucket][counter] = hash;
 
@@ -218,7 +212,7 @@ __global__  void FluffySeed2A(const u64 v0i, const u64 v1i, const u64 v2i, const
 }
 
 #define BKTGRAN 32
-__global__  void FluffySeed2B(const  uint2 * source, ulonglong4 * destination, const  int * sourceIndexes, int * destinationIndexes, int startBlock)
+__global__  void FluffySeed2B(const  uint2 * __restrict__  source , ulonglong4 * __restrict__  destination, const  int * __restrict__  sourceIndexes, int * __restrict__  destinationIndexes, int startBlock)
 {
 	const int gid = blockDim.x * blockIdx.x + threadIdx.x;
 	const int lid = threadIdx.x;
@@ -331,7 +325,9 @@ __device__ __forceinline__  bool Read2bCounter(u32 * ecounters, const int bucket
 }
 
 template<int bktInSize, int bktOutSize>
-__global__   void FluffyRound(const uint2 * source, uint2 * destination, const int * sourceIndexes, int * destinationIndexes)
+__global__   void
+//__launch_bounds__(1024,2)
+FluffyRound(const uint2 * __restrict__  source, uint2 * __restrict__  destination, const int * __restrict__  sourceIndexes, int * __restrict__  destinationIndexes)
 {
 	const int gid = blockDim.x * blockIdx.x + threadIdx.x;
 	const int lid = threadIdx.x;
@@ -361,7 +357,7 @@ __global__   void FluffyRound(const uint2 * source, uint2 * destination, const i
 		{
 			const int index = (bktInSize * group) + lindex;
 
-			uint2 edge = source[index];
+			uint2 edge = __ldg(&source[index]);
 
 			if (edge.x == 0 && edge.y == 0) continue;
 
@@ -371,7 +367,8 @@ __global__   void FluffyRound(const uint2 * source, uint2 * destination, const i
 
 	__syncthreads();
 
-	for (int i = 0; i < loops; i++)
+	//for (int i = 0; i < loops; i++)
+	for (int i = loops - 1; i >= 0; i--)
 	{
 		const int lindex = (i * CTHREADS) + lid;
 
@@ -379,7 +376,7 @@ __global__   void FluffyRound(const uint2 * source, uint2 * destination, const i
 		{
 			const int index = (bktInSize * group) + lindex;
 
-			uint2 edge = source[index];
+			uint2 edge = __ldg(&source[index]);
 
 			if (edge.x == 0 && edge.y == 0) continue;
 
@@ -424,8 +421,12 @@ __global__   void /*Magical*/FluffyTail/*Pony*/(const uint2 * source, uint2 * de
 static u32 hostB[2 * 260000];
 static u64 h_mydata[42];
 
-int main()
+int main(int argc, char* argv[])
 {
+	int device = 0;
+	if (argc >= 2)
+		device = atoi(argv[1]);
+
 	std::ofstream myfile;
 
 	u32 * buffer = new u32[150000 * 2];
@@ -463,7 +464,7 @@ int main()
 
 
 	// Choose which GPU to run on, change this on a multi-GPU system.
-	cudaStatus = cudaSetDevice(0);
+	cudaStatus = cudaSetDevice(device);
 	if (cudaStatus != cudaSuccess) {
 		fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?\n");
 		goto Error;
@@ -572,7 +573,6 @@ int main()
 		cudaMemset(indexesE2, 0, indexesSize);
 
 		cudaDeviceSynchronize();
-
 
 		FluffySeed2A << < 512, 64 >> > (k0, k1, k2, k3, (ulonglong4 *)bufferA, (int *)indexesE);
 

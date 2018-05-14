@@ -33,12 +33,6 @@ typedef uint64_t u64;
 typedef u32 node_t;
 typedef u64 nonce_t;
 
-typedef struct uint10
-{
-	uint2 edges[5];
-} uint10;
-
-
 	#ifdef _WIN32
 	#define DUCK_SIZE_A 129LL
 	#define DUCK_SIZE_B 82LL
@@ -425,8 +419,12 @@ __global__   void /*Magical*/FluffyTail/*Pony*/(const uint2 * source, uint2 * de
 static u32 hostB[2 * 260000];
 static u64 h_mydata[42];
 
-int main()
+int main(int argc, char* argv[])
 {
+	int device = 0;
+	if (argc >= 2)
+		device = atoi(argv[1]);
+
 	std::ofstream myfile;
 
 	u32 * buffer = new u32[150000 * 2];
@@ -464,7 +462,7 @@ int main()
 
 
 	// Choose which GPU to run on, change this on a multi-GPU system.
-	cudaStatus = cudaSetDevice(0);
+	cudaStatus = cudaSetDevice(device);
 	if (cudaStatus != cudaSuccess) {
 		fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?\n");
 		goto Error;
