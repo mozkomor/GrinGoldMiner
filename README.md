@@ -1,5 +1,5 @@
 # GPU Miner for Cuckoo Cycle PoW - Work In Progress
-This miner runs on windows and linux. It does not actually interface with grin software yet (see below). OpenCL version is being made, bounty cuda version can be seen in repo. 
+This miner runs on windows and linux. OpenCL version is being made, bounty cuda version can be seen in repo. 
 
  * Stratum communication tested, implementation underway
  * OpenCL version is finished but needs to be rewritten for AMD to work around a feature we did not know about (credits to OhGodACompany) - currently too slow on AMD
@@ -10,7 +10,7 @@ This miner runs on windows and linux. It does not actually interface with grin s
     GTX 1070    - up to 2.9 gps
     GTX 1070 Ti - up to 3.2 gps
     GTX 1080 Ti - up to 5.2 Graphs/s @ ~250W
-    GTX 1080 Ti - up to 4.0 Graphs/s @ ~125W
+    GTX 1080 Ti - up to 3.9 Graphs/s @ ~125W
     Vega64      - unknown (1080Ti > Vega64 > 1070)
     RX580       - unknown - do not have
     Intel iGPU  - in future update
@@ -19,7 +19,7 @@ This miner runs on windows and linux. It does not actually interface with grin s
 
 **Q:** Can I use this to mine testnet2 grin?
 
-**A:** Not at this moment. Stratum connection to grin is being developed next.
+**A:** Yes only on nvidia for now, simply run with parameters -d <cuda_device_id> -a <grin_node_ip>
 
 **Q:** Can it use multiple GPUs?
 
@@ -44,10 +44,6 @@ If you want to support or speedup development of this cross platform miner, cont
 ----------------------------------
 
 4x speedup bounty has been received. No further bounty claims will be made.
-
-50% bounty here - btc (Photon): 3MRRCuFmS3GciugRRawkuAbLLcpNVXSJqm
-
-50% bounty here - btc (Urza): 3AcRFwqKx6P8rBngUz4hRTG2QEwodLqAVE
 
 Contact us at mozkomorkaban@gmail.com
 
