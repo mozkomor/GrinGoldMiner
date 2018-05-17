@@ -36,6 +36,10 @@ namespace Theta
         private CancellationToken listenerCancel;
         public JobTemplate CurrentJob = null;
 
+        public DateTime lastComm = DateTime.Now;
+        public volatile bool WaitForJob = false;
+        public int BadPacketCnt = 0;
+
         public GrinConeeect(string ip, int port)
         {
             _ip = ip;
@@ -122,10 +126,25 @@ namespace Theta
             {
                 while (client.Connected)
                 {
+                    if ((DateTime.Now - lastComm) > TimeSpan.FromMinutes(30) || BadPacketCnt > 10)
+                        break;
+
                     string message = reader.ReadLine();
+
+                    if (string.IsNullOrEmpty(message) || string.IsNullOrWhiteSpace(message))
+                    {
+                        Console.WriteLine("Bad TCP packet!");
+                        BadPacketCnt++;
+                        continue;
+                    }
+
                     Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine();
                     Console.WriteLine("TCP IN: " + message + Environment.NewLine);
                     Console.ResetColor();
+
+
+
 
                     try
                     {
@@ -136,13 +155,14 @@ namespace Theta
                         if (msg.ContainsKey("params"))
                             para = msg["params"].ToString().Replace("\\", "");
 
-                        //if (msg.ContainsKey("error"))
-                        //    Console.WriteLine("ERROR : " + msg["error"].ToString());
+                        BadPacketCnt = 0;
 
                         switch (method)
                         {
                             case "job":
-                                CurrentJob = JsonConvert.DeserializeObject<JobTemplate>(para, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
+                                 CurrentJob = JsonConvert.DeserializeObject<JobTemplate>(para, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
+                                WaitForJob = false;
+                                lastComm = DateTime.Now;
                                 break;
                             case "submit":
                                 if (msg.ContainsKey("result") && msg["result"].ToString() == "ok")
@@ -178,6 +198,8 @@ namespace Theta
                         Console.WriteLine(ex.Message);
                     }
                 }
+                IsConnected = false;
+                Console.WriteLine("Connection dropped.");
             }
             catch (Exception ex)
             {

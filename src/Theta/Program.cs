@@ -71,7 +71,7 @@ namespace Theta
                 return;
             }
 
-            Console.Write("Waiting for job");
+            Console.Write("Waiting for next block, this may take a bit");
             while (true)
             {
                 if (gc.CurrentJob != null && gc.IsConnected)
@@ -98,7 +98,7 @@ namespace Theta
                 {
                     nonce = 0;
                     reps = 0;
-                    device = UInt64.Parse(parser.Arguments["d"][0]);
+                    device = parser.Contains("d") ? UInt64.Parse(parser.Arguments["d"][0]) : 0;
                 }
                 catch (Exception ex)
                 {
@@ -138,8 +138,14 @@ namespace Theta
                         byte[] header;
 
                         //for (ulong i = 0; i < reps; i++)
-                        while (!Canceled)
+                        while (!Canceled && gc.IsConnected)
                         {
+                            if (gc.WaitForJob)
+                            {
+                                Task.Delay(100).Wait();
+                                Console.Write(".");
+                                continue;
+                            }
 
                             DateTime a = DateTime.Now;
 
@@ -434,9 +440,13 @@ namespace Theta
                                 var diffOk = CheckAdditionalDifficulty(sols, ActiveSolution.difficulty, out ulong diff);
                                 if (diffOk && (ulong)gc.CurrentJob.height == ActiveSolution.height)
                                 {
-                                    Console.ForegroundColor = ConsoleColor.Green;
+                                    Console.ForegroundColor = ConsoleColor.Red;
                                     Console.WriteLine("Solution difficulty at network: " + diff.ToString() + " @ " + ActiveSolution.difficulty);
                                     Console.ResetColor();
+
+                                    Task.Run(() => { gc.SendSolution(ActiveSolution, sols); });
+
+                                    gc.WaitForJob = true;
                                 }
                                 else if ((ulong)gc.CurrentJob.height == ActiveSolution.height)
                                 {
@@ -445,7 +455,7 @@ namespace Theta
                                     Console.ResetColor();
                                 }
 
-                                Task.Run(() => { gc.SendSolution(ActiveSolution, sols); });
+                                
 
                                 //Console.ForegroundColor = ConsoleColor.Red;
 
@@ -477,20 +487,12 @@ namespace Theta
 
         private static bool CheckAdditionalDifficulty(List<uint> sols, ulong target, out ulong diff)
         {
-            var solB = sols.Select(x => BitConverter.GetBytes(x)).SelectMany(x => x).ToArray<Byte>();
+            var solB = sols.Select(x => BitConverter.GetBytes(x).Reverse().ToArray()).SelectMany(x => x).ToArray<Byte>();
 
             var hash = new Crypto.Blake2B(256);
-            byte[] blaked = hash.ComputeHash(solB);
-            blaked = blaked.Append<byte>(0).ToArray();
+            UInt64 blaked = BitConverter.ToUInt64( hash.ComputeHash(solB).Reverse().ToArray(), 24 );
 
-            var blakedBI = new BigInteger(blaked);
-            byte[] maxb = new byte[33];
-            Array.Fill<byte>(maxb, 255);
-            maxb[32] = 0;
-
-            var max256 = new BigInteger(maxb);
-
-            BigInteger div = (max256 / blakedBI);
+            UInt64 div = (UInt64.MaxValue / blaked);
 
             diff = (ulong)div;
 
