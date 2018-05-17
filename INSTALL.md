@@ -1,5 +1,9 @@
 ## How to compile on Windows
-You need Visual Studio 2017 with dotnet core 2.0 and CUDA 9.1 SDK installed on your system. Simply open the solution and build Release target for x64 architecture. Grab both executables and their libraries and put them in a single folder somewhere else. Open windows power shell in that folder and run ./Theta -r 100 -n 0
+You need Visual Studio 2017 with dotnet core 2.0 and CUDA 9.1 SDK installed on your system. Simply open the solution and build Release target for x64 architecture (or better publish). Grab both executables and their libraries and put them in a single folder somewhere else. Open windows power shell in that folder and run
+
+    ./Theta -d <cuda_device_id> -a <grin_node_IP>
+or
+    dotnet Theta.dll -d <cuda_device_id> -a <grin_node_IP>
 
 CUDA 9.1 needs specific maximum version of VS2017, it may not work with the latest VC++ compiler version!
 
@@ -19,6 +23,8 @@ If you don’t want to install dotnet core package, just use Mono – it is much
 
 Run it
 
-    ./Theta -r 100 -n 0
+    ./Theta -d <cuda_device_id> -a <grin_node_IP>
+or
+    dotnet Theta.dll -d <cuda_device_id> -a <grin_node_IP>
     
 This launches 100 iterations and at the end prints total time that you simply divide by 100 to get single graph time.
