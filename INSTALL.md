@@ -3,6 +3,7 @@ You need Visual Studio 2017 with dotnet core 2.0 and CUDA 9.1 SDK installed on y
 
     ./Theta -d <cuda_device_id> -a <grin_node_IP>
 or
+
     dotnet Theta.dll -d <cuda_device_id> -a <grin_node_IP>
 
 CUDA 9.1 needs specific maximum version of VS2017, it may not work with the latest VC++ compiler version!
@@ -25,6 +26,7 @@ Run it
 
     ./Theta -d <cuda_device_id> -a <grin_node_IP>
 or
+
     dotnet Theta.dll -d <cuda_device_id> -a <grin_node_IP>
     
 This launches 100 iterations and at the end prints total time that you simply divide by 100 to get single graph time.
