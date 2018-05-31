@@ -127,7 +127,13 @@ namespace Theta
                     cuda.BeginOutputReadLine();
                     cuda.BeginErrorReadLine();
 
-                    Task.Delay(2000).Wait();
+                    Task.Delay(4000).Wait();
+                    
+                    if (cuda.HasExited)
+                        Console.WriteLine("Process cuda self-terminated!");
+                    
+                    if (tstate != TrimmerState.Ready)
+                        Console.WriteLine("Process cuda not in ready state!");
 
                     if (!cuda.HasExited && tstate == TrimmerState.Ready)
                     {
