@@ -22,18 +22,19 @@ namespace Theta
 
         public static Queue<Solution> solutions = new Queue<Solution>();
         public static List<Tuple<uint, uint>> edges = new List<Tuple<uint, uint>>(150000);
-        //public static CGraph g = new CGraph();
-        //public static CGraph g2 = new CGraph();
-        public static Task cycler;
+        public volatile static int activeCyclers = 0;
         public static Process cuda;
         private static Solution ActiveSolution;
         public volatile static TrimmerState tstate = TrimmerState.Starting;
+        public volatile static bool SupressCudaConsole = false;
+        public static string CppInitText = "";
 
         public static UInt64 k0, k1, k2, k3, nonce, reps, device = 0;
         public static string node = "127.0.0.1";
         private static bool timeout;
         private static bool Canceled = false;
 
+        private static int trimfailed = 0;
         static Random rnd = new Random((int)DateTime.Now.Ticks);
 
         static void Main(string[] args)
@@ -127,13 +128,26 @@ namespace Theta
                     cuda.BeginOutputReadLine();
                     cuda.BeginErrorReadLine();
 
-                    Task.Delay(4000).Wait();
-                    
+                    Task.Delay(5000).Wait();
+
                     if (cuda.HasExited)
-                        Console.WriteLine("Process cuda self-terminated!");
-                    
+                        Console.WriteLine("C++ trimmer self-terminated!");
+
                     if (tstate != TrimmerState.Ready)
-                        Console.WriteLine("Process cuda not in ready state!");
+                    {
+                        Console.WriteLine("C++ trimmer not in ready state!");
+
+                        if (CppInitText.Trim() == "")
+                        {
+                            Console.WriteLine("Console output redirection failed! Lets try to use sockets for OpenCL miner instead...");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Unexpected data from C++ (expected #r): " + CppInitText);
+                        }
+                    }
+
+                    SupressCudaConsole = true;
 
                     if (!cuda.HasExited && tstate == TrimmerState.Ready)
                     {
@@ -160,12 +174,6 @@ namespace Theta
                             height = (UInt64)gc.CurrentJob.height;
                             dif = (UInt64)gc.CurrentJob.difficulty;
                             header = gc.CurrentJob.GetHeader();
-
-                            //string hh = "000100000000000100d3cab77958344e8b143f79f201d805fe2a12aa486c5304c66c9996e68b5bab8436000000005af94f2b0000000000015bf53db905b0d5ad8eb2e521420ea237c1a6096c53987db3d707e66945cda820b8efb36d954aa49eb76d167242e8415058523c4dbd3991d88b17b682c757a15893ca6d776586d14985884ef96d32880caec84259a8ca970718d864db981abe1d3eac4fd21ccaac43ded1c67a51d106b2b52b266784fc9919d46e11bc24afcb702e93";
-                            //header = Enumerable.Range(0, hh.Length)
-                            // .Where(x => x % 2 == 0)
-                            // .Select(x => Convert.ToByte(hh.Substring(x, 2), 16))
-                            // .ToArray();
 
                             UInt64 hnonce = (UInt64)rnd.Next() | ((UInt64)rnd.Next() << 32);
                             var bytes = BitConverter.GetBytes(hnonce).Reverse().ToArray();
@@ -215,6 +223,7 @@ namespace Theta
                                         {
                                             if (tstate == TrimmerState.Ready && !reported)
                                             {
+                                                trimfailed = 0;
                                                 reported = true;
                                                 Console.ForegroundColor = ConsoleColor.Magenta;
                                                 Console.WriteLine("Trimmed in " + Math.Round((DateTime.Now - a).TotalMilliseconds).ToString() + "ms");
@@ -224,15 +233,33 @@ namespace Theta
                                             if (tstate == TrimmerState.Ready)
                                             {
                                                 UInt64 _k0 = k0, _k1 = k1, _k2 = k2, _k3 = k3, _nonce = hnonce;
-                                                
+
+                                                if (activeCyclers < 4)
                                                 {
                                                     Task.Run(() =>
                                                     {
-                                                        CGraph g = new CGraph();
-                                                        g.SetHeader(_nonce, _k0, _k1, _k2, _k3, height, dif);
-                                                        g.SetEdges(edges);
-                                                        g.FindSolutions(42, solutions);
+                                                        try
+                                                        {
+                                                            activeCyclers++;
+
+                                                            CGraph g = new CGraph();
+                                                            g.SetHeader(_nonce, _k0, _k1, _k2, _k3, height, dif);
+                                                            g.SetEdges(edges);
+                                                            g.FindSolutions(42, solutions);
+                                                        }
+                                                        catch
+                                                        {
+
+                                                        }
+                                                        finally
+                                                        {
+                                                            activeCyclers--;
+                                                        }
                                                     });
+                                                }
+                                                else
+                                                {
+                                                    Console.WriteLine("CPU overloaded, dropping tasks, CPU bottleneck!");
                                                 }
 
 
@@ -271,17 +298,15 @@ namespace Theta
                                 }
                                 catch { }
 
-                                break;
+                                if (trimfailed++ > 3)
+                                    break;
                             }
 
 
                         }
 
-                        if (cycler != null && !cycler.IsCompleted)
-                            cycler.Wait();
-                        //if (g != null && g.recovery != null && !g.recovery.IsCompleted)
-                        //    g.recovery.Wait();
-
+                        if (activeCyclers > 0)
+                            Task.Delay(500).Wait();
 
                         if (solutions.Count > 0)
                         {
@@ -359,10 +384,13 @@ namespace Theta
         {
             try
             {
-                if (e.Data != null && e.Data != "" && e.Data[0] == '#')
+                if (e.Data != null && !SupressCudaConsole)
+                    CppInitText += e.Data;
+
+                if (e.Data != null && e.Data != "" && e.Data.Trim()[0] == '#')
                 {
                     // valid command line
-                    switch (e.Data[1])
+                    switch (e.Data.Trim()[1])
                     {
                         case 'a':
                             tstate = TrimmerState.Trimming;
@@ -372,10 +400,6 @@ namespace Theta
                             break;
                         case 'e':
                             tstate = TrimmerState.SendingEdges;
-                            if (cycler != null && !cycler.IsCompleted)
-                            {
-                                Console.WriteLine("Warning, CPU bottleneck detected");
-                            }
 
                             lock (edges)
                             {
@@ -461,15 +485,6 @@ namespace Theta
                                     Console.ResetColor();
                                 }
 
-                                
-
-                                //Console.ForegroundColor = ConsoleColor.Red;
-
-                                //if (sols != null && sols.Count > 0)
-                                //{
-                                //    Console.WriteLine(sols.Select(s => s.ToString("X")).Aggregate((current, next) => current + ", " + next));
-                                //}
-                                //Console.ResetColor();
                             }
                             catch
                             {
@@ -485,9 +500,12 @@ namespace Theta
                     Console.ResetColor();
                 }
             }
-            catch
+            catch (Exception ex)
             {
-
+                if (!SupressCudaConsole)
+                {
+                    Console.WriteLine("Unknown problem parsing c++ output: " + e.Data + ", " + ex.Message);
+                }
             }
         }
 
@@ -507,7 +525,10 @@ namespace Theta
 
         private static void Cuda_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
-
+            if (!SupressCudaConsole)
+            {
+                Console.WriteLine("Unexpected c++ stdout data: " + e.Data);
+            }
         }
     }
 
