@@ -170,17 +170,9 @@ namespace Theta
                                     Console.ForegroundColor = ConsoleColor.Cyan;
                                     Console.WriteLine(
 @"
-                                    _._
-                               _.-='_-         _
-                          _.-='   _-          | ||'''''''---._______     __..
-              ___.===''''-.______-,,,,,,,,,,,,`-''----' '''''       '''''  __'
-       __.--''     __        ,'                   o \           __        [__|
-  __-''=======.--''  ''--.=================================.--''  ''--.=======:
- ]       [w] : /        \ : |========================|    : /        \ :  [w] :
- V___________:|          |: |========================|    :|          |:   _-'
-  V__________: \        / :_|=======================/_____: \        / :__-'
-  -----------'  ''____''  `-------------------------------'  ''____''
-
+--------
+ACCEPTED
+--------
 "
                                         );
                                     Console.ResetColor();
@@ -199,6 +191,8 @@ namespace Theta
                     }
                 }
                 IsConnected = false;
+                // TODO REMOVE when recconect is added
+                WaitForJob = false;
                 Console.WriteLine("Connection dropped.");
             }
             catch (Exception ex)

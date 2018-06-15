@@ -160,6 +160,9 @@ namespace Theta
                         //for (ulong i = 0; i < reps; i++)
                         while (!Canceled && gc.IsConnected)
                         {
+                            if (gc.lastComm.AddMinutes(30) < DateTime.Now)
+                                gc.WaitForJob = true;
+
                             if (gc.WaitForJob)
                             {
                                 Task.Delay(100).Wait();
@@ -471,17 +474,15 @@ namespace Theta
                                 if (diffOk && (ulong)gc.CurrentJob.height == ActiveSolution.height)
                                 {
                                     Console.ForegroundColor = ConsoleColor.Red;
-                                    Console.WriteLine("Solution difficulty at network: " + diff.ToString() + " @ " + ActiveSolution.difficulty);
+                                    Console.WriteLine("Solution difficulty: " + diff.ToString() + " @ " + ActiveSolution.difficulty);
                                     Console.ResetColor();
 
                                     Task.Run(() => { gc.SendSolution(ActiveSolution, sols); });
-
-                                    gc.WaitForJob = true;
                                 }
                                 else if ((ulong)gc.CurrentJob.height == ActiveSolution.height)
                                 {
                                     Console.ForegroundColor = ConsoleColor.Green;
-                                    Console.WriteLine("Solution difficulty below network: " + diff.ToString() + " under " + ActiveSolution.difficulty);
+                                    Console.WriteLine("Solution difficulty: " + diff.ToString() + " @ " + ActiveSolution.difficulty);
                                     Console.ResetColor();
                                 }
 
