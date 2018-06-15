@@ -37,7 +37,6 @@ namespace Theta
         public JobTemplate CurrentJob = null;
 
         public DateTime lastComm = DateTime.Now;
-        public volatile bool WaitForJob = false;
         public int BadPacketCnt = 0;
 
         public GrinConeeect(string ip, int port)
@@ -160,8 +159,7 @@ namespace Theta
                         switch (method)
                         {
                             case "job":
-                                 CurrentJob = JsonConvert.DeserializeObject<JobTemplate>(para, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
-                                WaitForJob = false;
+                                CurrentJob = JsonConvert.DeserializeObject<JobTemplate>(para, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
                                 lastComm = DateTime.Now;
                                 break;
                             case "submit":

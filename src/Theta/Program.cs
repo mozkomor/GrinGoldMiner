@@ -160,13 +160,6 @@ namespace Theta
                         //for (ulong i = 0; i < reps; i++)
                         while (!Canceled && gc.IsConnected)
                         {
-                            if (gc.WaitForJob)
-                            {
-                                Task.Delay(100).Wait();
-                                Console.Write(".");
-                                continue;
-                            }
-
                             DateTime a = DateTime.Now;
 
                             GetSols();
@@ -475,8 +468,6 @@ namespace Theta
                                     Console.ResetColor();
 
                                     Task.Run(() => { gc.SendSolution(ActiveSolution, sols); });
-
-                                    gc.WaitForJob = true;
                                 }
                                 else if ((ulong)gc.CurrentJob.height == ActiveSolution.height)
                                 {
