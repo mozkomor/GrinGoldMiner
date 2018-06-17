@@ -153,7 +153,7 @@ namespace Theta
                         var method = ((JObject)msg)["method"].ToString();
                         string para = "";
                         if (msg.ContainsKey("params"))
-                            para = msg["params"].ToString().Replace("\\", "");
+                            para = msg["params"].ToString()/*.Replace("\\", "")*/;
 
                         BadPacketCnt = 0;
 
@@ -234,7 +234,7 @@ ACCEPTED
         public string jsonrpc = "2.0";
         public string method = "status";
         public string id = "Stratum";
-        public string @params = null;
+        public object @params = null;
 
         public GrinRpcRequest(GrinCommand cmd)
         {
@@ -251,7 +251,8 @@ ACCEPTED
 
         public void SetParams<T>(T param)
         {
-            @params = JsonConvert.SerializeObject(param, Formatting.None, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
+            @params = param;
+            //@params = JsonConvert.SerializeObject(param, Formatting.None, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
         }
     }
 
