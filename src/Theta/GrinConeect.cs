@@ -227,6 +227,25 @@ ACCEPTED
             }
             catch { }
         }
+
+        public void SendLogin(string username, string password)
+        {
+            try
+            {
+                LoginParams lp = new LoginParams() { login = username, pass = password };
+                GrinRpcRequest request = new GrinRpcRequest(GrinCommand.Login);
+                request.SetParams(lp);
+
+                if (GrinSend<GrinRpcRequest>(request))
+                {
+                    Console.WriteLine("Login sent.");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+        }
     }
 
     public class GrinRpcRequest
@@ -245,6 +264,9 @@ ACCEPTED
                     break;
                 case GrinCommand.Solution:
                     method = "submit";
+                    break;
+                case GrinCommand.Login:
+                    method = "login";
                     break;
             }
         }
@@ -269,6 +291,13 @@ ACCEPTED
         public UInt64 height;
 	    public UInt64 nonce;
         public List<UInt32> pow;
+    }
+
+    public class LoginParams
+    {
+        public string login;
+        public string pass;
+        public string agent = "mozkomor";
     }
 
     public class JobTemplate

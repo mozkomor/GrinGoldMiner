@@ -72,6 +72,14 @@ namespace Theta
                 return;
             }
 
+            if (parser.Contains("l"))
+            {
+                string login = parser.Arguments["l"][0];
+                string pwd = parser.Contains("p") ? parser.Arguments["p"][0] : "";
+
+                gc.SendLogin(login, pwd);
+            }
+
             Console.Write("Waiting for next block, this may take a bit");
             while (true)
             {
