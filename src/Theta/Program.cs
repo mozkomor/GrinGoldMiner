@@ -54,15 +54,27 @@ namespace Theta
             var parser = new SimpleCommandLineParser();
             parser.Parse(args);
 
-            if (parser.Contains("a"))
+            try
             {
-                gc = new GrinConeeect(parser.Arguments["a"][0], 13416);
+                if (parser.Contains("a"))
+                {
+                    string remote = parser.Arguments["a"][0];
+                    if (remote.Contains(":"))
+                        gc = new GrinConeeect(remote.Split(':')[0], int.Parse(remote.Split(':')[1])); // user specified port
+                    else
+                        gc = new GrinConeeect(remote, 13416); // default port
+                }
+                else
+                {
+                    Console.WriteLine("Please specify options: [-d <cuda device>] -a <node IP>");
+                    return;
+                }
             }
-            else
+            catch (Exception ex)
             {
-                Console.WriteLine("Please specify options: [-d <cuda device>] -a <node IP>");
-                return;
+                Console.WriteLine("Error parsing remote address:port" + ex.Message);
             }
+
 
             if (gc.IsConnected)
                 Console.WriteLine("Connected to node.");

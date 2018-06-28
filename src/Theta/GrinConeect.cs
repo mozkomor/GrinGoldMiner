@@ -159,6 +159,17 @@ namespace Theta
 
                         switch (method)
                         {
+                            case "getjobtemplate":
+                                if (msg.ContainsKey("result"))
+                                {
+                                    CurrentJob = JsonConvert.DeserializeObject<JobTemplate>(msg["result"].ToString(), new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
+                                    if (CurrentJob != null && CurrentJob.pre_pow != null && CurrentJob.pre_pow != "")
+                                    {
+                                        WaitForJob = false;
+                                        lastComm = DateTime.Now;
+                                    }
+                                }
+                                break;
                             case "job":
                                  CurrentJob = JsonConvert.DeserializeObject<JobTemplate>(para, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
                                 WaitForJob = false;
