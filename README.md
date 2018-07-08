@@ -1,8 +1,8 @@
 # GPU Miner for Cuckoo Cycle PoW - nvidia beta version
 
-This miner is currently (testnet2) in early beta stage, OpenCL version is expected to arrive for testnet3 with multiple improvements: amd support, speed boost, more reliable inter-process socket connection, easier linux install, multi-gpu, binary package (windows, linux).
+This miner is currently (testnet3) in early beta stage, OpenCL version is expected to arrive later with multiple improvements: amd support, speed boost, more reliable inter-process socket connection, easier linux install, multi-gpu, binary package (windows, linux).
 
-Beta miner requires 8GB GPU for cuckoo30. Final miner will work on 6GB GPUs.
+Beta miner requires 8GB GPU for cuckoo30. Final miner may work on 6GB GPUs. Grin PoW is in flux.
 
 ## Expected Perfomance (OpenCL)
 
