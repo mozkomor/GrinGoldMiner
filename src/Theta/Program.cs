@@ -130,9 +130,12 @@ namespace Theta
 
                 try
                 {
-                    cuda = Process.Start(new ProcessStartInfo()
+                    bool lowMem = parser.Contains("lm");
+                    Console.WriteLine("8GB version selected");
+
+                   cuda = Process.Start(new ProcessStartInfo()
                     {
-                        FileName = "Cudacka.exe",
+                        FileName = lowMem ? "Cudacka8G.exe" : "Cudacka.exe",
                         Arguments = device.ToString(),
                         CreateNoWindow = true,
                         RedirectStandardError = true,
