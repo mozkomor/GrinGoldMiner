@@ -204,7 +204,7 @@ namespace Theta
                             header = header.Concat(bytes).ToArray();
                             var hash = new Crypto.Blake2B(256);
                             byte[] blaked = hash.ComputeHash(header);
-                            blaked = hash.ComputeHash(blaked);
+                            //blaked = hash.ComputeHash(blaked);
 
                             k0 = BitConverter.ToUInt64(blaked, 0);
                             k1 = BitConverter.ToUInt64(blaked, 8);
