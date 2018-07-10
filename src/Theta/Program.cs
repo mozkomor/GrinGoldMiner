@@ -76,9 +76,7 @@ namespace Theta
             }
 
 
-            if (gc.IsConnected)
-                Console.WriteLine("Connected to node.");
-            else
+            if (!gc.IsConnected)
             {
                 Console.WriteLine("Unable to connect to node.");
                 return;
@@ -184,12 +182,12 @@ namespace Theta
                         byte[] header;
 
                         //for (ulong i = 0; i < reps; i++)
-                        while (!Canceled && gc.IsConnected)
+                        while (!Canceled)
                         {
                             if (gc.lastComm.AddMinutes(30) < DateTime.Now)
                                 gc.WaitForJob = true;
 
-                            if (gc.WaitForJob)
+                            if (gc.WaitForJob | !gc.IsConnected)
                             {
                                 Task.Delay(100).Wait();
                                 Console.Write(".");

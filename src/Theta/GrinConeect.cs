@@ -40,6 +40,7 @@ namespace Theta
         public volatile bool WaitForJob = false;
         public int BadPacketCnt = 0;
         private int attempts;
+        private bool terminated = false;
 
         public GrinConeeect(string ip, int port)
         {
@@ -79,6 +80,8 @@ namespace Theta
         {
             try
             {
+                terminated = true;
+
                 if (client != null && client.Connected)
                 {
                     stream.Close();
@@ -99,12 +102,18 @@ namespace Theta
         {
             try
             {
+                if (client != null)
+                    client.Dispose();
+
                 Console.WriteLine("Connecting to : " + _ip);
 
                 client = new TcpClient(_ip, _port);
 
                 if (client.Connected)
                 {
+                    Console.WriteLine("Connected to node.");
+
+                    BadPacketCnt = 0;
                     attempts = 0;
                     IsConnected = true;
                     stream = client.GetStream();
@@ -209,6 +218,12 @@ ACCEPTED
                 // TODO REMOVE when recconect is added
                 WaitForJob = false;
                 Console.WriteLine("Connection dropped.");
+                // reconnect
+                if (!terminated)
+                {
+                    Console.WriteLine("Reconnecting");
+                    Connect();
+                }
             }
             catch (Exception ex)
             {
@@ -227,6 +242,7 @@ ACCEPTED
                 {
                     if (!client.Connected)
                     {
+                        Console.WriteLine("Reconnecting");
                         Connect();
                         attempts++;
                     }
