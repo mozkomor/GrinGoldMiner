@@ -131,7 +131,9 @@ namespace Theta
                 try
                 {
                     bool lowMem = parser.Contains("lm");
-                    Console.WriteLine("8GB version selected");
+
+                    if(lowMem)
+                        Console.WriteLine("8GB version selected");
 
                    cuda = Process.Start(new ProcessStartInfo()
                     {
@@ -176,6 +178,7 @@ namespace Theta
                     {
                         s = DateTime.Now;
 
+                        UInt64 jobId = 0;
                         UInt64 height = 0;
                         UInt64 dif = 0;
                         byte[] header;
@@ -197,6 +200,7 @@ namespace Theta
 
                             GetSols();
 
+                            jobId = gc.CurrentJob.job_id;
                             height = (UInt64)gc.CurrentJob.height;
                             dif = (UInt64)gc.CurrentJob.difficulty;
                             header = gc.CurrentJob.GetHeader();
@@ -207,7 +211,7 @@ namespace Theta
                             header = header.Concat(bytes).ToArray();
                             var hash = new Crypto.Blake2B(256);
                             byte[] blaked = hash.ComputeHash(header);
-                            //blaked = hash.ComputeHash(blaked);
+                            //blaked = hash.ComputeHash(blaked); -- testnet2 bug
 
                             k0 = BitConverter.ToUInt64(blaked, 0);
                             k1 = BitConverter.ToUInt64(blaked, 8);
@@ -269,7 +273,7 @@ namespace Theta
                                                             activeCyclers++;
 
                                                             CGraph g = new CGraph();
-                                                            g.SetHeader(_nonce, _k0, _k1, _k2, _k3, height, dif);
+                                                            g.SetHeader(_nonce, _k0, _k1, _k2, _k3, height, dif, jobId);
                                                             g.SetEdges(edges);
                                                             g.FindSolutions(42, solutions);
                                                         }
@@ -494,20 +498,19 @@ namespace Theta
                                 var sols = nonces.Skip(1).Select(n => uint.Parse(n)).OrderBy(n => n).ToList();
 
                                 var diffOk = CheckAdditionalDifficulty(sols, ActiveSolution.difficulty, out ulong diff);
-                                if (diffOk && (ulong)gc.CurrentJob.height == ActiveSolution.height)
+                                if (diffOk && (ulong)gc.CurrentJob.job_id == ActiveSolution.jobId)
                                 {
-                                    Console.ForegroundColor = ConsoleColor.Red;
-                                    Console.WriteLine("Solution difficulty: " + diff.ToString() + " @ " + ActiveSolution.difficulty);
-                                    Console.ResetColor();
-
                                     Task.Run(() => { gc.SendSolution(ActiveSolution, sols); });
+
+                                    Console.ForegroundColor = ConsoleColor.Red;
                                 }
-                                else if ((ulong)gc.CurrentJob.height == ActiveSolution.height)
+                                else if ((ulong)gc.CurrentJob.job_id == ActiveSolution.jobId)
                                 {
                                     Console.ForegroundColor = ConsoleColor.Green;
-                                    Console.WriteLine("Solution difficulty: " + diff.ToString() + " @ " + ActiveSolution.difficulty);
-                                    Console.ResetColor();
                                 }
+
+                                Console.WriteLine("Solution difficulty: " + diff.ToString() + " | " + ActiveSolution.difficulty);
+                                Console.ResetColor();
 
                             }
                             catch
@@ -558,7 +561,7 @@ namespace Theta
 
     public class Solution
     {
-        public UInt64 k0, k1, k2, k3, nonce, height, difficulty;
+        public UInt64 k0, k1, k2, k3, nonce, height, difficulty, jobId;
         public List<Tuple<uint, uint>> nonces = new List<Tuple<uint, uint>>();
     }
 
@@ -583,7 +586,7 @@ namespace Theta
         private int maxlength = 8192;
         public Task recovery;
 
-        private UInt64 nonce, k0, k1, k2, k3, height, diff;
+        private UInt64 nonce, k0, k1, k2, k3, height, diff, jobId;
 
         public void SetEdges(List<Tuple<uint, uint>> edges)
         {
@@ -596,7 +599,7 @@ namespace Theta
             graphV = new Dictionary<uint, uint>(edges.Count);
         }
 
-        public void SetHeader(UInt64 snonce, UInt64 k0, UInt64 k1, UInt64 k2, UInt64 k3, UInt64 height, UInt64 diff)
+        public void SetHeader(UInt64 snonce, UInt64 k0, UInt64 k1, UInt64 k2, UInt64 k3, UInt64 height, UInt64 diff, UInt64 jobId)
         {
             this.nonce = snonce;
             this.k0 = k0;
@@ -605,6 +608,7 @@ namespace Theta
             this.k3 = k3;
             this.height = height;
             this.diff = diff;
+            this.jobId = jobId;
         }
 
         internal void FindSolutions(int cyclen, Queue<Solution> solutions)
@@ -673,7 +677,7 @@ namespace Theta
                             cycleEdges.AddRange(path1t.Zip(path1t.Skip(1), (second, first) => new Tuple<uint, uint>(first, second)));
                             cycleEdges.AddRange(path2t.Zip(path2t.Skip(1), (second, first) => new Tuple<uint, uint>(first, second)));
 
-                            solutions.Enqueue(new Solution() { k0 = k0, k1 = k1, k2 = k2, k3 = k3, nonce = nonce, nonces = cycleEdges, height = height, difficulty = diff });
+                            solutions.Enqueue(new Solution() { k0 = k0, k1 = k1, k2 = k2, k3 = k3, nonce = nonce, nonces = cycleEdges, height = height, difficulty = diff, jobId = jobId });
                             //recovery = Task.Run(() => { Cucko30.RecoverSolution(cycleEdges, snonce, k0,k1,k2,k3); });
                         }
                         else

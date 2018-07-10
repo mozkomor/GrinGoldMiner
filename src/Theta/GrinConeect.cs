@@ -39,6 +39,7 @@ namespace Theta
         public DateTime lastComm = DateTime.Now;
         public volatile bool WaitForJob = false;
         public int BadPacketCnt = 0;
+        private int attempts;
 
         public GrinConeeect(string ip, int port)
         {
@@ -98,15 +99,18 @@ namespace Theta
         {
             try
             {
+                Console.WriteLine("Connecting to : " + _ip);
+
                 client = new TcpClient(_ip, _port);
 
                 if (client.Connected)
                 {
+                    attempts = 0;
                     IsConnected = true;
                     stream = client.GetStream();
                     reader = new StreamReader(stream);
 
-                    if (watchdog != null)
+                    if (watchdog == null)
                         watchdog = Task.Factory.StartNew(() => { Monitor(); }, wdCancel);
                     listener = Task.Factory.StartNew(() => { Listen(); }, listenerCancel);
                 }
@@ -215,11 +219,21 @@ ACCEPTED
 
         private void Monitor()
         {
+            attempts = 0;
+            Task.Delay(5000).Wait();
             while (!watchdog.IsCanceled)
             {
+                try
+                {
+                    if (!client.Connected)
+                    {
+                        Connect();
+                        attempts++;
+                    }
+                }
+                catch { }
 
-
-                Task.Delay(1000).Wait();
+                Task.Delay(2000).Wait();
             }
         }
 
@@ -227,7 +241,7 @@ ACCEPTED
         {
             try
             {
-                SubmitParams pow = new SubmitParams() { height = activeSolution.height, nonce = activeSolution.nonce, pow = sols };
+                SubmitParams pow = new SubmitParams() { height = activeSolution.height, nonce = activeSolution.nonce, pow = sols, job_id = activeSolution.jobId };
                 GrinRpcRequest request = new GrinRpcRequest(GrinCommand.Solution);
                 request.SetParams(pow);
 
@@ -300,7 +314,8 @@ ACCEPTED
     public class SubmitParams
     {
         public UInt64 height;
-	    public UInt64 nonce;
+        public UInt64 job_id;
+        public UInt64 nonce;
         public List<UInt32> pow;
     }
 
@@ -313,8 +328,9 @@ ACCEPTED
 
     public class JobTemplate
     {
-        public Int64 height;
-        public Int64 difficulty;
+        public UInt64 height;
+        public UInt64 job_id;
+        public UInt64 difficulty;
         public string pre_pow;
 
         public byte[] GetHeader()
