@@ -41,6 +41,7 @@ namespace Theta
         public int BadPacketCnt = 0;
         private int attempts;
         private bool terminated = false;
+        private int mined = 0;
 
         public GrinConeeect(string ip, int port)
         {
@@ -192,13 +193,15 @@ namespace Theta
                                 if (msg.ContainsKey("result") && msg["result"].ToString() == "ok")
                                 {
                                     Console.ForegroundColor = ConsoleColor.Cyan;
-                                    Console.WriteLine(
-@"
---------
-ACCEPTED
---------
-"
-                                        );
+                                    Console.WriteLine("Share accepted");
+                                    Console.ResetColor();
+                                }
+                                else if (msg.ContainsKey("result") && msg["result"].ToString().StartsWith("blockfound"))
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Cyan;
+                                    Console.WriteLine("###################################");
+                                    Console.WriteLine("######  Block mined!  #" + (++mined).ToString("D4") + "  ######"); // 8 chars
+                                    Console.WriteLine("###################################");
                                     Console.ResetColor();
                                 }
                                 break;
