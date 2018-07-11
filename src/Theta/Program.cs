@@ -498,17 +498,18 @@ namespace Theta
                                 var diffOk = CheckAdditionalDifficulty(sols, ActiveSolution.difficulty, out ulong diff);
                                 if (diffOk && (ulong)gc.CurrentJob.job_id == ActiveSolution.jobId)
                                 {
-                                    Task.Run(() => { gc.SendSolution(ActiveSolution, sols); });
-
                                     Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine("Solution difficulty: " + diff.ToString() + " | " + ActiveSolution.difficulty);
+                                    Console.ResetColor();
+
+                                    Task.Run(() => { gc.SendSolution(ActiveSolution, sols); });
                                 }
                                 else if ((ulong)gc.CurrentJob.job_id == ActiveSolution.jobId)
                                 {
                                     Console.ForegroundColor = ConsoleColor.Green;
+                                    Console.WriteLine("Solution difficulty: " + diff.ToString() + " | " + ActiveSolution.difficulty);
+                                    Console.ResetColor();
                                 }
-
-                                Console.WriteLine("Solution difficulty: " + diff.ToString() + " | " + ActiveSolution.difficulty);
-                                Console.ResetColor();
 
                             }
                             catch
