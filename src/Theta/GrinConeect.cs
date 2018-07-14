@@ -42,6 +42,7 @@ namespace Theta
         private int attempts;
         private bool terminated = false;
         private int mined = 0;
+        internal Stats statistics;
 
         public GrinConeeect(string ip, int port)
         {
@@ -203,10 +204,11 @@ namespace Theta
                                     Console.WriteLine("######  Block mined!  #" + (++mined).ToString("D4") + "  ######"); // 8 chars
                                     Console.WriteLine("###################################");
                                     Console.ResetColor();
+                                    statistics.mined++;
                                 }
                                 break;
                             default:
-                                Console.WriteLine(para);
+                                Console.WriteLine(para); 
                                 break;
                         }
 

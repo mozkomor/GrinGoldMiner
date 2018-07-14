@@ -36,6 +36,7 @@ namespace Theta
 
         private static int trimfailed = 0;
         static Random rnd = new Random((int)DateTime.Now.Ticks);
+        static Stats statistics = new Stats();
 
         static void Main(string[] args)
         {
@@ -63,6 +64,8 @@ namespace Theta
                         gc = new GrinConeeect(remote.Split(':')[0], int.Parse(remote.Split(':')[1])); // user specified port
                     else
                         gc = new GrinConeeect(remote, 13416); // default port
+
+                    gc.statistics = statistics;
                 }
                 else
                 {
@@ -216,6 +219,14 @@ namespace Theta
                             k2 = BitConverter.ToUInt64(blaked, 16);
                             k3 = BitConverter.ToUInt64(blaked, 24);
 
+                            if (statistics.graphs % 100 == 0)
+                            {
+                                Console.WriteLine("Graphs: {0}, Trims: {1}, Shares: {2}, Mined: {3}", statistics.graphs, statistics.edgesets, statistics.solutions, statistics.mined);
+                                if (statistics.solutions > 0)
+                                    Console.WriteLine("Graphs per Solution: {0}", statistics.graphs / statistics.solutions);
+                            }
+
+                            statistics.graphs++;
                             cuda.StandardInput.WriteLine(string.Format("#t {0} {1} {2} {3} {4}", k0, k1, k2, k3, 0));
 
                             bool notify = false;
@@ -270,6 +281,7 @@ namespace Theta
                                                         {
                                                             activeCyclers++;
 
+                                                            statistics.edgesets++;
                                                             CGraph g = new CGraph();
                                                             g.SetHeader(_nonce, _k0, _k1, _k2, _k3, height, dif, jobId);
                                                             g.SetEdges(edges);
@@ -511,6 +523,8 @@ namespace Theta
                                     Console.ResetColor();
                                 }
 
+                                statistics.solutions++;
+
                             }
                             catch
                             {
@@ -699,6 +713,7 @@ namespace Theta
                 }
 
             }
+
         }
 
 
