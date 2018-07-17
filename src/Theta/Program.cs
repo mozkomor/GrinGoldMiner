@@ -206,7 +206,7 @@ namespace Theta
                             dif = (UInt64)gc.CurrentJob.difficulty;
                             header = gc.CurrentJob.GetHeader();
 
-                            UInt64 hnonce = (UInt64)rnd.Next() | ((UInt64)rnd.Next() << 32);
+                            UInt64 hnonce = (UInt64)(long)rnd.Next() | ((UInt64)(long)rnd.Next() << 32);
                             var bytes = BitConverter.GetBytes(hnonce).Reverse().ToArray();
                             //Array.Copy(bytes, 0, header, header.Length - 8, 8);
                             header = header.Concat(bytes).ToArray();
@@ -590,7 +590,7 @@ namespace Theta
 
     public class CGraph
     {
-        const bool ShowCycles = false;
+        private bool ShowCycles = false;
 
         public Dictionary<uint, uint> graphU;
         public Dictionary<uint, uint> graphV;
@@ -626,7 +626,7 @@ namespace Theta
 
         internal void FindSolutions(int cyclen, Queue<Solution> solutions)
         {
-            int dupes = 0;
+            //int dupes = 0;
 
             foreach (var e in edges)
             {

@@ -120,7 +120,7 @@ namespace Crypto
 			var c = new ulong[8];
 
 			// digest length
-			c[0] |= (ulong)HashSizeInBytes;
+			c[0] |= (uint)HashSizeInBytes;
 
 			// Key length
 			if (Key != null)
