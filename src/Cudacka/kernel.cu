@@ -468,6 +468,8 @@ int main(int argc, char* argv[])
 		goto Error;
 	}
 
+	cudaSetDeviceFlags(cudaDeviceBlockingSync | cudaDeviceMapHost);
+	
 	cudaMemGetInfo(&free_device_mem, &total_device_mem);
 
 	fprintf(stderr, "Currently available amount of device memory: %zu bytes\n", free_device_mem);
