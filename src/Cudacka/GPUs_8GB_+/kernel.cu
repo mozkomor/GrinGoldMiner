@@ -455,8 +455,26 @@ int main(int argc, char* argv[])
 
 	unsigned long long nonce = 0;
 
+	LPCWSTR CDS = L"CDS0";
+
+	switch (device)
+	{
+	case 1:
+		CDS = L"CDS1"; break;
+	case 2:
+		CDS = L"CDS2"; break;
+	case 3:
+		CDS = L"CDS3"; break;
+	case 4:
+		CDS = L"CDS4"; break;
+	case 5:
+		CDS = L"CDS5"; break;
+	case 6:
+		CDS = L"CDS6"; break;
+	}
+
 #ifdef _WIN32
-	HANDLE handle = CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, 8000000, L"CuckoDataSend");
+	HANDLE handle = CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, 8000000, CDS);
 	u32 * sharedData = (u32*)MapViewOfFile(handle, FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, 8000000);
 #else
 
@@ -469,6 +487,8 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?\n");
 		goto Error;
 	}
+	
+	cudaSetDeviceFlags(cudaDeviceBlockingSync | cudaDeviceMapHost);
 
 	cudaMemGetInfo(&free_device_mem, &total_device_mem);
 
