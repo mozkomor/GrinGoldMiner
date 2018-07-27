@@ -447,7 +447,7 @@ namespace Theta
 
                                 try
                                 {
-                                    using (var mmf = MemoryMappedFile.OpenExisting("CuckoDataSend"))
+                                    using (var mmf = MemoryMappedFile.OpenExisting("CDS"+device.ToString()))
                                     {
                                         using (var mmfs = mmf.CreateViewStream(0, 8000000, MemoryMappedFileAccess.Read))
                                         {
