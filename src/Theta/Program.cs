@@ -224,6 +224,8 @@ namespace Theta
                                 Console.WriteLine("Graphs: {0}, Trims: {1}, Shares: {2}, Mined: {3}", statistics.graphs, statistics.edgesets, statistics.solutions, statistics.mined);
                                 if (statistics.solutions > 0)
                                     Console.WriteLine("Graphs per Solution: {0}", statistics.graphs / statistics.solutions);
+                                if (statistics.graphs > 0)
+                                    Console.WriteLine("GPS(Graphs/Second): {0:F2}", (float)statistics.graphs/(0.1 + (DateTime.Now - s).TotalSeconds));
                             }
 
                             statistics.graphs++;
