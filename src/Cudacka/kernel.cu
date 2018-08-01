@@ -214,7 +214,7 @@ __global__  void FluffySeed2A(const u64 v0i, const u64 v1i, const u64 v2i, const
 #define BKTGRAN 32
 __global__  void FluffySeed2B(const  uint2 * source, ulonglong4 * destination, const  int * sourceIndexes, int * destinationIndexes, int startBlock)
 {
-	const int gid = blockDim.x * blockIdx.x + threadIdx.x;
+	//const int gid = blockDim.x * blockIdx.x + threadIdx.x;
 	const int lid = threadIdx.x;
 	const int group = blockIdx.x;
 
@@ -327,7 +327,7 @@ __device__ __forceinline__  bool Read2bCounter(u32 * ecounters, const int bucket
 template<int bktInSize, int bktOutSize>
 __global__   void FluffyRound(const uint2 * source, uint2 * destination, const int * sourceIndexes, int * destinationIndexes)
 {
-	const int gid = blockDim.x * blockIdx.x + threadIdx.x;
+	//const int gid = blockDim.x * blockIdx.x + threadIdx.x;
 	const int lid = threadIdx.x;
 	const int group = blockIdx.x;
 
@@ -416,7 +416,7 @@ __global__   void /*Magical*/FluffyTail/*Pony*/(const uint2 * source, uint2 * de
 	}
 }
 
-static u32 hostB[2 * 260000];
+//static u32 hostB[2 * 260000];
 static u64 h_mydata[42];
 
 int main(int argc, char* argv[])
@@ -433,7 +433,7 @@ int main(int argc, char* argv[])
 	const size_t bufferSize2 = DUCK_SIZE_B * 1024 * 4096 * 8;
 	const size_t indexesSize = 128 * 128 * 4;
 
-	const unsigned int edges = (1 << 29);
+	//const unsigned int edges = (1 << 29);
 
 	int * bufferA;
 	int * bufferB;
@@ -563,7 +563,7 @@ int main(int argc, char* argv[])
 		{
 			scanf("%llu %llu %llu %llu %llu", &k0, &k1, &k2, &k3, &nonce);
 			for (int i = 0; i < 42; i++)
-				scanf(" %llu", &(h_mydata[i]));
+				scanf(" %lu", &(h_mydata[i]));
 			cudaMemcpyToSymbol(recovery, h_mydata, 42 * 8);
 			cudaDeviceSynchronize();
 
@@ -579,7 +579,7 @@ int main(int argc, char* argv[])
 
 			fprintf(stderr, "#s"); 
 			for (int i = 0; i < 42; i++)
-				fprintf(stderr, " %lu", hostA[i]);
+				fprintf(stderr, " %u", hostA[i]);
 			fprintf(stderr, "\n");
 
 			continue;
