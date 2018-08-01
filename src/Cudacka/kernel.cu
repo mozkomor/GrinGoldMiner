@@ -453,6 +453,7 @@ int main(int argc, char* argv[])
 
 	unsigned long long nonce = 0;
 
+#ifdef _WIN32
 	LPCWSTR CDS = L"CDS0";
 
 	switch (device)
@@ -471,7 +472,6 @@ int main(int argc, char* argv[])
 		CDS = L"CDS6"; break;
 	}
 
-#ifdef _WIN32
 	HANDLE handle = CreateFileMappingW(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0, 8000000, CDS);
 	u32 * sharedData = (u32*)MapViewOfFile(handle, FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, 8000000);
 #else
