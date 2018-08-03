@@ -563,7 +563,7 @@ int main(int argc, char* argv[])
 		{
 			scanf("%llu %llu %llu %llu %llu", &k0, &k1, &k2, &k3, &nonce);
 			for (int i = 0; i < 42; i++)
-				scanf(" %lu", &(h_mydata[i]));
+				scanf(" %llu", &(h_mydata[i]));
 			cudaMemcpyToSymbol(recovery, h_mydata, 42 * 8);
 			cudaDeviceSynchronize();
 
@@ -579,7 +579,7 @@ int main(int argc, char* argv[])
 
 			fprintf(stderr, "#s"); 
 			for (int i = 0; i < 42; i++)
-				fprintf(stderr, " %u", hostA[i]);
+				fprintf(stderr, " %lu", hostA[i]);
 			fprintf(stderr, "\n");
 
 			continue;
