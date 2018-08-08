@@ -1,10 +1,10 @@
 # Grin GPU Miner for Windows (Linux) - nvidia beta version
 
-This miner (GGM) is currently (testnet3) in beta stage, OpenCL version is expected to arrive soon with multiple improvements: beta amd support, speed boost, more reliable inter-process socket connection, easier linux install, multi-gpu, new UI, binary package (windows, linux).
+This miner (GGM) is currently (testnet3) in beta stage, OpenCL version is expected to arrive soon™ with multiple improvements: beta amd support, speed boost, more reliable inter-process socket connection, easier linux install, multi-gpu, new UI, binary package (windows, linux).
 
 Beta miner requires 8GB GPU for cuckoo30. Multiple GPUs can mine in separate console windows (instances).
 
-GGM is double bounty-winning algorithm, primarily intended for grin mining on testnet3 for those who are running on Windows. Remember that testnet coins have no value so lower your power-limit to 50% when mining for long periods of time. Performance table have been removed from this page, because cuckoo cycle may to slightly change in order to be competitive on gpus. Once the final algorithm is known, new benchmarks will be published. We advice not to build grin mining rigs atm. For now, 1080 Ti is twice as fast as 1070 (4 gps vs 2.3 gps). 
+GGM is double bounty-winning algorithm, primarily intended for grin mining on testnet3 for those who are running on Windows. Remember that testnet coins have no value so lower your power-limit to 50% when mining for long periods of time. Performance table have been removed from this page, because cuckoo cycle may slightly change in order to be competitive on gpus. Once the final algorithm is known, new benchmarks will be published. We advice not to build grin mining rigs atm. For now, 1080 Ti is twice as fast as 1070 (4 gps vs 2.3 gps). 
 
 ---------------------------------------------------
 
