@@ -5,3 +5,5 @@ This cuckoo cycle miner is no longer being developed since Grin project moves to
 For more infomation see https://github.com/mimblewimble/grin
 
 Contact mozkomorkaban@gmail.com
+
+![Screen](/img/cuda.png)
