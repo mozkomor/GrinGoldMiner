@@ -1,6 +1,6 @@
 # Grin GPU Miner for Windows (Linux)
 
-This cuckoo cycle miner is no longer being developed since Grin project moves to equihash PoW variant as primary non-asic hashpower. It can still be used for testing on testnet3.
+This cuckoo cycle miner is no longer being developed as Grin project may switch to equihash PoW variant as primary non-asic hashpower. It can still be used for testing on testnet3.
 
 For more information see https://github.com/mimblewimble/grin
 
@@ -10,7 +10,7 @@ Contact mozkomorkaban@gmail.com
 
 --------------------
 
-The miner is fully functional and uses our own (fastest known) algorithm. Cuckoo cycle can be further enhanced to be CPU friendly or asic-resistant. If you need a miner for your project, feel free to contact us.
+The miner is fully functional and uses our own (fastest known) algorithm. If you need a miner for your project, feel free to contact us.
 
 --------------------
 
