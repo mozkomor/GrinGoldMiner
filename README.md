@@ -2,9 +2,9 @@
 
 Grin is currently planning PoW switch:
 
-Testnet3: Cuckoo30 (this miner)
-Testnet4: PLACEHOLDER Cuckatoo29 + PLACEHOLDER Cuckatoo30 (miner stops working)
-Mainnet: Cuckatoo32+ for ASICS + TBD PoW for GPUs
+ * Testnet3: Cuckoo30 (this miner)
+ * Testnet4: PLACEHOLDER Cuckatoo29 + PLACEHOLDER Cuckatoo30 (miner stops working)
+ * Mainnet: Cuckatoo32+ for ASICS + TBD PoW for GPUs
 
 GGM miner will stop working in T4 and may return for mainnet for one or both algorithms.
 
