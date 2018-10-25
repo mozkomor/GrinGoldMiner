@@ -1,22 +1,20 @@
 # Grin GPU Miner for Windows (Linux)
 
-Grin is currently planning PoW switch:
+Grin is currently undergoing PoW switch. Grin Testnet 4 PoW changes are not compatible with this miner. We will do everything possible to make the miner operational once final ASIC resistant PoW gets activated on grin.
 
- * Testnet3: Cuckoo30 (this miner)
- * Testnet4: PLACEHOLDER Cuckatoo29 + PLACEHOLDER Cuckatoo30 (miner stops working)
- * Mainnet: Cuckatoo32+ for ASICS + TBD PoW for GPUs
-
-GGM miner will stop working in T4 and may return for mainnet for one or both algorithms.
+ * Testnet3: Cuckoo30 algorithm
+ * Testnet4: Cuckatoo29 & Cuckatoo30 (different algorithm)
+ * Mainnet: Cuckatoo32+ for ASICS & Cuckaroo PoW for GPUs
 
 For more information see https://github.com/mimblewimble/grin
 
-Contact mozkomorkaban@gmail.com
+Grin gitter chat: https://gitter.im/grin_community/Lobby
+
+Official Grin forum: https://www.grin-forum.org/
+
+Contact us: mozkomorkaban@gmail.com
 
 ![Screen](/img/cuda.png)
-
---------------------
-
-The miner is fully functional and uses our own (fastest known) algorithm. If you need a miner for your project, feel free to contact us.
 
 --------------------
 
