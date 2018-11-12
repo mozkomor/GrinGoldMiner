@@ -1,5 +1,7 @@
 # Grin GPU Miner for Windows (Linux)
 
+## WARNING! Grin forked away from basic cuckoo cycle, miner will NOT sumbit valied shares!
+
 Grin is currently undergoing PoW switch. Grin Testnet 4 PoW changes are not compatible with this miner. We will do everything possible to make the miner operational once final ASIC resistant PoW gets activated on grin.
 
  * Testnet3: Cuckoo30 algorithm
