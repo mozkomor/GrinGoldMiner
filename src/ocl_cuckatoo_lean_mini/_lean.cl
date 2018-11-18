@@ -79,7 +79,7 @@ __kernel  void LeanRound(const u64 v0i, const u64 v1i, const u64 v2i, const u64 
 			for (short e = 0; e < lEdges; e++)
 			{
 				// bit position of next living edge
-				short pos = ctz(ee);
+				short pos = clz(ee);
 				// position in the 256 edge block
 				int subPos = (i * 32) + pos;
 				// reconstruct value of noce for this edge
@@ -115,8 +115,7 @@ __kernel  void LeanRound(const u64 v0i, const u64 v1i, const u64 v2i, const u64 
 					// if edge is not alive, kill it (locally in registers)
 					if (!lives)
 					{
-						// TODO: is this correct bit?
-						el[i] ^= (u32)1 << pos; // 1 XOR 1 is 0
+						el[i] ^= ((u32)1<<31) >> pos; // 1 XOR 1 is 0
 					}
 					else
 					{
@@ -144,7 +143,7 @@ __kernel  void LeanRound(const u64 v0i, const u64 v1i, const u64 v2i, const u64 
 					}
 				}
 				// clear current edge position so that we can skip it in next run of ctz()
-				ee ^= (u32)1 << pos; // 1 XOR 1 is 0
+				ee ^= ((u32)1<<31) >> pos; // 1 XOR 1 is 0
 			}
 		}
 		// return edge bits back to global memory if we are in second stage
