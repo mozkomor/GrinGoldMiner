@@ -1,12 +1,10 @@
-# Grin GPU Miner for Windows (Linux)
+# Grin GPU Miner for (mostly) Windows
 
-## WARNING! Grin forked away from basic cuckoo cycle, miner will NOT submit valid shares!
+## UPDATE: Miner will start working early December after Grin hard-fork
 
-Grin is currently undergoing PoW switch. Grin Testnet 4 PoW changes are not compatible with this miner. We will do everything possible to make the miner operational once final ASIC resistant PoW gets activated on grin.
+Currently only supported cards are nvidia with at least 8GB of memory. Miner can handle multiple cards at the same time in separate console windows - this helps with debugging each card.
 
- * Testnet3: Cuckoo30 algorithm
- * Testnet4: Cuckatoo29 & Cuckatoo30 (different algorithm)
- * Mainnet: Cuckatoo32+ for ASICS & Cuckaroo PoW for GPUs
+For Grin main net, miner will support AMD cards and will have extra user friendliness. Best results are expected with RTX cards. AMD cards are expected to have similar power efficiency as nvidia, but will be slower at max power.
 
 For more information see https://github.com/mimblewimble/grin
 
@@ -18,9 +16,4 @@ Contact us: mozkomorkaban@gmail.com
 
 ![Screen](/img/cuda.png)
 
---------------------
-
-![Screen](/img/cuda_gui.png)
-![Screen](/img/mem.png)
-![Screen](/img/ocl.png)
-![Screen](/img/profile.png)
+Thanks to OhGodACompany for sending GTX1080Ti
