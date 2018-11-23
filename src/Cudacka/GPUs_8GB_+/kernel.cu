@@ -49,6 +49,9 @@ typedef u64 nonce_t;
 #define DUCK_B_EDGES (DUCK_SIZE_B * 1024LL)
 #define DUCK_B_EDGES_64 (DUCK_B_EDGES * 64LL)
 
+#define EDGE_BLOCK_SIZE (64)
+#define EDGE_BLOCK_MASK (EDGE_BLOCK_SIZE - 1)
+
 #define EDGEBITS 29
 // number of edges
 #define NEDGES ((node_t)1 << EDGEBITS)
@@ -134,52 +137,79 @@ __global__  void FluffySeed2A(const u64 v0i, const u64 v1i, const u64 v2i, const
 
 	__shared__ uint2 tmp[64][15];
 	__shared__ int counters[64];
+	u64 sipblock[64];
+
+	uint64_t v0;
+	uint64_t v1;
+	uint64_t v2;
+	uint64_t v3;
 
 	counters[lid] = 0;
 
 	__syncthreads();
 
-	for (int i = 0; i < 1024 * 16; i++)
+	for (int i = 0; i < 1024 * 16; i += EDGE_BLOCK_SIZE)
 	{
-		u64 nonce = gid * (1024 * 16) + i;
+		u64 blockNonce = gid * (1024 * 16) + i;
 
-		uint2 hash;
+		v0 = v0i;
+		v1 = v1i;
+		v2 = v2i;
+		v3 = v3i;
 
-		hash.x = dipnode(v0i, v1i, v2i, v3i, nonce, 0);
-		hash.y = dipnode(v0i, v1i, v2i, v3i, nonce, 1);
-
-		int bucket = hash.x & (64 - 1);
-
-		__syncthreads();
-
-		int counter = min((int)atomicAdd(counters + bucket, 1), (int)14);
-
-		tmp[bucket][counter] = hash;
-
-		__syncthreads();
-
+		for (u32 b = 0; b < EDGE_BLOCK_SIZE; b++)
 		{
-			int localIdx = min(15, counters[lid]);
+			v3 ^= blockNonce + b;
+			SIPROUND; SIPROUND;
+			v0 ^= blockNonce + b;
+			v2 ^= 0xff;
+			SIPROUND; SIPROUND; SIPROUND; SIPROUND;
 
-			if (localIdx >= 8)
+			sipblock[b] = (v0 ^ v1) ^ (v2  ^ v3);
+
+		}
+		const u64 last = sipblock[EDGE_BLOCK_MASK];
+		for (u32 b = 0; b < EDGE_BLOCK_MASK; b++)
+			sipblock[b] ^= last;
+
+
+		for (short s = 0; s < EDGE_BLOCK_SIZE; s++)
+		{
+			u64 lookup = sipblock[s];
+			uint2 hash = make_uint2(lookup & EDGEMASK, (lookup >> 32) & EDGEMASK);
+			int bucket = hash.x & 63;
+
+			__syncthreads();
+
+			int counter = min((int)atomicAdd(counters + bucket, 1), (int)14);
+
+			tmp[bucket][counter] = hash;
+
+			__syncthreads();
+
 			{
-				int newCount = (localIdx - 8);
-				counters[lid] = newCount;
+				int localIdx = min(15, counters[lid]);
 
+				if (localIdx >= 8)
 				{
-					int cnt = min((int)atomicAdd(indexes + lid, 8), (int)(DUCK_A_EDGES_64 - 8));
+					int newCount = (localIdx - 8);
+					counters[lid] = newCount;
 
 					{
-						buffer[(lid * DUCK_A_EDGES_64 + cnt) / 4] = Pack4edges(tmp[lid][0], tmp[lid][1], tmp[lid][2], tmp[lid][3]);
-						buffer[(lid * DUCK_A_EDGES_64 + cnt + 4) / 4] = Pack4edges(tmp[lid][4], tmp[lid][5], tmp[lid][6], tmp[lid][7]);
+						int cnt = min((int)atomicAdd(indexes + lid, 8), (int)(DUCK_A_EDGES_64 - 8));
+
+						{
+							buffer[(lid * DUCK_A_EDGES_64 + cnt) / 4] = Pack4edges(tmp[lid][0], tmp[lid][1], tmp[lid][2], tmp[lid][3]);
+							buffer[(lid * DUCK_A_EDGES_64 + cnt + 4) / 4] = Pack4edges(tmp[lid][4], tmp[lid][5], tmp[lid][6], tmp[lid][7]);
+						}
 					}
-				}
 
-				for (int t = 0; t < newCount; t++)
-				{
-					tmp[lid][t] = tmp[lid][t + 8];
-				}
+					for (int t = 0; t < newCount; t++)
+					{
+						tmp[lid][t] = tmp[lid][t + 8];
+					}
 
+				}
 			}
 		}
 	}

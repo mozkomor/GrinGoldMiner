@@ -332,10 +332,20 @@ namespace Theta
         GetJob
     }
 
+       /*
+   let params_in = types::SubmitParams {
+    height: height,
+    job_id: job_id,
+    edge_bits: edge_bits,
+    nonce: nonce,
+    pow: pow,
+   };
+       */
     public class SubmitParams
     {
         public UInt64 height;
         public UInt64 job_id;
+        public UInt32 edge_bits = 29;
         public UInt64 nonce;
         public List<UInt32> pow;
     }

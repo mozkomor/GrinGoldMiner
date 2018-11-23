@@ -33,6 +33,7 @@ namespace Theta
         public static string node = "127.0.0.1";
         private static bool timeout;
         private static bool Canceled = false;
+        public static bool Test = false;
 
         private static int trimfailed = 0;
         static Random rnd = new Random((int)DateTime.Now.Ticks);
@@ -54,6 +55,28 @@ namespace Theta
             DateTime s = DateTime.Now;
             var parser = new SimpleCommandLineParser();
             parser.Parse(args);
+
+            if (parser.Contains("t"))
+            {
+                Test = true;
+                /*
+                 *  src/cuckaroo$ ./cuda29 -n 77
+                    GeForce GTX 1070 with 8119MB @ 256 bits x 4004MHz
+                    Looking for 42-cycle on cuckaroo29("",77) with 50% edges, 64*64 buckets, 176 trims, and 64 thread blocks.
+                    Using 6976MB of global memory.
+                    nonce 77 k0 k1 k2 k3 f4956dc403730b01 e6d45de39c2a5a3e cbf626a8afee35f6 4307b94b1a0c9980
+                    Seeding completed in 355 + 131 ms
+                    67962 edges after trimming
+                      8-cycle found
+                      12-cycle found
+                      42-cycle found
+                    findcycles edges 67962 time 121 ms total 1044 ms
+                    Time: 1044 ms
+                    Solution 7d86f6 30eca94 4c4e3b8 5fdc721 70dd206 737c0cd 7b3b464 7dfd358 9038cc2 913872c b0a40a6 b50ea02 b52718b b58c806 d3a1049 d4f4485 e1083cf e267035 e531581 eb1e9bf ef7c556 11037141 11b20da7 11c73af0 136af3d4 13a9f961 13b4b0d9 146a4fed 161015fe 16125cb0 1653304f 18157684 18c2fc5b 18d4a39e 1962c64d 1bb64237 1c46b245 1d40bc3d 1d49d47c 1d8a0e1d 1e80fdc8 1fb4541e
+                    Verified with cyclehash 6d6545ca75f63e13c428a5e495e548e3c573b15af8841951599ba037d2f2ef58
+                    1 total solutions
+                 */
+            }
 
             try
             {
@@ -214,10 +237,20 @@ namespace Theta
                             byte[] blaked = hash.ComputeHash(header);
                             //blaked = hash.ComputeHash(blaked); -- testnet2 bug
 
-                            k0 = BitConverter.ToUInt64(blaked, 0);
-                            k1 = BitConverter.ToUInt64(blaked, 8);
-                            k2 = BitConverter.ToUInt64(blaked, 16);
-                            k3 = BitConverter.ToUInt64(blaked, 24);
+                            if (Test)
+                            {
+                                k0 = 0xf4956dc403730b01L;
+                                k1 = 0xe6d45de39c2a5a3eL;
+                                k2 = 0xcbf626a8afee35f6L;
+                                k3 = 0x4307b94b1a0c9980L;
+                            }
+                            else
+                            {
+                                k0 = BitConverter.ToUInt64(blaked, 0);
+                                k1 = BitConverter.ToUInt64(blaked, 8);
+                                k2 = BitConverter.ToUInt64(blaked, 16);
+                                k3 = BitConverter.ToUInt64(blaked, 24);
+                            }
 
                             if (statistics.graphs % 100 == 0)
                             {
@@ -509,20 +542,23 @@ namespace Theta
                                 var nonces = e.Data.Split(' ');
                                 var sols = nonces.Skip(1).Select(n => uint.Parse(n)).OrderBy(n => n).ToList();
 
-                                var diffOk = CheckAdditionalDifficulty(sols, ActiveSolution.difficulty, out ulong diff);
-                                if (diffOk && (ulong)gc.CurrentJob.job_id == ActiveSolution.jobId)
+                                if (!Test)
                                 {
-                                    Console.ForegroundColor = ConsoleColor.Red;
-                                    Console.WriteLine("Solution difficulty: " + diff.ToString() + " | " + ActiveSolution.difficulty);
-                                    Console.ResetColor();
+                                    var diffOk = CheckAdditionalDifficulty(sols, ActiveSolution.difficulty, out ulong diff);
+                                    if (diffOk && (ulong)gc.CurrentJob.job_id == ActiveSolution.jobId)
+                                    {
+                                        Console.ForegroundColor = ConsoleColor.Red;
+                                        Console.WriteLine("Solution difficulty: " + diff.ToString() + " | " + ActiveSolution.difficulty);
+                                        Console.ResetColor();
 
-                                    Task.Run(() => { gc.SendSolution(ActiveSolution, sols); });
-                                }
-                                else if ((ulong)gc.CurrentJob.job_id == ActiveSolution.jobId)
-                                {
-                                    Console.ForegroundColor = ConsoleColor.Green;
-                                    Console.WriteLine("Solution difficulty: " + diff.ToString() + " | " + ActiveSolution.difficulty);
-                                    Console.ResetColor();
+                                        Task.Run(() => { gc.SendSolution(ActiveSolution, sols); });
+                                    }
+                                    else if ((ulong)gc.CurrentJob.job_id == ActiveSolution.jobId)
+                                    {
+                                        Console.ForegroundColor = ConsoleColor.Green;
+                                        Console.WriteLine("Solution difficulty: " + diff.ToString() + " | " + ActiveSolution.difficulty);
+                                        Console.ResetColor();
+                                    }
                                 }
 
                                 statistics.solutions++;
@@ -592,7 +628,7 @@ namespace Theta
 
     public class CGraph
     {
-        private bool ShowCycles = false;
+        private bool ShowCycles = Program.Test;
 
         public Dictionary<uint, uint> graphU;
         public Dictionary<uint, uint> graphV;
