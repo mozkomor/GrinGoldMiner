@@ -169,13 +169,10 @@ __global__  void FluffySeed2A(const u64 v0i, const u64 v1i, const u64 v2i, const
 
 		}
 		const u64 last = sipblock[EDGE_BLOCK_MASK];
-		for (u32 b = 0; b < EDGE_BLOCK_MASK; b++)
-			sipblock[b] ^= last;
 
-
-		for (short s = 0; s < EDGE_BLOCK_SIZE; s++)
+		for (short s = EDGE_BLOCK_MASK; s >= 0; s--)
 		{
-			u64 lookup = sipblock[s];
+			u64 lookup = s == EDGE_BLOCK_MASK ? last : sipblock[s] ^ last;
 			uint2 hash = make_uint2(lookup & EDGEMASK, (lookup >> 32) & EDGEMASK);
 			int bucket = hash.x & 63;
 
