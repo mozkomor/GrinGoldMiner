@@ -14,6 +14,15 @@ Official Grin forum: https://www.grin-forum.org/
 
 Contact us: mozkomorkaban@gmail.com
 
+VIDEO GUIDE: How to run Grin node in Windows VM and mine directly in Windows on the same machine:
+<p>
+<a href="https://www.youtube.com/watch?v=Y-kF9RnkeJo">
+  <img src="https://img.youtube.com/vi/Y-kF9RnkeJo/0.jpg" align="center" height="128" width="164" >
+</a>
+</p>
+
+------------------------------------
+
 ![Screen](/img/cuda.png)
 
 Thanks to OhGodACompany for sending GTX1080Ti
