@@ -98,25 +98,53 @@ __global__  void FluffyRecovery(const u64 v0i, const u64 v1i, const u64 v2i, con
 	const int lid = threadIdx.x;
 
 	__shared__ u32 nonces[42];
+	u64 sipblock[64];
+
+	uint64_t v0;
+	uint64_t v1;
+	uint64_t v2;
+	uint64_t v3;
 
 	if (lid < 42) nonces[lid] = 0;
 
 	__syncthreads();
 
-	for (int i = 0; i < 1024 * 4; i++)
+	for (int i = 0; i < 1024 * 4; i += EDGE_BLOCK_SIZE)
 	{
-		u64 nonce = gid * (1024 * 4) + i;
+		u64 blockNonce = gid * (1024 * 4) + i;
 
-		u64 u = dipnode(v0i, v1i, v2i, v3i, nonce, 0);
-		u64 v = dipnode(v0i, v1i, v2i, v3i, nonce, 1);
+		v0 = v0i;
+		v1 = v1i;
+		v2 = v2i;
+		v3 = v3i;
 
-		u64 a = u | (v << 32);
-		u64 b = v | (u << 32);
-
-		for (int i = 0; i < 42; i++)
+		for (u32 b = 0; b < EDGE_BLOCK_SIZE; b++)
 		{
-			if ((recovery[i] == a) || (recovery[i] == b))
-				nonces[i] = nonce;
+			v3 ^= blockNonce + b;
+			SIPROUND; SIPROUND;
+			v0 ^= blockNonce + b;
+			v2 ^= 0xff;
+			SIPROUND; SIPROUND; SIPROUND; SIPROUND;
+
+			sipblock[b] = (v0 ^ v1) ^ (v2  ^ v3);
+
+		}
+		const u64 last = sipblock[EDGE_BLOCK_MASK];
+
+		for (short s = EDGE_BLOCK_MASK; s >= 0; s--)
+		{
+			u64 lookup = s == EDGE_BLOCK_MASK ? last : sipblock[s] ^ last;
+			u32 u = lookup & EDGEMASK;
+			u32 v = (lookup >> 32) & EDGEMASK;
+
+			u64 a = u | (v << 32);
+			u64 b = v | (u << 32);
+
+			for (int i = 0; i < 42; i++)
+			{
+				if ((recovery[i] == a) || (recovery[i] == b))
+					nonces[i] = blockNonce + s;
+			}
 		}
 	}
 
@@ -461,10 +489,10 @@ int main(int argc, char* argv[])
 
 	//const unsigned int edges = (1 << 29);
 
-	int * bufferA;
-	int * bufferB;
-	int * indexesE;
-	int * indexesE2;
+	u32 * bufferA;
+	u32 * bufferB;
+	u32 * indexesE;
+	u32 * indexesE2;
 
 	u32 hostA[256 * 256];
 
@@ -519,28 +547,20 @@ int main(int argc, char* argv[])
 	fprintf(stderr, "Currently available amount of device memory: %zu bytes\n", free_device_mem);
 	fprintf(stderr, "Total amount of device memory: %zu bytes\n", total_device_mem);
 
-	cudaStatus = cudaMalloc((void**)&bufferA, bufferSize);
+	cudaStatus = cudaMalloc((void**)&bufferA, bufferSize+bufferSize2);
 	if (cudaStatus != cudaSuccess) {
 		fprintf(stderr, "status: %s\n", cudaGetErrorString(cudaStatus));
 		fprintf(stderr, "cudaMalloc failed buffer A 4GB!\n");
 		goto Error;
 	}
 
-	fprintf(stderr, "Allociating buffer 1\n");
+	fprintf(stderr, "Allociating buffer 1+2\n");
 
 	cudaMemGetInfo(&free_device_mem, &total_device_mem);
 
-	//printf("Buffer A: Currently available amount of device memory: %zu bytes\n", free_device_mem);
-
-	fprintf(stderr, "Allociating buffer 2\n");
-
-	cudaStatus = cudaMalloc((void**)&bufferB, bufferSize2);
-	if (cudaStatus != cudaSuccess) {
-		fprintf(stderr, "status: %s\n", cudaGetErrorString(cudaStatus));
-		fprintf(stderr, "cudaMalloc failed buffer B 3GB!\n");
-		goto Error;
-	}
-
+	u32 * bufferMid = bufferA + (bufferSize2 / 4);
+	bufferB = bufferA + (bufferSize / 4);
+	
 	cudaStatus = cudaMalloc((void**)&indexesE, indexesSize);
 	if (cudaStatus != cudaSuccess) {
 		fprintf(stderr, "cudaMalloc failed Index array 1!\n");
@@ -619,13 +639,9 @@ int main(int argc, char* argv[])
 		cudaDeviceSynchronize();
 
 
-		FluffySeed2A << < 512, 64 >> > (k0, k1, k2, k3, (ulonglong4 *)bufferA, (int *)indexesE2);
-
-		FluffySeed2B << < 32 * BKTGRAN, 64 >> > ((const uint2 *)bufferA, (ulonglong4 *)bufferB, (const int *)indexesE2, (int *)indexesE, 0);
-		cudaMemcpy(bufferA, bufferB, bufferSize / 2, cudaMemcpyDeviceToDevice);
-
-		FluffySeed2B << < 32 * BKTGRAN, 64 >> > ((const uint2 *)bufferA, (ulonglong4 *)bufferB, (const int *)indexesE2, (int *)indexesE, 32);
-		cudaStatus = cudaMemcpy(&((char *)bufferA)[bufferSize / 2], bufferB, bufferSize / 2, cudaMemcpyDeviceToDevice);
+		FluffySeed2A << < 512, 64 >> > (k0, k1, k2, k3, (ulonglong4 *)bufferMid, (int *)indexesE2);
+		FluffySeed2B << < 32 * BKTGRAN, 64 >> > ((const uint2 *)bufferMid, (ulonglong4 *)bufferA, (const int *)indexesE2, (int *)indexesE, 0);
+		FluffySeed2B << < 32 * BKTGRAN, 64 >> > ((const uint2 *)bufferMid, (ulonglong4 *)&((char *)bufferA)[bufferSize / 2], (const int *)indexesE2, (int *)indexesE, 32);
 
 		cudaStatus = cudaGetLastError();
 		if (cudaStatus != cudaSuccess)
