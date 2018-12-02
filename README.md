@@ -1,6 +1,6 @@
 # Grin GPU Miner for (mostly) Windows
 
-## UPDATE: Miner will start working early December after Grin hard-fork
+## UPDATE: Miner now works again on Testnet4!
 
 Currently only supported cards are nvidia with at least 8GB of memory. Miner can handle multiple cards at the same time in separate console windows - this helps with debugging each card.
 
