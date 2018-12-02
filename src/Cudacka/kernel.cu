@@ -134,8 +134,8 @@ __global__  void FluffyRecovery(const u64 v0i, const u64 v1i, const u64 v2i, con
 		for (short s = EDGE_BLOCK_MASK; s >= 0; s--)
 		{
 			u64 lookup = s == EDGE_BLOCK_MASK ? last : sipblock[s] ^ last;
-			u32 u = lookup & EDGEMASK;
-			u32 v = (lookup >> 32) & EDGEMASK;
+			u64 u = lookup & EDGEMASK;
+			u64 v = (lookup >> 32) & EDGEMASK;
 
 			u64 a = u | (v << 32);
 			u64 b = v | (u << 32);
@@ -175,9 +175,9 @@ __global__  void FluffySeed2A(const u64 v0i, const u64 v1i, const u64 v2i, const
 
 	__syncthreads();
 
-	for (int i = 0; i < 1024 * 16; i += EDGE_BLOCK_SIZE)
+	for (int i = 0; i < 1024 * 4; i += EDGE_BLOCK_SIZE)
 	{
-		u64 blockNonce = gid * (1024 * 16) + i;
+		u64 blockNonce = gid * (1024 * 4) + i;
 
 		v0 = v0i;
 		v1 = v1i;
@@ -427,7 +427,7 @@ __global__   void FluffyRound(const uint2 * source, uint2 * destination, const i
 		{
 			const int index = (bktInSize * group) + lindex;
 
-			uint2 edge = source[index];
+			uint2 edge = __ldg(&source[index]);
 
 			if (edge.x == 0 && edge.y == 0) continue;
 
@@ -636,17 +636,9 @@ int main(int argc, char* argv[])
 		cudaMemset(indexesE, 0, indexesSize);
 		cudaMemset(indexesE2, 0, indexesSize);
 
-		cudaDeviceSynchronize();
-
-
-		FluffySeed2A << < 512, 64 >> > (k0, k1, k2, k3, (ulonglong4 *)bufferMid, (int *)indexesE2);
+		FluffySeed2A << < 2048, 64 >> > (k0, k1, k2, k3, (ulonglong4 *)bufferMid, (int *)indexesE2);
 		FluffySeed2B << < 32 * BKTGRAN, 64 >> > ((const uint2 *)bufferMid, (ulonglong4 *)bufferA, (const int *)indexesE2, (int *)indexesE, 0);
 		FluffySeed2B << < 32 * BKTGRAN, 64 >> > ((const uint2 *)bufferMid, (ulonglong4 *)&((char *)bufferA)[bufferSize / 2], (const int *)indexesE2, (int *)indexesE, 32);
-
-		cudaStatus = cudaGetLastError();
-		if (cudaStatus != cudaSuccess)
-			fprintf(stderr, "status memcpy: %s\n", cudaGetErrorString(cudaStatus));
-
 
 		cudaMemset(indexesE2, 0, indexesSize);
 		FluffyRound<DUCK_A_EDGES, DUCK_B_EDGES> << < 4096, 1024 >> > ((const uint2 *)bufferA, (uint2 *)bufferB, (const int *)indexesE, (int *)indexesE2);
@@ -659,9 +651,6 @@ int main(int argc, char* argv[])
 		cudaMemset(indexesE2, 0, indexesSize);
 		FluffyRound<DUCK_B_EDGES / 2, DUCK_B_EDGES / 4> << < 4096, 1024 >> > ((const uint2 *)bufferA, (uint2 *)bufferB, (const int *)indexesE, (int *)indexesE2);
 
-
-		cudaDeviceSynchronize();
-
 		for (int i = 0; i < 80; i++)
 		{
 			cudaMemset(indexesE, 0, indexesSize);
@@ -672,7 +661,6 @@ int main(int argc, char* argv[])
 		}
 
 		cudaMemset(indexesE, 0, indexesSize);
-		cudaDeviceSynchronize();
 
 		FluffyTail << < 4096, 1024 >> > ((const uint2 *)bufferB, (uint2 *)bufferA, (const int *)indexesE2, (int *)indexesE);
 		cudaMemcpy(hostA, indexesE, 64 * 64 * 4, cudaMemcpyDeviceToHost);

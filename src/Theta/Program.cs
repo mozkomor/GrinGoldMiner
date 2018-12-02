@@ -157,11 +157,11 @@ namespace Theta
                     bool lowMem = parser.Contains("lm");
 
                     if(lowMem)
-                        Console.WriteLine("8GB version selected");
+                        Console.WriteLine("8GB version switch is deprecated");
 
                    cuda = Process.Start(new ProcessStartInfo()
                     {
-                        FileName = lowMem ? "Cudacka8G.exe" : "Cudacka.exe",
+                        FileName = "Cudacka.exe",
                         Arguments = device.ToString(),
                         CreateNoWindow = true,
                         RedirectStandardError = true,
@@ -544,21 +544,24 @@ namespace Theta
 
                                 if (!Test)
                                 {
-                                    var diffOk = CheckAdditionalDifficulty(sols, ActiveSolution.difficulty, out ulong diff);
-                                    if (diffOk && (ulong)gc.CurrentJob.job_id == ActiveSolution.jobId)
-                                    {
-                                        Console.ForegroundColor = ConsoleColor.Red;
-                                        Console.WriteLine("Solution difficulty: " + diff.ToString() + " | " + ActiveSolution.difficulty);
-                                        Console.ResetColor();
-
+                                    if ((ulong)gc.CurrentJob.job_id == ActiveSolution.jobId)
                                         Task.Run(() => { gc.SendSolution(ActiveSolution, sols); });
-                                    }
-                                    else if ((ulong)gc.CurrentJob.job_id == ActiveSolution.jobId)
-                                    {
-                                        Console.ForegroundColor = ConsoleColor.Green;
-                                        Console.WriteLine("Solution difficulty: " + diff.ToString() + " | " + ActiveSolution.difficulty);
-                                        Console.ResetColor();
-                                    }
+
+                                    //var diffOk = CheckAdditionalDifficulty(sols, ActiveSolution.difficulty, out ulong diff);
+                                    //if (diffOk && (ulong)gc.CurrentJob.job_id == ActiveSolution.jobId)
+                                    //{
+                                    //    Console.ForegroundColor = ConsoleColor.Red;
+                                    //    Console.WriteLine("Solution difficulty: " + diff.ToString() + " | " + ActiveSolution.difficulty);
+                                    //    Console.ResetColor();
+
+                                    //    Task.Run(() => { gc.SendSolution(ActiveSolution, sols); });
+                                    //}
+                                    //else if ((ulong)gc.CurrentJob.job_id == ActiveSolution.jobId)
+                                    //{
+                                    //    Console.ForegroundColor = ConsoleColor.Green;
+                                    //    Console.WriteLine("Solution difficulty: " + diff.ToString() + " | " + ActiveSolution.difficulty);
+                                    //    Console.ResetColor();
+                                    //}
                                 }
 
                                 statistics.solutions++;
