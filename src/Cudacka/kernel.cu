@@ -290,19 +290,21 @@ __global__  void FluffySeed2B(const  uint2 * source, ulonglong4 * destination, c
 	{
 		int edgeIndex = (microBlockNo * microBlockEdgesCount) + (64 * i) + lid;
 
-		if (edgeIndex < bucketEdges)
+		//if (edgeIndex < bucketEdges)
 		{
 			uint2 edge = source[offsetMem + (myBucket * DUCK_A_EDGES_64) + edgeIndex];
-
-			if (edge.x == 0 && edge.y == 0) continue;
+			bool skip = (edgeIndex >= bucketEdges) || (edge.x == 0 && edge.y == 0);
 
 			int bucket = (edge.x >> 6) & (64 - 1);
 
 			__syncthreads();
 
-			int counter = min((int)atomicAdd(counters + bucket, 1), (int)14);
+			if (!skip)
+			{
+				int counter = min((int)atomicAdd(counters + bucket, 1), (int)14);
 
-			tmp[bucket][counter] = edge;
+				tmp[bucket][counter] = edge;
+			}
 
 			__syncthreads();
 
