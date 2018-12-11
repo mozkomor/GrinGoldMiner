@@ -10,7 +10,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,6 +30,7 @@ namespace Theta
         public bool IsConnected;
         private TcpClient client;
         private NetworkStream stream;
+        private SslStream streamTLS;
         private StreamReader reader;
         private Task watchdog = null;
         private Task listener = null;
@@ -66,8 +70,17 @@ namespace Theta
                 Console.ResetColor();
 
                 byte[] bmsg = Encoding.UTF8.GetBytes(output+"\n");
-                stream.Write(bmsg, 0, bmsg.Length);
-                stream.FlushAsync();
+
+                if (streamTLS != null)
+                {
+                    streamTLS.Write(bmsg, 0, bmsg.Length);
+                    streamTLS.FlushAsync();
+                }
+                else
+                {
+                    stream.Write(bmsg, 0, bmsg.Length);
+                    stream.FlushAsync();
+                }
 
                 return true;
             }
@@ -86,7 +99,10 @@ namespace Theta
 
                 if (client != null && client.Connected)
                 {
-                    stream.Close();
+                    if (stream != null)
+                        stream.Close();
+                    if (streamTLS != null)
+                        streamTLS.Close();
                     client.Close();
                 }
                 if (watchdog != null)
@@ -107,6 +123,8 @@ namespace Theta
                 if (client != null)
                     client.Dispose();
 
+                System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+
                 Console.WriteLine("Connecting to : " + _ip);
 
                 client = new TcpClient(_ip, _port);
@@ -118,8 +136,17 @@ namespace Theta
                     BadPacketCnt = 0;
                     attempts = 0;
                     IsConnected = true;
-                    stream = client.GetStream();
-                    reader = new StreamReader(stream);
+                    if (_port < 23416)
+                    {
+                        stream = client.GetStream();
+                        reader = new StreamReader(stream);
+                    }
+                    else
+                    {
+                        streamTLS = new SslStream(client.GetStream(), false, new RemoteCertificateValidationCallback(ValidateServerCertificate), null);
+                        streamTLS.AuthenticateAsClient(_ip);
+                        reader = new StreamReader(streamTLS);
+                    }                    
 
                     if (watchdog == null)
                         watchdog = Task.Factory.StartNew(() => { Monitor(); }, wdCancel);
@@ -133,6 +160,17 @@ namespace Theta
             {
                 Console.WriteLine(ex.Message);
             }
+        }
+
+        private bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
+        {
+            if ((sslPolicyErrors == SslPolicyErrors.None) || (sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch))
+                return true;
+
+            Console.WriteLine("Certificate error: {0}", sslPolicyErrors);
+
+            // Do not allow this client to communicate with unauthenticated servers.
+            return false;
         }
 
         private void Listen()
