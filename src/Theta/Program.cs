@@ -3,6 +3,7 @@
 // Copyright (c) 2018 Jiri Vadura - photon
 // This management part of Theta optimized miner is covered by the FAIR MINING license
 
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -117,6 +118,7 @@ namespace Theta
             }
 
             Console.Write("Waiting for next block, this may take a bit");
+            int wcnt = 0;
             while (true)
             {
                 if (gc.CurrentJob != null && gc.IsConnected)
@@ -126,6 +128,14 @@ namespace Theta
                     return;
 
                 Console.Write(".");
+
+                if ((++wcnt % 30) == 0)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine("\nMake sure you are running 'grin wallet listen' on your node! \n");
+                    Console.ResetColor();
+                }
+
                 Task.Delay(500).Wait();
             }
             Console.WriteLine();
