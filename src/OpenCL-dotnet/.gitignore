@@ -1,0 +1,4 @@
+
+# Ignores the .NET Core build output
+bin/
+obj/

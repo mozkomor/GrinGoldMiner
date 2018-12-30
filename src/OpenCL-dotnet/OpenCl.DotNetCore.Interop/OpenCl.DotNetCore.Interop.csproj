@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>The interop wrapper for OpenCL .NET Core.</Description>
+    <Copyright>Copyright © 2016 David Neumann</Copyright>
+    <AssemblyTitle>OpenCL.NET Core Interop</AssemblyTitle>
+    <VersionPrefix>0.1.0-alpha1</VersionPrefix>
+    <Authors>David Neumann</Authors>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <DebugType>portable</DebugType>
+    <AssemblyName>OpenCl.DotNetCore.Interop</AssemblyName>
+    <PackageId>OpenCl.DotNetCore.Interop</PackageId>
+    <NetStandardImplicitPackageVersion>1.6.1</NetStandardImplicitPackageVersion>
+  </PropertyGroup>
+
+</Project>
