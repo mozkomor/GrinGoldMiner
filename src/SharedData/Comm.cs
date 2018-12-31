@@ -39,4 +39,17 @@ namespace SharedData
             return edges.Select(e => (ulong)e.Item1 | (((ulong)e.Item2) << 32)).ToArray();
         }
     }
+
+    [SerializableAttribute]
+    public class GpuDevice
+    {
+        public int id;
+        public string name;
+        public long memory;
+    }
+    [SerializableAttribute]
+    public class GpuDevicesMessage
+    {
+        public List<GpuDevice> devices;
+    }
 }

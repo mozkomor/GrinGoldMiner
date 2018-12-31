@@ -117,6 +117,23 @@ namespace CudaSolver
                     Logger.Log(LogLevel.Error, "No master connection, exitting!");
                     return;
                 }
+
+                if (deviceID < 0)
+                {
+                    int devCnt = CudaContext.GetDeviceCount();
+                    GpuDevicesMessage gpum = new GpuDevicesMessage() { devices = new List<GpuDevice>(devCnt) };
+                    for (int i = 0; i < devCnt; i++)
+                    {
+                        string name = CudaContext.GetDeviceName(i);
+                        var info = CudaContext.GetDeviceInfo(i);
+                        gpum.devices.Add(new GpuDevice() {id = i, name = name, memory = info.TotalGlobalMemory });
+                    }
+                    Comms.gpuMsg = gpum;
+                    Comms.SetEvent();
+                    Task.Delay(500).Wait();
+                    Comms.Close();
+                    return;
+                }
             }
 
 

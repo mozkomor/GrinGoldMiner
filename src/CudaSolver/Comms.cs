@@ -15,6 +15,7 @@ namespace CudaSolver
     {
         public static Queue<Solution> graphSolutionsOut = new Queue<Solution>();
         public static Queue<LogMessage> logsOut = new Queue<LogMessage>();
+        public static GpuDevicesMessage gpuMsg = null;
 
         public static AutoResetEvent flushToMaster;
         private static TcpClient client;
@@ -55,6 +56,11 @@ namespace CudaSolver
                         }
                         (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, s);
                     }
+                    if (gpuMsg != null)
+                    {
+                        (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, gpuMsg);
+                        gpuMsg = null;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -93,6 +99,19 @@ namespace CudaSolver
         {
             if (flushToMaster != null)
                 flushToMaster.Set();
+        }
+
+        internal static void Close()
+        {
+            try
+            {
+                IsTerminated = true;
+                if (stream != null)
+                    stream.Close();
+                if (client != null)
+                    client.Close();
+            }
+            catch { }
         }
     }
 

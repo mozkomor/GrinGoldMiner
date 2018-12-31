@@ -1,0 +1,18 @@
+﻿            TcpListener l = new TcpListener(IPAddress.Parse("127.0.0.1"), 13500);
+            l.Start();
+            var client = l.AcceptTcpClient();
+            NetworkStream stream = client.GetStream();
+            l.Stop();
+
+            while (true)
+            {
+                try
+                {
+                    object john = (new BinaryFormatter()).Deserialize(stream);
+                    Console.WriteLine(john);
+                }
+                catch (Exception ex)
+                {
+                    Task.Delay(1000).Wait();
+                }
+            }
