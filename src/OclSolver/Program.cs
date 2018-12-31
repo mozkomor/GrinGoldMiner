@@ -13,7 +13,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CudaSolver;
-using SharedData;
+using SharedSerialization;
 
 namespace OclSolver
 {

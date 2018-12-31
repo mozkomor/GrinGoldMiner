@@ -32,7 +32,7 @@
   <ItemGroup>
     <ProjectReference Include="..\OpenCL-dotnet\OpenCl.DotNetCore.Interop\OpenCl.DotNetCore.Interop.csproj" />
     <ProjectReference Include="..\OpenCL-dotnet\OpenCl.DotNetCore\OpenCl.DotNetCore.csproj" />
-    <ProjectReference Include="..\SharedData\SharedData.csproj" />
+    <ProjectReference Include="..\SharedSerialization\SharedSerialization.csproj" />
   </ItemGroup>
 
 </Project>

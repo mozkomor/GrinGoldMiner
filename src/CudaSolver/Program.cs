@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using ManagedCuda;
 using ManagedCuda.BasicTypes;
 using ManagedCuda.VectorTypes;
-using SharedData;
+using SharedSerialization;
 
 // dotnet publish -c Release -r win-x64
 
