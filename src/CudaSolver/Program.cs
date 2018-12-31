@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using ManagedCuda;
 using ManagedCuda.BasicTypes;
 using ManagedCuda.VectorTypes;
-
+using SharedData;
 
 // dotnet publish -c Release -r win-x64
 
@@ -61,7 +61,6 @@ namespace CudaSolver
 
         static volatile bool terminate = false;
         public static Queue<Solution> graphSolutions = new Queue<Solution>();
-        public static Queue<Solution> graphSolutionsOut = new Queue<Solution>();
 
         static void Main(string[] args)
         {
@@ -103,6 +102,15 @@ namespace CudaSolver
             }
             else
             {
+                currentJob = nextJob = new Job()
+                {
+                    jobID = 0,
+                    k0 = 0xf4956dc403730b01L,
+                    k1 = 0xe6d45de39c2a5a3eL,
+                    k2 = 0xcbf626a8afee35f6L,
+                    k3 = 0x4307b94b1a0c9980L,
+                };
+
                 if (!Comms.IsConnected())
                 {
                     Console.WriteLine("Master connection failed, aborting");
@@ -195,7 +203,6 @@ namespace CudaSolver
 
                     currentJob = nextJob;
 
-                    timer.Restart();
 
                     Logger.Log(LogLevel.Info, string.Format("Trimming #{4}: {0} {1} {2} {3}", currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, currentJob.jobID));
 
@@ -220,12 +227,14 @@ namespace CudaSolver
                         s.nonces = new uint[42];
                         d_indexesB.CopyToHost(s.nonces, 0, 0, 42 * 4);
                         s.nonces = s.nonces.OrderBy(n => n).ToArray();
-                        lock (graphSolutionsOut)
+                        lock (Comms.graphSolutionsOut)
                         {
-                            graphSolutionsOut.Enqueue(s);
+                            Comms.graphSolutionsOut.Enqueue(s);
                         }
                         Comms.SetEvent();
                     }
+
+                    timer.Restart();
 
                     d_indexesA.MemsetAsync(0, streamPrimary.Stream);
                     d_indexesB.MemsetAsync(0, streamPrimary.Stream);
@@ -279,15 +288,15 @@ namespace CudaSolver
 
                     if (TEST)
                     {
-                        Stopwatch sw = new Stopwatch();
-                        sw.Start();
-
                         CGraph cg = new CGraph();
                         cg.SetEdges(h_a, (int)count[0]);
                         cg.SetHeader(currentJob);
 
                         Task.Factory.StartNew(() =>
                            {
+                               Stopwatch sw = new Stopwatch();
+                               sw.Start();
+
                                if (count[0] < 200000)
                                {
                                    try

@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Linq;
 
-namespace OclSolver
+namespace SharedData
 {
-    public class Comms
-    {
-    }
 
+    [SerializableAttribute]
     public struct Job
     {
         public DateTime timestamp;
@@ -17,7 +15,7 @@ namespace OclSolver
         public UInt64 k2;
         public UInt64 k3;
     }
-
+    [SerializableAttribute]
     public struct Edge
     {
         public Edge(UInt32 U, UInt32 V)
@@ -29,10 +27,16 @@ namespace OclSolver
         public UInt32 Item1;
         public UInt32 Item2;
     }
-
+    [SerializableAttribute]
     public class Solution
     {
         public Job job;
-        public List<Edge> nonces;
+        public List<Edge> edges;
+        public UInt32[] nonces;
+
+        public ulong[] GetUlongEdges()
+        {
+            return edges.Select(e => (ulong)e.Item1 | (((ulong)e.Item2) << 32)).ToArray();
+        }
     }
 }

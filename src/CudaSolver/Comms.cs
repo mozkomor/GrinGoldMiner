@@ -7,12 +7,15 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Google.Protobuf;
+using SharedData;
 
 namespace CudaSolver
 {
     public class Comms
     {
+        public static Queue<Solution> graphSolutionsOut = new Queue<Solution>();
+        public static Queue<LogMessage> logsOut = new Queue<LogMessage>();
+
         public static AutoResetEvent flushToMaster;
         private static TcpClient client;
         private static NetworkStream stream;
@@ -37,17 +40,47 @@ namespace CudaSolver
 
         private static void WaitSend()
         {
-            //while (!IsTerminated)   
-            (new BinaryFormatter()).Serialize(stream, new Solution());
+            while (!IsTerminated)
+            {
+                try
+                {
+                    flushToMaster.WaitOne();
+
+                    if (graphSolutionsOut.Count > 0)
+                    {
+                        Solution s;
+                        lock (graphSolutionsOut)
+                        {
+                            s = graphSolutionsOut.Dequeue();
+                        }
+                        (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, s);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(LogLevel.Warning, "WaitSend error", ex);
+                }
+            }
         }
 
         private static void Listen()
         {
-            object john = (new BinaryFormatter()).Deserialize(stream);
-            switch (john)
+            while (!IsTerminated)
             {
-                case Solution sol when sol.job.height > 5:
-                    break;
+                try
+                {
+                    object payload = (new BinaryFormatter()).Deserialize(stream);
+
+                    switch (payload)
+                    {
+                        case Solution sol when sol.job.height > 5:
+                            break;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(LogLevel.Warning, "Listen error", ex);
+                }
             }
         }
 
@@ -64,38 +97,6 @@ namespace CudaSolver
     }
 
 
-    [SerializableAttribute]
-    public struct Job
-    {
-        public DateTime timestamp;
-        public UInt64 nonce, height, difficulty, jobID;
-        public UInt64 k0;
-	    public UInt64 k1;
-	    public UInt64 k2;
-	    public UInt64 k3;
-    }
-    [SerializableAttribute]
-    public struct Edge
-    {
-        public Edge(UInt32 U, UInt32 V)
-        {
-            Item1 = U;
-            Item2 = V;
-        }
 
-        public UInt32 Item1;
-        public UInt32 Item2;
-    }
-    [SerializableAttribute]
-    public class Solution
-    {
-        public Job job;
-        public List<Edge> edges;
-        public UInt32[] nonces;
 
-        internal ulong[] GetUlongEdges()
-        {
-            return edges.Select(e => (ulong)e.Item1 | (((ulong)e.Item2) << 32)).ToArray();
-        }
-    }
 }

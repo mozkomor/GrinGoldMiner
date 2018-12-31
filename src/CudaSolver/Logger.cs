@@ -12,6 +12,11 @@ namespace CudaSolver
         }
     }
 
+    [SerializableAttribute]
+    public class LogMessage
+    {
+    }
+
     public enum LogLevel
     {
         Debug,

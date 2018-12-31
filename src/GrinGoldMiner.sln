@@ -15,6 +15,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CudaSolver", "CudaSolver\Cu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OclSolver", "OclSolver\OclSolver.csproj", "{F81B3FA6-E182-4A9E-8BB7-6CCD172E31EC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedData", "SharedData\SharedData.csproj", "{5E766D01-E630-42B4-9FE3-39EB1952C624}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -70,6 +72,14 @@ Global
 		{F81B3FA6-E182-4A9E-8BB7-6CCD172E31EC}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F81B3FA6-E182-4A9E-8BB7-6CCD172E31EC}.Release|x64.ActiveCfg = Release|Any CPU
 		{F81B3FA6-E182-4A9E-8BB7-6CCD172E31EC}.Release|x64.Build.0 = Release|Any CPU
+		{5E766D01-E630-42B4-9FE3-39EB1952C624}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5E766D01-E630-42B4-9FE3-39EB1952C624}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5E766D01-E630-42B4-9FE3-39EB1952C624}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5E766D01-E630-42B4-9FE3-39EB1952C624}.Debug|x64.Build.0 = Debug|Any CPU
+		{5E766D01-E630-42B4-9FE3-39EB1952C624}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5E766D01-E630-42B4-9FE3-39EB1952C624}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5E766D01-E630-42B4-9FE3-39EB1952C624}.Release|x64.ActiveCfg = Release|Any CPU
+		{5E766D01-E630-42B4-9FE3-39EB1952C624}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
