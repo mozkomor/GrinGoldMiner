@@ -13,7 +13,8 @@ namespace Mozkomor.GrinGoldMiner
     {
         static void Main(string[] args)
         {
-            Console.CancelKeyPress += delegate {
+            Console.CancelKeyPress += delegate
+            {
                 Console.WriteLine("Ctrl+C - Exitting");
                 Close();
             };
@@ -33,42 +34,45 @@ namespace Mozkomor.GrinGoldMiner
             }
 
             WorkerManager.Init();
-
             ConnectionManager.Init(config);
 
-
-            string prevprepow = "";
-            while (true)
+            while (Console.ReadKey().Key != ConsoleKey.Q)
             {
-
-                var job = ConnectionManager.GetJob();
-                if (job != null)
-                {
-                    if (job.pre_pow != prevprepow)
-                    {
-                        ConnectionManager.SubmitSol(
-                                new Solution()
-                                {
-                                    jobId = job.job_id,
-                                    difficulty = job.difficulty,
-                                    height = job.height,
-                                    k0 = 111, k1 = 111, k2 = 111, k3 = 111,
-                                    nonce = 123456, nonces = null,
-                                    prepow = job.pre_pow,
-                                });
-
-                        prevprepow = job.pre_pow;
-                    }
-                    Task.Delay(2500).Wait();
-                }
-                else
-                {
-                    Console.Write(".");
-                    Task.Delay(500).Wait();
-                }
-
-                //Theta.ConnectionManager.SubmitJob();
             }
+            Close();
+
+            //string prevprepow = "";
+            //while (true)
+            //{
+
+            //    var job = ConnectionManager.GetJob();
+            //    if (job != null)
+            //    {
+            //        if (job.pre_pow != prevprepow)
+            //        {
+            //            //ConnectionManager.SubmitSol(
+            //            //        new Solution()
+            //            //        {
+            //            //            jobId = job.job_id,
+            //            //            difficulty = job.difficulty,
+            //            //            height = job.height,
+            //            //            k0 = 111, k1 = 111, k2 = 111, k3 = 111,
+            //            //            nonce = 123456, nonces = null,
+            //            //            prepow = job.pre_pow,
+            //            //        });
+
+            //            prevprepow = job.pre_pow;
+            //        }
+            //        Task.Delay(2500).Wait();
+            //    }
+            //    else
+            //    {
+            //        Console.Write(".");
+            //        Task.Delay(500).Wait();
+            //    }
+
+            //    //Theta.ConnectionManager.SubmitJob();
+            //}
             Console.WriteLine();
 
         }
@@ -77,19 +81,6 @@ namespace Mozkomor.GrinGoldMiner
         {
             ConnectionManager.CloseAll();
             Environment.Exit(0);
-        }
-    }
-
-    public class Solution
-    {
-        public UInt64 k0, k1, k2, k3, nonce, height, difficulty, jobId;
-        public List<Tuple<uint, uint>> nonces = new List<Tuple<uint, uint>>();
-
-        public string prepow = "";
-
-        public override string ToString()
-        {
-            return $"jobId: {jobId},k0 {k0}, k1 {k1}, k2 {k2}, k3 {k3}, nonce {nonce}, height {height}, difficulty {difficulty}";
         }
     }
 }

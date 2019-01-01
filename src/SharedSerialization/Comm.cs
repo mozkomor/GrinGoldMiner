@@ -7,6 +7,14 @@ namespace SharedSerialization
     [SerializableAttribute]
     public class Job
     {
+        public Job(JobTemplate _job)
+        {
+            difficulty = _job.difficulty;
+            jobID = _job.job_id;
+            pre_pow = _job.pre_pow;
+            height = _job.height;
+        }
+
         private static Random rnd = new Random((int)DateTime.Now.Ticks);
 
         public DateTime timestamp;
@@ -42,6 +50,11 @@ namespace SharedSerialization
                      .Where(x => x % 2 == 0)
                      .Select(x => Convert.ToByte(pre_pow.Substring(x, 2), 16))
                      .ToArray();
+        }
+
+        public override string ToString()
+        {
+            return $"jobId: {jobID},k0 {k0}, k1 {k1}, k2 {k2}, k3 {k3}, nonce {nonce}, height {height}, difficulty {difficulty}";
         }
     }
     [SerializableAttribute]
@@ -84,6 +97,41 @@ namespace SharedSerialization
             UInt64 div = (UInt64.MaxValue / blaked);
             diff = (ulong)div;
             return div >= target;
+        }
+    }
+
+    //stratum
+    public class SubmitParams
+    {
+        public UInt64 height;
+        public UInt64 job_id;
+        public UInt32 edge_bits = 29;
+        public UInt64 nonce;
+        public List<UInt32> pow;
+    }
+
+    //stratum
+    public class LoginParams
+    {
+        public string login;
+        public string pass;
+        public string agent = "mozkomor";
+    }
+
+    //stratum
+    public class JobTemplate
+    {
+        public UInt64 height;
+        public UInt64 job_id;
+        public UInt64 difficulty;
+        public string pre_pow;
+
+        public byte[] GetHeader()
+        {
+            return Enumerable.Range(0, pre_pow.Length)
+                     .Where(x => x % 2 == 0)
+                     .Select(x => Convert.ToByte(pre_pow.Substring(x, 2), 16))
+                     .ToArray();
         }
     }
 

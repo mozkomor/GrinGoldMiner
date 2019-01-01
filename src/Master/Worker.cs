@@ -74,6 +74,7 @@ namespace Mozkomor.GrinGoldMiner
             }
         }
 
+        //send job to worker
         public bool SendJob(SharedSerialization.Job job)
         {
             try
@@ -83,6 +84,7 @@ namespace Mozkomor.GrinGoldMiner
             }
             catch (Exception ex)
             {
+                Logger.Log(ex);
                 return false;
             }
 
@@ -114,6 +116,7 @@ namespace Mozkomor.GrinGoldMiner
             }
         }
 
+        //receive solution from worker
         private void Listen()
         {
             while (!IsTerminated)
@@ -125,6 +128,7 @@ namespace Mozkomor.GrinGoldMiner
                     switch (payload)
                     {
                         case SharedSerialization.Solution sol:
+                            WorkerManager.SubmitSolution(sol);
                             break;
                     }
                 }

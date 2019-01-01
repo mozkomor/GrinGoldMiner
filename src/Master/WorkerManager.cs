@@ -16,5 +16,22 @@ namespace Mozkomor.GrinGoldMiner
             var cards = w.GetDevices();
             ;
         }
+
+        //worker found solution
+        public static void SubmitSolution(SharedSerialization.Solution sol)
+        {
+            //todo wrap Solution into richer class with internal info
+            ConnectionManager.SubmitSol(sol);
+        }
+
+        //new job received from stratum connection
+        public static void newJobReceived(SharedSerialization.Job job)
+        {
+            //update workers..
+            foreach(var worker in workers)
+            {
+                worker.SendJob(job);
+            }
+        }
     }
 }

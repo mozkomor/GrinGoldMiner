@@ -4,6 +4,7 @@
 
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SharedSerialization;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -44,8 +45,8 @@ namespace Mozkomor.GrinGoldMiner
         //private CancellationTokenSource listenerSource = new CancellationTokenSource();
         //private CancellationToken wdCancel;
         //private CancellationToken listenerCancel;
-        public JobTemplate CurrentJob = null;
-        public JobTemplate PrevJob = null;
+        public Job CurrentJob = null;
+        public Job PrevJob = null;
 
         public DateTime lastComm = DateTime.Now;
         public int BadPacketCnt = 0;
@@ -182,17 +183,22 @@ namespace Mozkomor.GrinGoldMiner
                                 if (msg.ContainsKey("result"))
                                 {
                                     PrevJob = CurrentJob ?? null;
-                                    CurrentJob = JsonConvert.DeserializeObject<JobTemplate>(msg["result"].ToString(), new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
+                                    CurrentJob = new Job( JsonConvert.DeserializeObject<JobTemplate>(msg["result"].ToString(), new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore }));
                                     if (CurrentJob != null && CurrentJob.pre_pow != null && CurrentJob.pre_pow != "")
                                     {
                                         lastComm = DateTime.Now;
+                                        WorkerManager.newJobReceived(CurrentJob);
                                     }
                                 }
                                 break;
                             case "job":
                                 PrevJob = CurrentJob ?? null;
-                                CurrentJob = JsonConvert.DeserializeObject<JobTemplate>(para, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
-                                lastComm = DateTime.Now;
+                                CurrentJob = new Job( JsonConvert.DeserializeObject<JobTemplate>(para, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore }));
+                                if (CurrentJob != null && CurrentJob.pre_pow != null && CurrentJob.pre_pow != "")
+                                {
+                                    lastComm = DateTime.Now;
+                                    WorkerManager.newJobReceived(CurrentJob);
+                                }
                                 break;
                             case "submit":
                                 if (msg.ContainsKey("result") && msg["result"].ToString() == "ok")
@@ -334,11 +340,11 @@ namespace Mozkomor.GrinGoldMiner
             }
         }
 
-        internal void SendSolution(Solution activeSolution, List<uint> sols)
+        internal void SendSolution(Solution activeSolution)
         {
             try
             {
-                SubmitParams pow = new SubmitParams() { height = activeSolution.height, nonce = activeSolution.nonce, pow = sols, job_id = activeSolution.jobId };
+                SubmitParams pow = new SubmitParams() { height = activeSolution.job.height, nonce = activeSolution.job.nonce, pow = activeSolution.nonces.ToList(), job_id = activeSolution.job.jobID };
                 StratumRpcRequest request = new StratumRpcRequest(StratumCommand.Solution);
                 request.SetParams(pow);
 
@@ -466,35 +472,5 @@ namespace Mozkomor.GrinGoldMiner
     pow: pow,
    };
        */
-    public class SubmitParams
-    {
-        public UInt64 height;
-        public UInt64 job_id;
-        public UInt32 edge_bits = 29;
-        public UInt64 nonce;
-        public List<UInt32> pow;
-    }
-
-    public class LoginParams
-    {
-        public string login;
-        public string pass;
-        public string agent = "mozkomor";
-    }
-
-    public class JobTemplate
-    {
-        public UInt64 height;
-        public UInt64 job_id;
-        public UInt64 difficulty;
-        public string pre_pow;
-
-        public byte[] GetHeader()
-        {
-            return Enumerable.Range(0, pre_pow.Length)
-                     .Where(x => x % 2 == 0)
-                     .Select(x => Convert.ToByte(pre_pow.Substring(x, 2), 16))
-                     .ToArray();
-        }
-    }
+   
 }

@@ -2,6 +2,7 @@
 // Copyright (c) 2018 Lukas Kubicek - urza
 // Copyright (c) 2018 Jiri Vadura - photon
 
+using SharedSerialization;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -243,7 +244,7 @@ namespace Mozkomor.GrinGoldMiner
         }
 
         private static object lock1 = "";
-        public static JobTemplate GetJob()
+        public static Job GetJob()
         {
             //bude muset poznat z kteryho connectu to jde, aby ho pak mohl submitnout na spravny pool (dev, user..)
             lock (lock1)
@@ -280,14 +281,18 @@ namespace Mozkomor.GrinGoldMiner
                 return null;
         }
 
-        public static void SubmitSol(Solution solution)
+        public static void SubmitSol(SharedSerialization.Solution solution)
         {
 
-            var conn = GetConnectionForJob(solution.prepow);
+            var conn = GetConnectionForJob(solution.job.pre_pow);
             if (conn == null)
             {
-                Logger.Log(LogLevel.WARNING, $"No connection found for solution with job id {solution.jobId}");
+                Logger.Log(LogLevel.WARNING, $"No connection found for solution with job id {solution.job.jobID}");
                 return;
+            }
+            else
+            {
+                //conn.SendSolution(solution);
             }
 
             if (conn.id == 1 || conn.id == 2)
@@ -297,7 +302,7 @@ namespace Mozkomor.GrinGoldMiner
             if (conn.id == 5 || conn.id == 6)
                 solgfcnt++;
 
-            Logger.Log(LogLevel.DEBUG, $"submiting sol jobid: {solution.jobId}, solutionCounter is {solutionCounter}, mfcnt is {solmfcnt}, gfcnt is {solgfcnt}");
+            Logger.Log(LogLevel.DEBUG, $"submiting sol jobid: {solution.job.jobID}, solutionCounter is {solutionCounter}, mfcnt is {solmfcnt}, gfcnt is {solgfcnt}");
             SwitchEpoch();
         }
 
