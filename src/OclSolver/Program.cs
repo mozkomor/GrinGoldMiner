@@ -18,7 +18,6 @@ using SharedSerialization;
 namespace OclSolver
 {
     //https://www.reddit.com/r/MoneroMining/comments/8dhtrv/anybody_successfully_set_up_xmrstak_on_linux/
-    //  libkrb5-dev zlibg-dev clang-3.9  libcurl4-gnutls-dev
     // dotnet publish -c Release -r win-x64
     //dotnet restore -s https://dotnet.myget.org/F/dotnet-core/api/v3/index.json
     //sudo apt-get install dotnet-sdk-2.2 clang-3.9 libkrb5-dev zlib1g-dev  libcurl4-gnutls-dev
@@ -61,7 +60,7 @@ namespace OclSolver
             //Environment.SetEnvironmentVariable("GPU_MAX_ALLOC_PERCENT", "100", EnvironmentVariableTarget.Machine);
             //Environment.SetEnvironmentVariable("GPU_SINGLE_ALLOC_PERCENT", "100", EnvironmentVariableTarget.Machine);
             //Environment.SetEnvironmentVariable("GPU_64BIT_ATOMICS", "1", EnvironmentVariableTarget.Machine);
-            //Environment.SetEnvironmentVariable("AMD_OCL_BUILD_OPTIONS_APPEND", "-cl-std=CL2.1", EnvironmentVariableTarget.Machine);
+            //Environment.SetEnvironmentVariable("AMD_OCL_BUILD_OPTIONS_APPEND", "-cl-std=CL2.0", EnvironmentVariableTarget.Machine);
             //var ev =Environment.GetEnvironmentVariables();
 
             Console.WriteLine("Solver starting!");

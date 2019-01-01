@@ -9,7 +9,7 @@ namespace CudaSolver
 {
     public class CGraph
     {
-        private bool ShowCycles = true;
+        private bool ShowCycles = false;
 
         private Dictionary<uint, uint> graphU;
         private Dictionary<uint, uint> graphV;
@@ -80,17 +80,20 @@ namespace CudaSolver
                         {
                             if (ShowCycles)
                             {
-                                Console.ForegroundColor = ConsoleColor.DarkBlue;
+                                Console.ForegroundColor = ConsoleColor.Yellow;
                                 Console.WriteLine(cycle.ToString() + "-cycle found");
                                 Console.ResetColor();
                             }
                         }
                         else if (cycle == cyclen)
                         {
-                            Console.ForegroundColor = ConsoleColor.Red;
-                            Console.WriteLine("42-cycle found!");
-                            // initiate nonce recovery procedure
-                            Console.ResetColor();
+                            if (ShowCycles)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.WriteLine("42-cycle found!");
+                                // initiate nonce recovery procedure
+                                Console.ResetColor();
+                            }
 
                             List<uint> path1t = path1.Take((int)joinA + 1).ToList();
                             List<uint> path2t = path2.Take((int)joinB + 1).ToList();
