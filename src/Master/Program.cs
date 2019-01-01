@@ -32,6 +32,8 @@ namespace Mozkomor.GrinGoldMiner
                 Console.ReadLine();
             }
 
+            WorkerManager.Init();
+
             ConnectionManager.Init(config);
 
 

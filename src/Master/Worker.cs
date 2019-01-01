@@ -28,7 +28,7 @@ namespace Mozkomor.GrinGoldMiner
         private DateTime workerStartTime = DateTime.Now;
         private DateTime workerLastMessage = DateTime.Now;
         private long workerTotalSolutions = 0;
-        private long workerTotalLogMessages = 0;
+        private long workerTotalLogs = 0;
         private volatile bool IsTerminated;
 
         public Worker(WorkerType gpuType, int gpuID)
@@ -44,14 +44,14 @@ namespace Mozkomor.GrinGoldMiner
             {
                 TcpListener l = new TcpListener(IPAddress.Parse("127.0.0.1"), 13500);
                 l.Start();
-                var client = l.AcceptTcpClient();
-                Process.Start(new ProcessStartInfo()
+                var process = Process.Start(new ProcessStartInfo()
                 {
                     FileName = (type == WorkerType.NVIDIA) ? "CudaSolver.exe" : "OclSolver.exe",
                     Arguments = string.Format("-1 13500"),
                     CreateNoWindow = true,
                     UseShellExecute = false
                 });
+                var client = l.AcceptTcpClient();
                 NetworkStream stream = client.GetStream();
                 l.Stop();
                 object devices = (new BinaryFormatter()).Deserialize(stream);
@@ -59,6 +59,7 @@ namespace Mozkomor.GrinGoldMiner
                 {
                     stream.Close();
                     client.Close();
+                    process.Kill();
                 }
                 catch { }
                 if (devices is GpuDevicesMessage)
@@ -68,7 +69,7 @@ namespace Mozkomor.GrinGoldMiner
             }
             catch (Exception ex)
             {
-                Logger.LogMessage(LogLevel.ERROR, "Failed to enumerate devices: " + ex.Message);
+                Logger.Log(LogLevel.ERROR, "Failed to enumerate devices: " + ex.Message);
                 return new List<GpuDevice>();
             }
         }
@@ -108,7 +109,7 @@ namespace Mozkomor.GrinGoldMiner
             }
             catch (Exception ex)
             {
-                Logger.LogMessage(LogLevel.ERROR, "Failed to start worker process: " + ex.Message);
+                Logger.Log(LogLevel.ERROR, "Failed to start worker process: " + ex.Message);
                 return false;
             }
         }
@@ -129,7 +130,7 @@ namespace Mozkomor.GrinGoldMiner
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogMessage(LogLevel.ERROR, "Listen error" + ex.Message);
+                    Logger.Log(LogLevel.ERROR, "Listen error" + ex.Message);
                 }
             }
         }

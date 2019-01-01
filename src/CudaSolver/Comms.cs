@@ -60,6 +60,7 @@ namespace CudaSolver
                     {
                         (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, gpuMsg);
                         gpuMsg = null;
+                        stream.Flush();
                     }
                     if (logsOut.Count > 0)
                     {

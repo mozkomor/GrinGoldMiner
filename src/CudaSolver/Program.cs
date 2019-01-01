@@ -130,7 +130,7 @@ namespace CudaSolver
                     }
                     Comms.gpuMsg = gpum;
                     Comms.SetEvent();
-                    Task.Delay(500).Wait();
+                    Task.Delay(1000).Wait();
                     Comms.Close();
                     return;
                 }
