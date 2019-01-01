@@ -552,7 +552,7 @@ int main(int argc, char* argv[])
 	cudaStatus = cudaMalloc((void**)&bufferA, bufferSize+bufferSize2);
 	if (cudaStatus != cudaSuccess) {
 		fprintf(stderr, "status: %s\n", cudaGetErrorString(cudaStatus));
-		fprintf(stderr, "cudaMalloc failed buffer A 4GB!\n");
+		fprintf(stderr, "cudaMalloc failed buffer A+B 7079985152 bytes!\n");
 		goto Error;
 	}
 
