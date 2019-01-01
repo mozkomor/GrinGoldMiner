@@ -81,13 +81,13 @@ namespace Mozkomor.GrinGoldMiner
 
                 System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
 
-                Logger.LogMessage(LogLevel.INFO, "Connecting to : " + ip);
+                Logger.Log(LogLevel.INFO, "Connecting to : " + ip);
 
                 client = new TcpClient(ip, port);
 
                 if (client.Connected)
                 {
-                    Logger.LogMessage(LogLevel.INFO, "Connected to node.");
+                    Logger.Log(LogLevel.INFO, "Connected to node.");
 
                     BadPacketCnt = 0;
                     IsConnected = true;
@@ -120,7 +120,7 @@ namespace Mozkomor.GrinGoldMiner
             catch (Exception ex)
             {
                 IsConnected = false;
-                Logger.LogMessage(LogLevel.ERROR, ex.Message);
+                Logger.Log(ex);
             }
         }
 
@@ -130,7 +130,7 @@ namespace Mozkomor.GrinGoldMiner
             if ((sslPolicyErrors == SslPolicyErrors.None) || (sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch))
                 return true;
 
-            Logger.LogMessage(LogLevel.ERROR, $"Certificate error: {sslPolicyErrors}");
+            Logger.Log(LogLevel.ERROR, $"Certificate error: {sslPolicyErrors}");
 
             // Do not allow this client to communicate with unauthenticated servers.
             return false;
@@ -140,7 +140,7 @@ namespace Mozkomor.GrinGoldMiner
         //waiting for messages from stream and reading them
         public  void Listen()
         {
-            Logger.LogMessage(LogLevel.DEBUG, $"begin listen for sc id {id} from thread {Environment.CurrentManagedThreadId}");
+            Logger.Log(LogLevel.DEBUG, $"begin listen for sc id {id} from thread {Environment.CurrentManagedThreadId}");
             try
             {
                 while (client.Connected)
@@ -155,14 +155,14 @@ namespace Mozkomor.GrinGoldMiner
 
                     if (string.IsNullOrWhiteSpace(message))
                     {
-                        Logger.LogMessage(LogLevel.DEBUG, "Epmty read from reader");
+                        Logger.Log(LogLevel.DEBUG, "Epmty read from reader");
                         BadPacketCnt++;
                         continue;
                     }
 
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine();
-                    Logger.LogMessage(LogLevel.INFO, "TCP IN: " + message + Environment.NewLine);
+                    Logger.Log(LogLevel.INFO, "TCP IN: " + message + Environment.NewLine);
                     Console.ResetColor();
                 
                     try
@@ -198,14 +198,14 @@ namespace Mozkomor.GrinGoldMiner
                                 if (msg.ContainsKey("result") && msg["result"].ToString() == "ok")
                                 {
                                     Console.ForegroundColor = ConsoleColor.Cyan;
-                                    Logger.LogMessage(LogLevel.INFO, "Share accepted");
+                                    Logger.Log(LogLevel.INFO, "Share accepted");
                                     Console.ResetColor();
                                 }
                                 else if (msg.ContainsKey("result") && msg["result"].ToString().StartsWith("blockfound"))
                                 {
                                     Console.ForegroundColor = ConsoleColor.Cyan;
                                     Console.WriteLine("###################################");
-                                    Logger.LogMessage(LogLevel.INFO, "######  Block mined!  #" + (++mined).ToString("D4") + "  ######"); // 8 chars
+                                    Logger.Log(LogLevel.INFO, "######  Block mined!  #" + (++mined).ToString("D4") + "  ######"); // 8 chars
                                     Console.WriteLine("###################################");
                                     Console.ResetColor();
                                     statistics.mined++;
@@ -220,18 +220,18 @@ namespace Mozkomor.GrinGoldMiner
                     }
                     catch (Exception ex)
                     {
-                        Logger.LogMessage(LogLevel.ERROR, ex.Message);
+                        Logger.Log(ex);
                     }
                 }
                 IsConnected = false; //more like "IsListening" 
-                Logger.LogMessage(LogLevel.DEBUG, $"Listener dropped for stratum connection id {id} on thread {Environment.CurrentManagedThreadId}");
+                Logger.Log(LogLevel.DEBUG, $"Listener dropped for stratum connection id {id} on thread {Environment.CurrentManagedThreadId}");
                 //listenerCancel.ThrowIfCancellationRequested();
 
             }
             catch (Exception ex)
             {
                 IsConnected = false;
-                Logger.LogMessage(LogLevel.ERROR, ex.Message);
+                Logger.Log(ex);
             }
         }
 
@@ -264,11 +264,11 @@ namespace Mozkomor.GrinGoldMiner
                 listener = null;
                 //watchdog = null;
 
-                Logger.LogMessage(LogLevel.DEBUG, $"Closed connection id {id}");
+                Logger.Log(LogLevel.DEBUG, $"Closed connection id {id}");
             }
             catch (Exception ex)
             {
-                Logger.LogMessage(LogLevel.ERROR, ex.Message);
+                Logger.Log(ex);
             }
         }
 
@@ -282,7 +282,7 @@ namespace Mozkomor.GrinGoldMiner
                 {
                     if (!IsConnected) //if (!client.Connected)
                     {
-                        Logger.LogMessage(LogLevel.DEBUG, $"Reconnecting from DisconnectMonitor, SC ID {id}");
+                        Logger.Log(LogLevel.DEBUG, $"Reconnecting from DisconnectMonitor, SC ID {id}");
 
                         
                         //wdSource.Cancel();
@@ -294,7 +294,7 @@ namespace Mozkomor.GrinGoldMiner
                         ReconnectAction();
                     }
                 }
-                catch (Exception ex) { Logger.LogMessage(LogLevel.ERROR, ex.Message); }
+                catch (Exception ex) { Logger.Log(ex); }
 
                 Task.Delay(2000).Wait();
             }
@@ -309,7 +309,7 @@ namespace Mozkomor.GrinGoldMiner
                 string output = JsonConvert.SerializeObject(message, Formatting.None, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
 
                 Console.ForegroundColor = ConsoleColor.Green;
-                Logger.LogMessage(LogLevel.INFO, "TCP OUT: " + output + Environment.NewLine);
+                Logger.Log(LogLevel.INFO, "TCP OUT: " + output + Environment.NewLine);
                 Console.ResetColor();
 
                 byte[] bmsg = Encoding.UTF8.GetBytes(output + "\n");
@@ -329,7 +329,7 @@ namespace Mozkomor.GrinGoldMiner
             }
             catch (Exception ex)
             {
-                Logger.LogMessage(LogLevel.ERROR, ex.Message);
+                Logger.Log(ex);
                 return false;
             }
         }
@@ -347,7 +347,7 @@ namespace Mozkomor.GrinGoldMiner
 
                 }
             }
-            catch(Exception ex) { Logger.LogMessage(LogLevel.ERROR, ex.Message); }
+            catch(Exception ex) { Logger.Log(ex); }
         }
 
         internal void KeepAlive()
@@ -358,12 +358,12 @@ namespace Mozkomor.GrinGoldMiner
 
                 if (GrinSend<StratumRpcRequest>(request))
                 {
-                    Logger.LogMessage(LogLevel.DEBUG, $"keepalive sent for connection id {id}");
+                    Logger.Log(LogLevel.DEBUG, $"keepalive sent for connection id {id}");
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogMessage(LogLevel.ERROR, ex.Message);
+                Logger.Log(ex);
 
             }
         }
@@ -378,12 +378,12 @@ namespace Mozkomor.GrinGoldMiner
 
                 if (GrinSend<StratumRpcRequest>(request))
                 {
-                    Logger.LogMessage(LogLevel.DEBUG, $"Login sent for connection id {id}.");
+                    Logger.Log(LogLevel.DEBUG, $"Login sent for connection id {id}.");
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogMessage(LogLevel.ERROR, ex.Message);
+                Logger.Log(ex);
 
             }
         }
@@ -396,12 +396,12 @@ namespace Mozkomor.GrinGoldMiner
 
                 if (GrinSend<StratumRpcRequest>(request))
                 {
-                    Logger.LogMessage(LogLevel.DEBUG, $"job request sent for connection id {id}");
+                    Logger.Log(LogLevel.DEBUG, $"job request sent for connection id {id}");
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogMessage(LogLevel.ERROR, ex.Message);
+                Logger.Log(ex);
             }
         }
 

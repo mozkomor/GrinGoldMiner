@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Mozkomor.GrinGoldMiner
@@ -13,6 +14,7 @@ namespace Mozkomor.GrinGoldMiner
     {
         DEBUG,
         INFO,
+        WARNING,
         ERROR
     }
     public class LogOptions
@@ -59,19 +61,30 @@ namespace Mozkomor.GrinGoldMiner
         {
             logOptions = options;
         }
-        public static void LogMessage(LogLevel level, string msg)
+        public static void Log(Exception ex, [CallerFilePath]string callerFilePath = null, [CallerMemberName]string callerMemberName = null, [CallerLineNumber]int callerLineNumber = 0)
+        {
+            var msg = $"Exception in # File: {callerFilePath} # Line: {callerLineNumber} # Member: {callerMemberName} Message: {ex.Message}";
+            Log(LogLevel.ERROR, msg);
+        }
+        private static object lock1 = "";
+        public static void Log(LogLevel level, string msg)
         {
             if (logOptions == null)
             {
+#if DEBUG
                 logOptions = new LogOptions() { FileMinimumLogLevel = LogLevel.DEBUG, ConsoleMinimumLogLevel = LogLevel.DEBUG };
+#else
+                logOptions = new LogOptions() { FileMinimumLogLevel = LogLevel.INFO, ConsoleMinimumLogLevel = LogLevel.INFO };
+#endif
             }
 
             if (level >= logOptions.FileMinimumLogLevel)
-                File.AppendAllText(LogPath, $"{DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssK")}    {level.ToString()},     {msg}{Environment.NewLine}");
+                lock(lock1)
+                    File.AppendAllText(LogPath, $"{DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssK")}    {level.ToString()},     {msg}{Environment.NewLine}");
 
             if (level >= logOptions.ConsoleMinimumLogLevel)
             {
-                if (level == LogLevel.ERROR)
+                if ((level == LogLevel.ERROR) || (level == LogLevel.WARNING))
                     Console.ForegroundColor = ConsoleColor.Red;
 
                 Console.WriteLine($"{level.ToString()}    {msg}");

@@ -17,7 +17,7 @@ namespace Mozkomor.GrinGoldMiner
         private static int solutionCounter = 0;
         private static int solutionRound = 15;
         private static int solverswitchmin = 5;
-        private static int solverswitch = 10;
+        private static int solverswitch = 3;
         private static int prepConn = 2;
         private static int solmfcnt = 0;
         private static int solgfcnt = 0;
@@ -27,6 +27,7 @@ namespace Mozkomor.GrinGoldMiner
         private static Episode activeEpisode = Episode.main_first;
         private static bool IsGfConnecting = false;
         private static bool isMfConnecting = false;
+        private static bool pauseConnecting = false;
 
         private static DateTime roundTime;
 
@@ -57,7 +58,7 @@ namespace Mozkomor.GrinGoldMiner
             con_gf2 = null; // new StratumConnet("10.0.0.237", 13416, 6);
 
             solutionCounter = 0;
-            solverswitch = 10;// new Random(DateTime.UtcNow.Millisecond).Next(solverswitchmin,solutionRound);
+            solverswitch = 3;// new Random(DateTime.UtcNow.Millisecond).Next(solverswitchmin,solutionRound);
 
             roundTime = DateTime.Now;
             ConnectMain();
@@ -69,12 +70,12 @@ namespace Mozkomor.GrinGoldMiner
         {
             bool connected = false;
 
-            while (!connected)
+            while (!connected && !pauseConnecting)
             {
 
                 if (con_m1 == null)
                 {
-                    Logger.LogMessage(LogLevel.DEBUG, "Conection 1 is null");
+                    Logger.Log(LogLevel.DEBUG, "Conection 1 is null");
                     //Console.ReadLine();
                 }
 
@@ -83,7 +84,7 @@ namespace Mozkomor.GrinGoldMiner
                 {
                     curr_m = con_m1;
                     connected = true;
-                    Logger.LogMessage(LogLevel.DEBUG, "conection1 succ");
+                    Logger.Log(LogLevel.DEBUG, "conection1 succ");
                 }
                 else
                 {
@@ -94,30 +95,33 @@ namespace Mozkomor.GrinGoldMiner
                         {
                             curr_m = con_m2;
                             connected = true;
-                            Logger.LogMessage(LogLevel.DEBUG, "conection2 succ");
+                            Logger.Log(LogLevel.DEBUG, "conection2 succ");
                         }
                         else
                         {
-                            Logger.LogMessage(LogLevel.DEBUG, "both con1 & con2 failed, trying again");
+                            Logger.Log(LogLevel.DEBUG, "both con1 & con2 failed, trying again");
                             Task.Delay(1000).Wait();
                         }
                     }
                 }
             }
 
-            curr_m.ReconnectAction = ReconnectMain;
-            curr_m.SendLogin();
-            curr_m.RequestJob();
-            
-            lock (lock1)
+            if (curr_m != null)
             {
-                curr = curr_m;
+                curr_m.ReconnectAction = ReconnectMain;
+                curr_m.SendLogin();
+                curr_m.RequestJob();
+                lock (lock1)
+                {
+                    curr = curr_m;
+                }
             }
+            
         }
 
         public static void ReconnectMain()
         {
-            Logger.LogMessage(LogLevel.ERROR, "trying to reconnect...");
+            Logger.Log(LogLevel.INFO, "trying to reconnect...");
            // curr_m.StratumClose(); //already in watchdog
             curr_m = null;
             ConnectMain();
@@ -125,11 +129,11 @@ namespace Mozkomor.GrinGoldMiner
 
         private static void ConnectMf()
         {
-            Logger.LogMessage(LogLevel.DEBUG, "conecting to mf");
+            Logger.Log(LogLevel.DEBUG, "conecting to mf");
             bool connected = false;
             isMfConnecting = true;
 
-            while (!connected)
+            while (!connected && !pauseConnecting)
             {
 
                 con_mf1.Connect();
@@ -137,7 +141,7 @@ namespace Mozkomor.GrinGoldMiner
                 {
                     curr_mf = con_mf1;
                     connected = true;
-                    Logger.LogMessage(LogLevel.DEBUG, "conection1 mf succ");
+                    Logger.Log(LogLevel.DEBUG, "conection1 mf succ");
                 }
                 else
                 {
@@ -148,28 +152,30 @@ namespace Mozkomor.GrinGoldMiner
                         {
                             curr_mf = con_mf2;
                             connected = true;
-                            Logger.LogMessage(LogLevel.DEBUG, "conection2 mf succ");
+                            Logger.Log(LogLevel.DEBUG, "conection2 mf succ");
                         }
                         else
                         {
-                            Logger.LogMessage(LogLevel.DEBUG, "both con1 & con2 mf failed, trying again");
+                            Logger.Log(LogLevel.DEBUG, "both con1 & con2 mf failed, trying again");
                             Task.Delay(1000).Wait();
                         }
                     }
                 }
             }
 
-            curr_mf.ReconnectAction = ReconnectMf;
-            curr_mf.SendLogin();
-            curr_mf.RequestJob();
-            //Task.Factory.StartNew(() => { curr_mf.Listen(); }, TaskCreationOptions.LongRunning); 
+            if (curr_mf != null)
+            {
+                curr_mf.ReconnectAction = ReconnectMf;
+                curr_mf.SendLogin();
+                curr_mf.RequestJob();
+            }
 
             isMfConnecting = false;
         }
 
         public static void ReconnectMf()
         {
-            Logger.LogMessage(LogLevel.DEBUG, "trying to reconnect...");
+            Logger.Log(LogLevel.DEBUG, "trying to reconnect...");
             curr_mf = null;
             ConnectMf();
         }
@@ -179,7 +185,7 @@ namespace Mozkomor.GrinGoldMiner
             bool connected = false;
             IsGfConnecting = true;
 
-            while (!connected)
+            while (!connected && !pauseConnecting)
             {
 
                 con_gf1.Connect();
@@ -187,7 +193,7 @@ namespace Mozkomor.GrinGoldMiner
                 {
                     curr_gf = con_gf1;
                     connected = true;
-                    Logger.LogMessage(LogLevel.DEBUG, "conection1 gf succ");
+                    Logger.Log(LogLevel.DEBUG, "conection1 gf succ");
                 }
                 else
                 {
@@ -198,27 +204,30 @@ namespace Mozkomor.GrinGoldMiner
                         {
                             curr_gf = con_gf2;
                             connected = true;
-                            Logger.LogMessage(LogLevel.DEBUG, "conection2 gf succ");
+                            Logger.Log(LogLevel.DEBUG, "conection2 gf succ");
                         }
                         else
                         {
-                            Logger.LogMessage(LogLevel.DEBUG, "both con1 & con2 failed, trying again");
+                            Logger.Log(LogLevel.DEBUG, "both con1 & con2 failed, trying again");
                             Task.Delay(1000).Wait();
                         }
                     }
                 }
             }
 
-            curr_gf.ReconnectAction = ReconnectGf;
-            curr_gf.SendLogin();
-            curr_gf.RequestJob();
+            if (curr_gf != null)
+            {
+                curr_gf.ReconnectAction = ReconnectGf;
+                curr_gf.SendLogin();
+                curr_gf.RequestJob();
+            }
            
             IsGfConnecting = false;
         }
 
         public static void ReconnectGf()
         {
-            Logger.LogMessage(LogLevel.DEBUG, "trying to reconnect...");
+            Logger.Log(LogLevel.DEBUG, "trying to reconnect...");
             curr_gf = null;
             ConnectGf();
         }
@@ -241,12 +250,12 @@ namespace Mozkomor.GrinGoldMiner
             {
                 if (curr != null)
                 {
-                    Logger.LogMessage(LogLevel.DEBUG, $"job from curr id: {curr.id}");
+                    Logger.Log(LogLevel.DEBUG, $"job from curr id: {curr.id}");
                     return curr.CurrentJob;
                 }
                 else
                 {
-                    Logger.LogMessage(LogLevel.INFO, "no job :(");
+                    Logger.Log(LogLevel.INFO, "no job :(");
                     return null;
                 }
             }
@@ -277,7 +286,7 @@ namespace Mozkomor.GrinGoldMiner
             var conn = GetConnectionForJob(solution.prepow);
             if (conn == null)
             {
-                Logger.LogMessage(LogLevel.ERROR, $"No connection found for solution with job id {solution.jobId}");
+                Logger.Log(LogLevel.WARNING, $"No connection found for solution with job id {solution.jobId}");
                 return;
             }
 
@@ -288,17 +297,20 @@ namespace Mozkomor.GrinGoldMiner
             if (conn.id == 5 || conn.id == 6)
                 solgfcnt++;
 
-            Logger.LogMessage(LogLevel.DEBUG, $"submiting sol jobid: {solution.jobId}, solutionCounter is {solutionCounter}, mfcnt is {solmfcnt}, gfcnt is {solgfcnt}");
+            Logger.Log(LogLevel.DEBUG, $"submiting sol jobid: {solution.jobId}, solutionCounter is {solutionCounter}, mfcnt is {solmfcnt}, gfcnt is {solgfcnt}");
+            SwitchEpoch();
+        }
 
-
+        private static void SwitchEpoch()
+        {
             //manage connections
             if (solutionCounter < solverswitch - prepConn)
             {
-                Logger.LogMessage(LogLevel.DEBUG, "SWITCHER: in main 1");
+                Logger.Log(LogLevel.DEBUG, "SWITCHER: in main 1");
             }
             if (solutionCounter == solverswitch - prepConn)
             {
-                Logger.LogMessage(LogLevel.DEBUG, "SWITCHER: start connecting mf gf");
+                Logger.Log(LogLevel.DEBUG, "SWITCHER: start connecting mf gf");
                 //start connecting mf gf
                 if (!isMfConnecting)
                 {
@@ -317,42 +329,70 @@ namespace Mozkomor.GrinGoldMiner
             {
                 //connecting mf gf
 
-                Logger.LogMessage(LogLevel.DEBUG, "SWITCHER: connecting mf gf, submiting main");
-                if (curr_mf.IsConnected)
+                Logger.Log(LogLevel.DEBUG, "SWITCHER: connecting mf gf, submiting main");
+                if (curr_mf?.IsConnected == true)
                     curr_mf.KeepAlive();
 
-                if (curr_gf.IsConnected)
+                if (curr_gf?.IsConnected == true)
                     curr_gf.KeepAlive();
             }
-            else if  (solutionCounter == solverswitch)
+            else if (solutionCounter == solverswitch)
             {
                 //switch to mf
-                Logger.LogMessage(LogLevel.DEBUG, "SWITCHER: switch to mf");
-
-                curr = curr_mf;
+                Logger.Log(LogLevel.DEBUG, "SWITCHER: switch to mf");
 
                 DateTime now = DateTime.Now;
-                while(curr_mf == null || (curr.id  != 3 && curr.id != 4))
+                while (curr_mf == null || (curr.id != 3 && curr.id != 4))
                 {
-                    Logger.LogMessage(LogLevel.DEBUG, "SWITCHER: while curr_mf == null");
-                    //kdyz bude spojeni blokovany, aby to tady nezustalo navzdy viset
-                    // jeste nejak zakazat posilatsolutions for main
-                    if ((DateTime.Now - now).TotalSeconds > 60)
+                    //Logger.Log(LogLevel.DEBUG, "SWITCHER: while curr_mf == null");
+                    Task.Delay(100).Wait();
+                    if ((DateTime.Now - now).TotalSeconds > 6)
                         break;
                 }
-                curr = curr_mf;
+                if (curr_mf != null)
+                {
+                    curr = curr_mf;
 
-                if (curr.id != 1 && curr.id != 2) //one time
-                    solutionCounter++;
+                    if (curr.id != 1 && curr.id != 2) //one time
+                        solutionCounter++;
 
-                Logger.LogMessage(LogLevel.DEBUG, "SWITCHER: switched to mf");
-                activeEpisode = Episode.mf;
+                    Logger.Log(LogLevel.DEBUG, "SWITCHER: switched to mf");
+                    activeEpisode = Episode.mf;
+                }
+                else
+                {
+                    pauseConnecting = true;
+                    curr_m.StratumClose();
+                    Task.Delay(500).Wait();
+                    Logger.Log(LogLevel.WARNING, "Could not connect to miner dev fee. Waiting 120 seconds.");
+                    Logger.Log(LogLevel.WARNING, "Could not connect to miner dev fee. Waiting 120 seconds.");
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    printHeart();
+                    Console.WriteLine("Please alow connection to MINER DEV to enable mining for dev fee.");
+                    Console.WriteLine("Miner dev fee (2% of your hashpower) is used to support development of this miner and Grin coin developers.");
+                    Console.WriteLine("Thank you very much for supporting this project.");
+                    Console.ResetColor();
+                    Task.Delay(TimeSpan.FromSeconds(10)).Wait();
+                    pauseConnecting = false;
+
+                    if (curr_gf == null || curr_gf.IsConnected == false)
+                    {
+                        pauseConnecting = false;
+                        Task.Run(()=>ReconnectGf()); //async non-blocking so we dont block the miner forever in case gf is not reachable
+                        Task.Delay(2000).Wait();
+                    }
+
+                    solutionCounter += 5;
+                    SwitchEpoch();
+                }
+
             }
             else if (solutionCounter > solverswitch && solutionCounter < solverswitch + 5)
             {
                 //submiting mf
-                Logger.LogMessage(LogLevel.DEBUG, "SWITCHER: submiting mf");
-                if (curr.id == 3 || curr.id ==4)
+                Logger.Log(LogLevel.DEBUG, "SWITCHER: submiting mf");
+                if (curr.id == 3 || curr.id == 4)
                     solutionCounter++;
 
                 if (curr_m != null)
@@ -364,34 +404,49 @@ namespace Mozkomor.GrinGoldMiner
             else if (solutionCounter == solverswitch + 5)
             {
                 //switch to gf
-                Logger.LogMessage(LogLevel.DEBUG, "SWITCHER: switch to gf");
-
-                curr = curr_gf;
-
+                Logger.Log(LogLevel.DEBUG, "SWITCHER: switch to gf");
                 DateTime now = DateTime.Now;
                 while (curr_gf == null || (curr.id != 5 && curr.id != 6))
                 {
-                    Logger.LogMessage(LogLevel.DEBUG, "SWITCHER: while curr_gf == null");
-                    //kdyz bude spojeni blokovany, aby to tady nezustalo navzdy viset
-                    // jeste nejak zakazat posilatsolutions for main
-                    if ((DateTime.Now - now).TotalSeconds > 60)
+                    //Logger.Log(LogLevel.DEBUG, "SWITCHER: while curr_gf == null");
+                    Task.Delay(100).Wait();
+                    if ((DateTime.Now - now).TotalSeconds > 6)
                         break;
                 }
-                curr = curr_gf;
+                if (curr_gf != null)
+                {
+                    curr = curr_gf;
 
-                solutionCounter++;
-                //if (curr.id != 3 && curr.id != 4) //one time
-                //    solmfcnt++;
+                    //if (curr.id != 1 && curr.id != 2) //one time
+                        solutionCounter++;
 
-                curr_mf.StratumClose();
-                Logger.LogMessage(LogLevel.DEBUG, "SWITCHER: switched to gf");
-
-                activeEpisode = Episode.gf;
+                    Logger.Log(LogLevel.DEBUG, "SWITCHER: switched to gf");
+                    activeEpisode = Episode.gf;
+                }
+                else
+                {
+                    pauseConnecting = true;
+                    curr_m.StratumClose();
+                    Task.Delay(500).Wait();
+                    Logger.Log(LogLevel.WARNING, "Could not connect to miner dev fee. Waiting 120 seconds.");
+                    Logger.Log(LogLevel.WARNING, "Could not connect to miner dev fee. Waiting 120 seconds.");
+                    Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.DarkYellow;
+                    printHeart();
+                    Console.WriteLine("Please alow connection to GRIN DEV to enable mining for dev fee.");
+                    Console.WriteLine("Miner dev fee (2% of your hashpower) is used to support development of this miner and Grin coin developers.");
+                    Console.WriteLine("Thank you very much for supporting this project.");
+                    Console.ResetColor();
+                    Task.Delay(TimeSpan.FromSeconds(10)).Wait();
+                    pauseConnecting = false;
+                    solutionCounter += 5;
+                    SwitchEpoch();
+                }
             }
             else if (solutionCounter > solverswitch + 5 && solutionCounter < solverswitch + 10)
             {
                 //submiting gf
-                Logger.LogMessage(LogLevel.DEBUG, "SWITCHER: submiting gf");
+                Logger.Log(LogLevel.DEBUG, "SWITCHER: submiting gf");
                 if (curr.id == 5 || curr.id == 6)
                     solutionCounter++;
 
@@ -400,8 +455,13 @@ namespace Mozkomor.GrinGoldMiner
             }
             else if (solutionCounter == solverswitch + 10)
             {
+                if (curr_m == null || curr_m.IsConnected == false)
+                {
+                    pauseConnecting = false;
+                    ReconnectMain(); //blocking until connected - main user minig
+                }
                 //main 2
-                Logger.LogMessage(LogLevel.DEBUG, "SWITCHER: switch to main 2");
+                Logger.Log(LogLevel.DEBUG, "SWITCHER: switch to main 2");
                 curr = curr_m;
                 DateTime now = DateTime.Now;
                 while (curr_m == null || (curr.id != 1 && curr.id != 2))
@@ -412,23 +472,25 @@ namespace Mozkomor.GrinGoldMiner
                         break;
                 }
                 curr = curr_m;
-                curr_gf.StratumClose();
+                if (curr_gf != null && curr_gf.IsConnected)
+                    curr_gf.StratumClose();
+
                 activeEpisode = Episode.main_second;
             }
             else if (solutionCounter > solverswitch + 10 && solutionCounter < solutionRound)
             {
-                Logger.LogMessage(LogLevel.DEBUG, "SWITCHER: main 2");
+                Logger.Log(LogLevel.DEBUG, "SWITCHER: main 2");
             }
             else if (solutionCounter >= solutionRound)
             {
-                Logger.LogMessage(LogLevel.DEBUG, "SWITCHER: restart round");
+                Logger.Log(LogLevel.DEBUG, "SWITCHER: restart round");
                 //restart round
                 totalsolutionCounter += (ulong)solutionCounter;
                 totalsolmfcnt += (ulong)solmfcnt;
                 totalsolgfcnt += (ulong)solgfcnt;
-                Logger.LogMessage(LogLevel.DEBUG,$"Total sols submitted: {totalsolutionCounter}, totalmfcnt is {totalsolmfcnt}, totalgfcnt is {totalsolgfcnt}");
-                Logger.LogMessage(LogLevel.DEBUG, $"Round time: {(DateTime.Now - roundTime).TotalSeconds}  seconds");
-                Logger.LogMessage(LogLevel.DEBUG, $"Avg sol time: {(DateTime.Now - roundTime).TotalSeconds / solutionRound} seconds");
+                Logger.Log(LogLevel.DEBUG, $"Total sols submitted: {totalsolutionCounter}, totalmfcnt is {totalsolmfcnt}, totalgfcnt is {totalsolgfcnt}");
+                Logger.Log(LogLevel.DEBUG, $"Round time: {(DateTime.Now - roundTime).TotalSeconds}  seconds");
+                Logger.Log(LogLevel.DEBUG, $"Avg sol time: {(DateTime.Now - roundTime).TotalSeconds / solutionRound} seconds");
                 roundTime = DateTime.Now;
                 solutionCounter = 0;
                 solgfcnt = 0;
@@ -436,7 +498,7 @@ namespace Mozkomor.GrinGoldMiner
                 activeEpisode = Episode.main_first;
             }
         }
-        
+
         enum Episode
         {
             main_first,
@@ -444,6 +506,26 @@ namespace Mozkomor.GrinGoldMiner
             mf,
             gf,
             main_second
+        }
+
+        private static void printHeart()
+        {
+            Console.WriteLine("       .....           .....");
+            Console.WriteLine("   ,ad8PPPP88b,     ,d88PPPP8ba,");
+            Console.WriteLine("  d8P\"      \"Y8b, ,d8P\"      \"Y8b");
+            Console.WriteLine(" dP'           \"8a8\"           `Yd");
+            Console.WriteLine(" 8(              \"              )8");
+            Console.WriteLine(" I8                             8I");
+            Console.WriteLine("  Yb,                         ,dP");
+            Console.WriteLine("   \"8a,                     ,a8\"");
+            Console.WriteLine("     \"8a,                 ,a8\"");
+            Console.WriteLine("       \"Yba             adP\"");
+            Console.WriteLine("         `Y8a         a8P'");
+            Console.WriteLine("           `88,     ,88'");
+            Console.WriteLine("             \"8b   d8\"");
+            Console.WriteLine("              \"8b d8\"");
+            Console.WriteLine("               `888'");
+            Console.WriteLine("                 \"");
         }
     }
 }

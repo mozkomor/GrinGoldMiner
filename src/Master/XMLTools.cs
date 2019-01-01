@@ -48,7 +48,7 @@ namespace Mozkomor.GrinGoldMiner
             }
             catch (Exception Ex)
             {
-                //Ex.logException(error: "Serialization error", category: ErrorCategory.NETWORK);
+                Logger.Log(Ex);
                 return false;
             }
         }
@@ -69,6 +69,7 @@ namespace Mozkomor.GrinGoldMiner
             }
             catch (Exception Ex)
             {
+                Logger.Log(Ex);
                 return default(T);
             }
         }
@@ -89,6 +90,7 @@ namespace Mozkomor.GrinGoldMiner
             }
             catch (Exception Ex)
             {
+                Logger.Log(Ex);
                 return default(T);
             }
         }
