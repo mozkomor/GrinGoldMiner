@@ -61,10 +61,20 @@ namespace CudaSolver
                         (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, gpuMsg);
                         gpuMsg = null;
                     }
+                    if (logsOut.Count > 0)
+                    {
+                        LogMessage lm;
+                        lock (logsOut)
+                        {
+                            lm = logsOut.Dequeue();
+                        }
+                         (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, lm);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(LogLevel.Warning, "WaitSend error", ex);
+                    // log to local file and console
+                    //Logger.Log(LogLevel.Warning, "WaitSend error", ex);
                 }
             }
         }
@@ -79,7 +89,9 @@ namespace CudaSolver
 
                     switch (payload)
                     {
-                        case Solution sol when sol.job.height > 5:
+                        case Job job:
+                            nextJob = job;
+                            Console.WriteLine($"New job received: {job.pre_pow}");
                             break;
                     }
                 }

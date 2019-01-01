@@ -24,7 +24,7 @@ namespace CudaSolver
         const long DUCK_EDGES_A = DUCK_SIZE_A * 1024;
         const long DUCK_EDGES_B = DUCK_SIZE_B * 1024;
 
-        const long INDEX_SIZE = 256 * 256 * 4;
+        const long INDEX_SIZE = 64 * 64 * 4;
 
         static DeviceFamily d_Family = DeviceFamily.Other;
         static int deviceID = 0;
@@ -207,7 +207,6 @@ namespace CudaSolver
             }
 
             int loopCnt = 0;
-            long totalMsCycle = 0;
 
             while (!terminate)
             {
@@ -215,7 +214,7 @@ namespace CudaSolver
                 {
 
                     // test runs only once
-                    if (TEST && loopCnt++ > 1000)
+                    if (TEST && loopCnt++ > 100)
                         terminate = true;
 
                     currentJob = nextJob;
@@ -223,9 +222,9 @@ namespace CudaSolver
 
                     Logger.Log(LogLevel.Info, string.Format("Trimming #{4}: {0} {1} {2} {3}", currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, currentJob.jobID));
 
+                    Console.WriteLine("----------------------------------------------------");
                     if (TEST)
                     {
-                        Console.WriteLine("----------------------------------------------------");
                         Console.WriteLine("Starting on " + ctx.GetDeviceName());
                         Console.WriteLine();
                     }
@@ -301,7 +300,8 @@ namespace CudaSolver
                     System.Runtime.InteropServices.Marshal.Copy(hAligned_a.PinnedHostPointer, h_a, 0, ((int)count[0] * 8) / sizeof(int));
 
                     timer.Stop();
-                    Console.WriteLine("Trimmed in {0}ms", timer.ElapsedMilliseconds);
+                    currentJob.trimTime = timer.ElapsedMilliseconds;
+                    Console.WriteLine("Trimmed in {0}ms to {1} edges", timer.ElapsedMilliseconds, count[0]);
 
                     if (TEST)
                     {
@@ -334,21 +334,20 @@ namespace CudaSolver
                                    {
                                        findersInFlight--;
                                    }
-
-                                   if (++trims % 50 == 0)
-                                   {
-                                       Console.ForegroundColor = ConsoleColor.Green;
-                                       Console.WriteLine("LOSS: {0}/{1}", solutions, trims);
-                                       Console.ResetColor();
-                                   }
                                }
 
                                sw.Stop();
 
-                               //totalMsCycle += sw.ElapsedMilliseconds;
-                               Console.WriteLine("Finder completed in {0}ms on {1} edges", sw.ElapsedMilliseconds, count[0]);
+                               if (++trims % 50 == 0)
+                               {
+                                   Console.ForegroundColor = ConsoleColor.Green;
+                                   Console.WriteLine("LOSS: {0}/{1}", solutions, trims);
+                                   Console.ResetColor();
+                               }
+                               Console.WriteLine("Finder completed in {0}ms on {1} edges with {2} solution(s)", sw.ElapsedMilliseconds, count[0], graphSolutions.Count);
                                Console.WriteLine("Duped edges: {0}", cg.dupes);
                                Console.WriteLine();
+                               graphSolutions.Clear();
                            });
 
                         //h_indexesA = d_indexesA;
@@ -413,6 +412,7 @@ namespace CudaSolver
             }
             catch { }
 
+            Task.Delay(500).Wait();
         }
 
         static void AllocateHostMemory(bool bPinGenericMemory, ref int[] pp_a, ref CudaPageLockedHostMemory<int> pp_Aligned_a, int nbytes)
