@@ -7,6 +7,10 @@ namespace SharedSerialization
     [SerializableAttribute]
     public class Job
     {
+        public Job()
+        {
+        }
+
         public Job(JobTemplate _job)
         {
             difficulty = _job.difficulty;
@@ -55,6 +59,13 @@ namespace SharedSerialization
         public override string ToString()
         {
             return $"jobId: {jobID},k0 {k0}, k1 {k1}, k2 {k2}, k3 {k3}, nonce {nonce}, height {height}, difficulty {difficulty}";
+        }
+
+        public Job Next()
+        {
+            Job next = new Job() { difficulty = difficulty, height = height, jobID = jobID, nonce = nonce, pre_pow = pre_pow, timestamp = timestamp, graphAttempts = graphAttempts };
+            next.MutateJob();
+            return next;
         }
     }
     [SerializableAttribute]

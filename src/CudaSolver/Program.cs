@@ -59,7 +59,6 @@ namespace CudaSolver
         static Job nextJob;
         static Stopwatch timer = new Stopwatch();
 
-        static volatile bool terminate = false;
         public static Queue<Solution> graphSolutions = new Queue<Solution>();
 
         static void Main(string[] args)
@@ -98,6 +97,7 @@ namespace CudaSolver
                     k1 = 0xe6d45de39c2a5a3eL,
                     k2 = 0xcbf626a8afee35f6L,
                     k3 = 0x4307b94b1a0c9980L,
+                    pre_pow = "0001000000000000100f000000005c1fea7f0208c1ae873960d0f98e0d3b837fc9a08b898d8b2f5d067f98e74b7f0cedeed42b1158649fc4638f5bc548f6296f57e09966c0968be97780b8a842957c329b2291c8e3dcf52d2558586a6eaecb416693567fe1841b2a9375ff448b7003de59752678e01774981e487a7aec9f198d5dba2acc4a50cac9b4d7f0b82768ed26721cabbe6df16becaed640c169289e7a66a15641a3b1a584aa2d192b9bdfbac99f6d86f43075896fa93cb50b85dbbb1405059e5402c5eeb1614c71c48f81d3add3520000000000002ee40000000000002770000000001cb576280000028f"
                 };
             }
             else
@@ -211,27 +211,28 @@ namespace CudaSolver
 
             int loopCnt = 0;
 
-            while (!terminate)
+            while (!Comms.IsTerminated)
             {
                 try
                 {
+                    if (Comms.nextJob.pre_pow == null || Comms.nextJob.pre_pow == "")
+                    {
+                        Logger.Log(LogLevel.Info, string.Format("Waiting for job...."));
+                        Task.Delay(1000).Wait();
+                        continue;
+                    }
 
                     // test runs only once
                     if (TEST && loopCnt++ > 100)
-                        terminate = true;
+                        Comms.IsTerminated = true;
 
-                    currentJob = nextJob;
-
+                    if (!TEST && (currentJob.pre_pow != Comms.nextJob.pre_pow))
+                    {
+                        currentJob = Comms.nextJob;
+                     }
+                    currentJob.MutateJob();
 
                     Logger.Log(LogLevel.Info, string.Format("Trimming #{4}: {0} {1} {2} {3}", currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, currentJob.jobID));
-
-
-                    if (TEST)
-                    {
-                        Console.WriteLine("----------------------------------------------------");
-                        Console.WriteLine("Starting on " + ctx.GetDeviceName());
-                        Console.WriteLine();
-                    }
 
                     if (graphSolutions.Count > 0)
                     {
@@ -306,13 +307,18 @@ namespace CudaSolver
                     timer.Stop();
                     currentJob.trimTime = timer.ElapsedMilliseconds;
 
+                    //Console.WriteLine("Trimmed in {0}ms to {1} edges", timer.ElapsedMilliseconds, count[0]);
+                    Logger.Log(LogLevel.Info, string.Format("Trimmed in {0}ms to {1} edges", timer.ElapsedMilliseconds, count[0]));
+
                     if (TEST)
                     {
-                        Console.WriteLine("Trimmed in {0}ms to {1} edges", timer.ElapsedMilliseconds, count[0]);
+                        //Console.WriteLine("Trimmed in {0}ms to {1} edges", timer.ElapsedMilliseconds, count[0]);
 
                         CGraph cg = new CGraph();
                         cg.SetEdges(h_a, (int)count[0]);
                         cg.SetHeader(currentJob);
+
+                        currentJob = currentJob.Next();
 
                         Task.Factory.StartNew(() =>
                            {
@@ -349,9 +355,10 @@ namespace CudaSolver
                                    Console.WriteLine("LOSS: {0}/{1}", solutions, trims);
                                    Console.ResetColor();
                                }
-                               Console.WriteLine("Finder completed in {0}ms on {1} edges with {2} solution(s)", sw.ElapsedMilliseconds, count[0], graphSolutions.Count);
-                               Console.WriteLine("Duped edges: {0}", cg.dupes);
-                               Console.WriteLine();
+                               //Console.WriteLine("Finder completed in {0}ms on {1} edges with {2} solution(s)", sw.ElapsedMilliseconds, count[0], graphSolutions.Count);
+                               //Console.WriteLine("Duped edges: {0}", cg.dupes);
+                               Logger.Log(LogLevel.Info, string.Format("Finder completed in {0}ms on {1} edges with {2} solution(s) and {3} dupes", sw.ElapsedMilliseconds, count[0], graphSolutions.Count, cg.dupes));
+                               //Console.WriteLine();
                                graphSolutions.Clear();
                            });
 

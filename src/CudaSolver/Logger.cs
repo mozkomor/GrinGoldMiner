@@ -12,7 +12,7 @@ namespace CudaSolver
             try
             {
                 // error message overload detection with a dictionary...
-                Console.WriteLine(string.Format("{0}:\t {1}, {2}, {3}", DateTime.Now, level.ToString(), message, e.Message));
+                Console.WriteLine(string.Format("{0}:\t {1}, {2}, {3}", DateTime.Now, level.ToString(), message, e != null ? e.Message : ""));
                 lock (Comms.logsOut)
                 {
                     Comms.logsOut.Enqueue(new LogMessage() { });

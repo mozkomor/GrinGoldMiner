@@ -23,8 +23,10 @@ namespace CudaSolver
         private static Task listener;
         private static Task sender;
         private static int _port;
-        public static Job nextJob;
+        public static Job nextJob = new Job();
         public static volatile bool IsTerminated = false;
+
+        static int errorCounter = 0;
 
         internal static void ConnectToMaster(int port)
         {
@@ -102,6 +104,10 @@ namespace CudaSolver
                 catch (Exception ex)
                 {
                     Logger.Log(LogLevel.Warning, "Listen error", ex);
+                    if (errorCounter++ > 3)
+                    {
+                        Close();
+                    }
                 }
             }
         }

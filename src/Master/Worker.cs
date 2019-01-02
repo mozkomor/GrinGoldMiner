@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.Serialization.Formatters.Binary;
@@ -46,7 +47,7 @@ namespace Mozkomor.GrinGoldMiner
                 l.Start();
                 var process = Process.Start(new ProcessStartInfo()
                 {
-                    FileName = (type == WorkerType.NVIDIA) ? "solvers\\CudaSolver.exe" : "solvers\\OclSolver.exe",
+                    FileName = (type == WorkerType.NVIDIA) ? Path.Combine("solvers", "CudaSolver.exe") : Path.Combine("solvers", "OclSolver.exe"),
                     Arguments = string.Format("-1 13500"),
                     CreateNoWindow = true,
                     UseShellExecute = false
@@ -98,7 +99,7 @@ namespace Mozkomor.GrinGoldMiner
                 l.Start();
                 worker = Process.Start(new ProcessStartInfo()
                 {
-                    FileName = (type == WorkerType.NVIDIA) ? "solvers\\CudaSolver.exe" : "solvers\\OclSolver.exe",
+                    FileName = (type == WorkerType.NVIDIA) ? Path.Combine("solvers","CudaSolver.exe") : Path.Combine("solvers","OclSolver.exe"),
                     Arguments = string.Format("{0} {1}", workerDeviceID, workerCommPort),
                     CreateNoWindow = !DEBUG,
                     UseShellExecute = false
