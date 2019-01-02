@@ -24,12 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="1.0.0-alpha-27227-02" />
-    <PackageReference Include="runtime.linux-x64.Microsoft.DotNet.ILCompiler" Version="1.0.0-alpha-27227-02" />
-    <PackageReference Include="runtime.win-x64.Microsoft.DotNet.ILCompiler" Version="1.0.0-alpha-27227-02" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\OpenCL-dotnet\OpenCl.DotNetCore.Interop\OpenCl.DotNetCore.Interop.csproj" />
     <ProjectReference Include="..\OpenCL-dotnet\OpenCl.DotNetCore\OpenCl.DotNetCore.csproj" />
     <ProjectReference Include="..\SharedSerialization\SharedSerialization.csproj" />

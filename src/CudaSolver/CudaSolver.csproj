@@ -19,10 +19,7 @@
 
   <ItemGroup>
     <PackageReference Include="ManagedCuda.NETStandard" Version="9.1.300" />
-    <PackageReference Include="Microsoft.DotNet.ILCompiler" Version="1.0.0-alpha-27227-02" />
     <PackageReference Include="NETStandard.Library" Version="2.1.0-prerelease.18603.1" />
-    <PackageReference Include="runtime.linux-x64.Microsoft.DotNet.ILCompiler" Version="1.0.0-alpha-27227-02" />
-    <PackageReference Include="runtime.win-x64.Microsoft.DotNet.ILCompiler" Version="1.0.0-alpha-27227-02" />
   </ItemGroup>
 
   <ItemGroup>

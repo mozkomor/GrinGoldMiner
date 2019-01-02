@@ -46,7 +46,7 @@ namespace Mozkomor.GrinGoldMiner
                 l.Start();
                 var process = Process.Start(new ProcessStartInfo()
                 {
-                    FileName = (type == WorkerType.NVIDIA) ? "CudaSolver.exe" : "OclSolver.exe",
+                    FileName = (type == WorkerType.NVIDIA) ? "solvers\\CudaSolver.exe" : "solvers\\OclSolver.exe",
                     Arguments = string.Format("-1 13500"),
                     CreateNoWindow = true,
                     UseShellExecute = false
@@ -96,14 +96,14 @@ namespace Mozkomor.GrinGoldMiner
             {
                 TcpListener l = new TcpListener(IPAddress.Parse("127.0.0.1"), workerCommPort);
                 l.Start();
-                client = l.AcceptTcpClient();
                 worker = Process.Start(new ProcessStartInfo()
                 {
-                    FileName = (type == WorkerType.NVIDIA) ? "CudaSolver.exe" : "OclSolver.exe",
+                    FileName = (type == WorkerType.NVIDIA) ? "solvers\\CudaSolver.exe" : "solvers\\OclSolver.exe",
                     Arguments = string.Format("{0} {1}", workerDeviceID, workerCommPort),
                     CreateNoWindow = !DEBUG,
                     UseShellExecute = false
                 });
+                client = l.AcceptTcpClient();
                 l.Stop();
                 stream = client.GetStream();
                 listener = Task.Factory.StartNew(() => { Listen(); }, TaskCreationOptions.LongRunning);

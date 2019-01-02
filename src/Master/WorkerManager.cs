@@ -13,7 +13,7 @@ namespace Mozkomor.GrinGoldMiner
             Worker w = new Worker(SharedSerialization.WorkerType.NVIDIA, 0);
             workers.Add(w);
 
-            var cards = w.GetDevices();
+            var cards = w.Start();
             ;
         }
 
@@ -28,10 +28,10 @@ namespace Mozkomor.GrinGoldMiner
         public static void newJobReceived(SharedSerialization.Job job)
         {
             //update workers..
-            foreach(var worker in workers)
-            {
-                worker.SendJob(job);
-            }
+            //foreach(var worker in workers)
+            //{
+            //    worker.SendJob(job);
+            //}
         }
     }
 }

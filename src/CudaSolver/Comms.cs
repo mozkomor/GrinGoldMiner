@@ -58,8 +58,10 @@ namespace CudaSolver
                     }
                     if (gpuMsg != null)
                     {
+                        //Console.WriteLine("sending now");
                         (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, gpuMsg);
                         gpuMsg = null;
+                        //Console.WriteLine("flushing now");
                         stream.Flush();
                     }
                     if (logsOut.Count > 0)
@@ -76,6 +78,7 @@ namespace CudaSolver
                 {
                     // log to local file and console
                     //Logger.Log(LogLevel.Warning, "WaitSend error", ex);
+                    //Console.WriteLine("exc " + ex.InnerException.Message);
                 }
             }
         }

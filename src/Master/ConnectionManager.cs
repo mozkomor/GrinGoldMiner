@@ -292,7 +292,10 @@ namespace Mozkomor.GrinGoldMiner
             }
             else
             {
-                //conn.SendSolution(solution);
+                if (conn.IsConnected)
+                    conn.SendSolution(solution);
+                else
+                    Logger.Log(LogLevel.WARNING, "Cant send solution, stratum connect not connected.");
             }
 
             if (conn.id == 1 || conn.id == 2)

@@ -128,9 +128,12 @@ namespace CudaSolver
                         var info = CudaContext.GetDeviceInfo(i);
                         gpum.devices.Add(new GpuDevice() {id = i, name = name, memory = info.TotalGlobalMemory });
                     }
+                    //Console.WriteLine(devCnt);
                     Comms.gpuMsg = gpum;
                     Comms.SetEvent();
+                    //Console.WriteLine("event fired");
                     Task.Delay(1000).Wait();
+                    //Console.WriteLine("closing");
                     Comms.Close();
                     return;
                 }
@@ -222,9 +225,10 @@ namespace CudaSolver
 
                     Logger.Log(LogLevel.Info, string.Format("Trimming #{4}: {0} {1} {2} {3}", currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, currentJob.jobID));
 
-                    Console.WriteLine("----------------------------------------------------");
+
                     if (TEST)
                     {
+                        Console.WriteLine("----------------------------------------------------");
                         Console.WriteLine("Starting on " + ctx.GetDeviceName());
                         Console.WriteLine();
                     }
@@ -301,10 +305,11 @@ namespace CudaSolver
 
                     timer.Stop();
                     currentJob.trimTime = timer.ElapsedMilliseconds;
-                    Console.WriteLine("Trimmed in {0}ms to {1} edges", timer.ElapsedMilliseconds, count[0]);
 
                     if (TEST)
                     {
+                        Console.WriteLine("Trimmed in {0}ms to {1} edges", timer.ElapsedMilliseconds, count[0]);
+
                         CGraph cg = new CGraph();
                         cg.SetEdges(h_a, (int)count[0]);
                         cg.SetHeader(currentJob);
