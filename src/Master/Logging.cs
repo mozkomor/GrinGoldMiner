@@ -3,6 +3,7 @@
 // Copyright (c) 2018 Jiri Vadura - photon
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -27,6 +28,7 @@ namespace Mozkomor.GrinGoldMiner
         private static LogOptions logOptions;
         private static string _logPath;
         private static DateTime _lastDayLogCreated;
+        private static Dictionary<string,int> msgcnt = new Dictionary<string,int>();
         private static string LogPath
         {
             get
@@ -69,26 +71,61 @@ namespace Mozkomor.GrinGoldMiner
         private static object lock1 = "";
         public static void Log(LogLevel level, string msg)
         {
-            if (logOptions == null)
+            try
             {
+                if (logOptions == null)
+                {
 #if DEBUG
-                logOptions = new LogOptions() { FileMinimumLogLevel = LogLevel.DEBUG, ConsoleMinimumLogLevel = LogLevel.DEBUG };
+                    logOptions = new LogOptions() { FileMinimumLogLevel = LogLevel.DEBUG, ConsoleMinimumLogLevel = LogLevel.DEBUG };
 #else
                 logOptions = new LogOptions() { FileMinimumLogLevel = LogLevel.INFO, ConsoleMinimumLogLevel = LogLevel.INFO };
 #endif
+                }
+
+                if (level >= logOptions.FileMinimumLogLevel)
+                {
+                    lock (lock1)
+                    {
+                        //prevent overloading log
+                        if (level != LogLevel.ERROR || (level == LogLevel.ERROR && OverloadCheck(msg)))
+                        {
+                            File.AppendAllText(LogPath, $"{DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssK")}    {level.ToString()},     {msg}{Environment.NewLine}");
+                        }
+                    }
+                }
+
+                if (level >= logOptions.ConsoleMinimumLogLevel)
+                {
+                    if ((level == LogLevel.ERROR) || (level == LogLevel.WARNING))
+                        Console.ForegroundColor = ConsoleColor.Red;
+
+                    Console.WriteLine($"{level.ToString()}    {msg}");
+                    Console.ResetColor();
+                }
             }
+            catch { } //epic fail
+        }
 
-            if (level >= logOptions.FileMinimumLogLevel)
-                lock(lock1)
-                    File.AppendAllText(LogPath, $"{DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssK")}    {level.ToString()},     {msg}{Environment.NewLine}");
-
-            if (level >= logOptions.ConsoleMinimumLogLevel)
+        //surround by lock when calling
+        public static bool OverloadCheck(string msg)
+        {
+            if (!msgcnt.ContainsKey(msg))
             {
-                if ((level == LogLevel.ERROR) || (level == LogLevel.WARNING))
-                    Console.ForegroundColor = ConsoleColor.Red;
-
-                Console.WriteLine($"{level.ToString()}    {msg}");
-                Console.ResetColor();
+                msgcnt.Add(msg, 1);
+                return true;
+            }
+            else
+            {
+                if (msgcnt[msg] < 60)
+                {
+                    var val = msgcnt[msg];
+                    msgcnt[msg] = val + 1;
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
             }
         }
     }

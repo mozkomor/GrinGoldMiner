@@ -184,4 +184,17 @@ namespace SharedSerialization
         Warning,
         Error
     }
+
+    public class GPUOption
+    {
+        public WorkerType GPUType { get; set; }
+        public int DeviceID { get; set; }
+        public int PlatformID { get; set; }
+        public bool Enabled { get; set; }
+    }
+
+    //public class GPUOptions
+    //{
+    //    public List<GPUOption> Cards { get; set; }
+    //}
 }

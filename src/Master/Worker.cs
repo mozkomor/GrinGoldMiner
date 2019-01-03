@@ -95,7 +95,11 @@ namespace Mozkomor.GrinGoldMiner
         {
             try
             {
+#if DEBUG
+                TcpListener l = new TcpListener(IPAddress.Parse("0.0.0.0"), workerCommPort);
+#else
                 TcpListener l = new TcpListener(IPAddress.Parse("127.0.0.1"), workerCommPort);
+#endif
                 l.Start();
                 //worker = Process.Start(new ProcessStartInfo()
                 //{
