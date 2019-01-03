@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -13,8 +14,8 @@ namespace CudaSolver
 {
     public class Comms
     {
-        public static Queue<Solution> graphSolutionsOut = new Queue<Solution>();
-        public static Queue<LogMessage> logsOut = new Queue<LogMessage>();
+        public static ConcurrentQueue<Solution> graphSolutionsOut = new ConcurrentQueue<Solution>();
+        public static ConcurrentQueue<LogMessage> logsOut = new ConcurrentQueue<LogMessage>();
         public static GpuDevicesMessage gpuMsg = null;
 
         public static AutoResetEvent flushToMaster;
@@ -49,13 +50,9 @@ namespace CudaSolver
                 {
                     flushToMaster.WaitOne();
 
-                    if (graphSolutionsOut.Count > 0)
+                    Solution s;
+                    if (graphSolutionsOut.TryDequeue(out s))
                     {
-                        Solution s;
-                        lock (graphSolutionsOut)
-                        {
-                            s = graphSolutionsOut.Dequeue();
-                        }
                         (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, s);
                     }
                     if (gpuMsg != null)
@@ -66,13 +63,9 @@ namespace CudaSolver
                         //Console.WriteLine("flushing now");
                         stream.Flush();
                     }
-                    if (logsOut.Count > 0)
+                    LogMessage lm;
+                    if (logsOut.TryDequeue(out lm))
                     {
-                        LogMessage lm;
-                        lock (logsOut)
-                        {
-                            lm = logsOut.Dequeue();
-                        }
                          (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, lm);
                     }
                 }

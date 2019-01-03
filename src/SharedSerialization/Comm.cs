@@ -149,7 +149,9 @@ namespace SharedSerialization
     [SerializableAttribute]
     public class GpuDevice
     {
-        public int id;
+        public int deviceID;
+        public string platformName;
+        public int platformID;
         public string name;
         public long memory;
     }

@@ -28,10 +28,10 @@ namespace Mozkomor.GrinGoldMiner
         public static void newJobReceived(SharedSerialization.Job job)
         {
             //update workers..
-            //foreach(var worker in workers)
-            //{
-            //    worker.SendJob(job);
-            //}
+            foreach (var worker in workers)
+            {
+                worker.SendJob(job);
+            }
         }
     }
 }

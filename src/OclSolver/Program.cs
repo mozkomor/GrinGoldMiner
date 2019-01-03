@@ -33,6 +33,7 @@ namespace OclSolver
 
         const long INDEX_SIZE = 256 * 256 * 4;
 
+        static int platformID = 0;
         static int deviceID = 0;
         static int port = 13500;
         static bool TEST = false;
@@ -42,6 +43,7 @@ namespace OclSolver
         static MemoryBuffer bufferB;
         static MemoryBuffer bufferI1;
         static MemoryBuffer bufferI2;
+        static MemoryBuffer bufferR;
 
         static UInt32[] h_indexesA = new UInt32[INDEX_SIZE];
         static UInt32[] h_indexesB = new UInt32[INDEX_SIZE];
@@ -50,7 +52,7 @@ namespace OclSolver
         static Job nextJob;
         static Stopwatch timer = new Stopwatch();
 
-        static volatile bool terminate = false;
+        public static Queue<Solution> graphSolutions = new Queue<Solution>();
 
         static void Main(string[] args)
         {
@@ -66,26 +68,6 @@ namespace OclSolver
             Console.WriteLine("Solver starting!");
             Console.WriteLine();
 
-            // Gets all available platforms and their corresponding devices, and prints them out in a table
-            IEnumerable<Platform> platforms = Platform.GetPlatforms();
-            foreach (Platform platform in platforms)
-            {
-                foreach (Device device in platform.GetDevices(DeviceType.All))
-                {
-                    Console.WriteLine(device.Name + " " + platform.Version.VersionString);
-                }
-            }
-
-            Console.WriteLine();
-
-            Device chosenDevice = platforms.FirstOrDefault(p => p.Name.ToLower().Contains("amd") && p.Version.VersionString.Contains("2.1") ).GetDevices(DeviceType.Gpu).FirstOrDefault();
-
-            //Device chosenDevice = platforms.FirstOrDefault(p => p.Name.ToLower().Contains("nvidia")/* && p.Version.VersionString.Contains("2.1")*/ ).GetDevices(DeviceType.Gpu).FirstOrDefault();
-            Console.WriteLine($"Using: {chosenDevice.Name} ({chosenDevice.Vendor})");
-            Console.WriteLine();
-
-            //Console.WriteLine(chosenDevice.GetDeviceInformation<ulong>(OpenCl.DotNetCore.Interop.Devices.DeviceInformation.MaximumWorkGroupSize));
-
             try
             {
                 if (args.Length > 0)
@@ -93,19 +75,36 @@ namespace OclSolver
             }
             catch (Exception ex)
             {
-
+                Logger.Log(LogLevel.Error, "Device ID parse error", ex);
             }
 
             try
             {
                 if (args.Length > 1)
+                {
                     port = int.Parse(args[1]);
+                    Comms.ConnectToMaster(port);
+                }
                 else
                     TEST = true;
             }
             catch (Exception ex)
             {
+                Logger.Log(LogLevel.Error, "Master connection error", ex);
+            }
 
+            
+            // Gets all available platforms and their corresponding devices, and prints them out in a table
+            List<Platform> platforms = null;
+
+            try
+            {
+                platforms = Platform.GetPlatforms().ToList();
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(LogLevel.Error, "Failed to get OpenCL platform list", ex);
+                return;
             }
 
             if (TEST)
@@ -117,11 +116,76 @@ namespace OclSolver
                     k1 = 0xe6d45de39c2a5a3eL,
                     k2 = 0xcbf626a8afee35f6L,
                     k3 = 0x4307b94b1a0c9980L,
+                    pre_pow = "0001000000000000100f000000005c1fea7f0208c1ae873960d0f98e0d3b837fc9a08b898d8b2f5d067f98e74b7f0cedeed42b1158649fc4638f5bc548f6296f57e09966c0968be97780b8a842957c329b2291c8e3dcf52d2558586a6eaecb416693567fe1841b2a9375ff448b7003de59752678e01774981e487a7aec9f198d5dba2acc4a50cac9b4d7f0b82768ed26721cabbe6df16becaed640c169289e7a66a15641a3b1a584aa2d192b9bdfbac99f6d86f43075896fa93cb50b85dbbb1405059e5402c5eeb1614c71c48f81d3add3520000000000002ee40000000000002770000000001cb576280000028f"
                 };
+            }
+            else
+            {
+                currentJob = nextJob = new Job()
+                {
+                    jobID = 0,
+                    k0 = 0xf4956dc403730b01L,
+                    k1 = 0xe6d45de39c2a5a3eL,
+                    k2 = 0xcbf626a8afee35f6L,
+                    k3 = 0x4307b94b1a0c9980L,
+                };
+
+                if (!Comms.IsConnected())
+                {
+                    Console.WriteLine("Master connection failed, aborting");
+                    Logger.Log(LogLevel.Error, "No master connection, exitting!");
+                    return;
+                }
+
+                if (deviceID < 0)
+                {
+                    try
+                    {
+                        GpuDevicesMessage gpum = new GpuDevicesMessage() { devices = new List<GpuDevice>() };
+                        //foreach (Platform platform in platforms)
+                        for (int p = 0; p < platforms.Count(); p++)
+                        {
+                            Platform platform = platforms[p];
+                            var devices = platform.GetDevices(DeviceType.Gpu).ToList();
+                            //foreach (Device device in platform.GetDevices(DeviceType.All))
+                            for (int d = 0; d < devices.Count(); d++)
+                            {
+                                Device device = devices[d];
+                                string name = device.Name;
+                                string pName = platform.Name;
+                                //Console.WriteLine(device.Name + " " + platform.Version.VersionString);
+                                gpum.devices.Add(new GpuDevice() { deviceID = d, platformID = p, platformName = pName, name = name, memory = device.GlobalMemorySize });
+                            }
+                        }
+                        Comms.gpuMsg = gpum;
+                        Comms.SetEvent();
+                        Task.Delay(1000).Wait();
+                        Comms.Close();
+                        return;
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.Log(LogLevel.Error, "Unable to enumerate OpenCL devices", ex);
+                        return;
+                    }
+                }
             }
 
             try
             {
+                Device chosenDevice = null;
+                try
+                {
+                    chosenDevice = platforms[platformID].GetDevices(DeviceType.Gpu).ToList()[deviceID];
+                    Console.WriteLine($"Using OpenCL device: {chosenDevice.Name} ({chosenDevice.Vendor})");
+                    Console.WriteLine();
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(LogLevel.Error, $"Unable to select OpenCL device {deviceID} on platform {platformID} ", ex);
+                    return;
+                }
+
                 var assembly = Assembly.GetEntryAssembly();
                 var resourceStream = assembly.GetManifestResourceStream("OclSolver.kernel.cl");
                 using (StreamReader reader = new StreamReader(resourceStream))
@@ -153,6 +217,8 @@ namespace OclSolver
 
                                         bufferI1 = context.CreateBuffer<uint>(MemoryFlag.ReadWrite, INDEX_SIZE);
                                         bufferI2 = context.CreateBuffer<uint>(MemoryFlag.ReadWrite, INDEX_SIZE);
+
+                                        bufferR = context.CreateBuffer<uint>(MemoryFlag.ReadOnly, 42*2);
                                     }
                                     catch { }
 
@@ -212,7 +278,7 @@ namespace OclSolver
                                         kernelTail.SetKernelArgument(2, bufferI1);
                                         kernelTail.SetKernelArgument(3, bufferI2);
 
-                                        const int runs = 10;
+                                        const int runs = 1;
 
                                         if (runs > 1)
                                         {
@@ -243,7 +309,7 @@ namespace OclSolver
                                             commandQueue.EnqueueClearBuffer(bufferI1, 64 * 64 * 4, clearPattern);
                                             commandQueue.EnqueueNDRangeKernel(kernelRound1, 1, 4096 * 1024, 1024, 0);
 
-                                            for (int r = 0; r < 60; r++)
+                                            for (int r = 0; r < 80; r++)
                                             {
                                                 commandQueue.EnqueueClearBuffer(bufferI2, 64 * 64 * 4, clearPattern);
                                                 commandQueue.EnqueueNDRangeKernel(kernelRoundNA, 1, 4096 * 1024, 1024, 0);

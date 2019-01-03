@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -35,7 +36,7 @@ namespace CudaSolver
             job = jobToSolve;
         }
 
-        internal void FindSolutions(Queue<Solution> solutions, int cyclen = 42)
+        internal void FindSolutions(ConcurrentQueue<Solution> solutions, int cyclen = 42)
         {
             for (int ee = 0; ee < edges.Length/2; ee++)
             {

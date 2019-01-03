@@ -9,6 +9,7 @@ using ManagedCuda;
 using ManagedCuda.BasicTypes;
 using ManagedCuda.VectorTypes;
 using SharedSerialization;
+using System.Collections.Concurrent;
 
 // dotnet publish -c Release -r win-x64
 
@@ -59,7 +60,7 @@ namespace CudaSolver
         static Job nextJob;
         static Stopwatch timer = new Stopwatch();
 
-        public static Queue<Solution> graphSolutions = new Queue<Solution>();
+        public static ConcurrentQueue<Solution> graphSolutions = new ConcurrentQueue<Solution>();
 
         static void Main(string[] args)
         {
@@ -85,7 +86,7 @@ namespace CudaSolver
             }
             catch (Exception ex)
             {
-                Logger.Log(LogLevel.Error, "Port parse error");
+                Logger.Log(LogLevel.Error, "Master connection error");
             }
 
             if (TEST)
@@ -126,7 +127,7 @@ namespace CudaSolver
                     {
                         string name = CudaContext.GetDeviceName(i);
                         var info = CudaContext.GetDeviceInfo(i);
-                        gpum.devices.Add(new GpuDevice() {id = i, name = name, memory = info.TotalGlobalMemory });
+                        gpum.devices.Add(new GpuDevice() {deviceID = i, name = name, memory = info.TotalGlobalMemory });
                     }
                     //Console.WriteLine(devCnt);
                     Comms.gpuMsg = gpum;
@@ -215,7 +216,7 @@ namespace CudaSolver
             {
                 try
                 {
-                    if (Comms.nextJob.pre_pow == null || Comms.nextJob.pre_pow == "")
+                    if (!TEST && (Comms.nextJob.pre_pow == null || Comms.nextJob.pre_pow == ""))
                     {
                         Logger.Log(LogLevel.Info, string.Format("Waiting for job...."));
                         Task.Delay(1000).Wait();
@@ -223,24 +224,20 @@ namespace CudaSolver
                     }
 
                     // test runs only once
-                    if (TEST && loopCnt++ > 100)
+                    if (TEST && loopCnt++ > 10000)
                         Comms.IsTerminated = true;
 
                     if (!TEST && (currentJob.pre_pow != Comms.nextJob.pre_pow))
                     {
                         currentJob = Comms.nextJob;
                      }
-                    currentJob.MutateJob();
+                    currentJob = currentJob.Next();
 
                     Logger.Log(LogLevel.Info, string.Format("Trimming #{4}: {0} {1} {2} {3}", currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, currentJob.jobID));
 
-                    if (graphSolutions.Count > 0)
+                    Solution s;
+                    if (graphSolutions.TryDequeue(out s))
                     {
-                        Solution s;
-                        lock (graphSolutions)
-                        {
-                            s = graphSolutions.Dequeue();
-                        }
                         meanRecover.SetConstantVariable<ulong>("recovery", s.GetUlongEdges());
                         d_indexesB.MemsetAsync(0, streamPrimary.Stream);
                         meanRecover.RunAsync(streamPrimary.Stream, s.job.k0, s.job.k1, s.job.k2, s.job.k3, d_indexesB.DevicePointer);
@@ -318,7 +315,7 @@ namespace CudaSolver
                         cg.SetEdges(h_a, (int)count[0]);
                         cg.SetHeader(currentJob);
 
-                        currentJob = currentJob.Next();
+                        //currentJob = currentJob.Next();
 
                         Task.Factory.StartNew(() =>
                            {
@@ -352,14 +349,12 @@ namespace CudaSolver
                                if (++trims % 50 == 0)
                                {
                                    Console.ForegroundColor = ConsoleColor.Green;
-                                   Console.WriteLine("LOSS: {0}/{1}", solutions, trims);
+                                   Console.WriteLine("SOLS: {0}/{1} - RATE: {2:F1}", solutions, trims, (float)trims/solutions );
                                    Console.ResetColor();
                                }
                                //Console.WriteLine("Finder completed in {0}ms on {1} edges with {2} solution(s)", sw.ElapsedMilliseconds, count[0], graphSolutions.Count);
                                //Console.WriteLine("Duped edges: {0}", cg.dupes);
                                Logger.Log(LogLevel.Info, string.Format("Finder completed in {0}ms on {1} edges with {2} solution(s) and {3} dupes", sw.ElapsedMilliseconds, count[0], graphSolutions.Count, cg.dupes));
-                               //Console.WriteLine();
-                               graphSolutions.Clear();
                            });
 
                         //h_indexesA = d_indexesA;

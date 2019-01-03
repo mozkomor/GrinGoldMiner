@@ -170,7 +170,7 @@ namespace OpenCl.DotNetCore.Contexts
                 throw new OpenClException("The program could not be created.", result);
 
             // Builds (compiles and links) the program and checks if it was successful, if not, then an exception is thrown
-            result = ProgramsNativeApi.BuildProgram(programPointer, 0, null, null, IntPtr.Zero, IntPtr.Zero);
+            result = ProgramsNativeApi.BuildProgram(programPointer, 0, null, "-cl-std=CL2.0", IntPtr.Zero, IntPtr.Zero);
             if (result != Result.Success)
             {
                 // Cycles over all devices and retrieves the build log for each one, so that the errors that occurred can be added to the exception message (if any error occur during the retrieval, the exception is thrown without the log)
