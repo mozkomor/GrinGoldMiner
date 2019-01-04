@@ -16,9 +16,9 @@ namespace Mozkomor.GrinGoldMiner
         private static string gfpwd = "";
         
         private static int solutionCounter = 0;
-        private static int solutionRound = 15;
+        private static int solutionRound = 50;
         private static int solverswitchmin = 5;
-        private static int solverswitch = 3;
+        private static int solverswitch = 10;
         private static int prepConn = 2;
         private static int solmfcnt = 0;
         private static int solgfcnt = 0;
@@ -45,12 +45,26 @@ namespace Mozkomor.GrinGoldMiner
         private static StratumConnet con_gf2;
 
         private static StratumConnet curr;
+        private static void setcurr(StratumConnet value)
+        {
+            lock (lock1)
+            {
+                curr = value;
+                curr.notifyWorkers = true;
+                if (con_m1 != null && (con_m1.id != value.id)) con_m1.notifyWorkers = false;
+                if (con_m2 != null && (con_m2.id != value.id)) con_m2.notifyWorkers = false;
+                if (con_mf1 != null && (con_mf1.id != value.id)) con_mf1.notifyWorkers = false;
+                if (con_mf2 != null && (con_mf2.id != value.id)) con_mf2.notifyWorkers = false;
+                if (con_gf1 != null && (con_gf1.id != value.id)) con_gf1.notifyWorkers = false;
+                if (con_gf2 != null && (con_gf2.id != value.id)) con_gf2.notifyWorkers = false;
+            }
+        }
 
         public static void Init(Config config)
         {
             //main
-            con_m1 = new StratumConnet(config.ConnectionAddress, config.ConnectionPort, 1, config.Login, config.Password);
-            con_m2 = null; // new StratumConnet("10.0.0.239", 13416, 4, "huflepuf", "azkaban");  //null; // new StratumConnet(config.SecondaryConnectionAddress, config.SecondaryConnectionPort, 2);
+            con_m1 = new StratumConnet(config.PrimaryConnection.ConnectionAddress, config.PrimaryConnection.ConnectionPort, 1, config.PrimaryConnection.Login, config.PrimaryConnection.Password);
+            con_m2 = new StratumConnet(config.SecondaryConnection.ConnectionAddress, config.SecondaryConnection.ConnectionPort, 1, config.SecondaryConnection.Login, config.SecondaryConnection.Password);
             //miner dev
             con_mf1 = new StratumConnet("10.0.0.237", 13416, 3, "huflepuf", "azkaban");
             con_mf2 = null; // new StratumConnet("10.0.0.237", 13416, 4, "huflepuf", "azkaban");
@@ -59,10 +73,11 @@ namespace Mozkomor.GrinGoldMiner
             con_gf2 = null; // new StratumConnet("10.0.0.237", 13416, 6);
 
             solutionCounter = 0;
-            solverswitch = 3;// new Random(DateTime.UtcNow.Millisecond).Next(solverswitchmin,solutionRound);
+            solverswitch = 10;// new Random(DateTime.UtcNow.Millisecond).Next(solverswitchmin,solutionRound);
 
             roundTime = DateTime.Now;
             ConnectMain();
+            curr.notifyWorkers = true;
             //ConnectMf();
             //ConnectGf();
         }
@@ -114,7 +129,7 @@ namespace Mozkomor.GrinGoldMiner
                 curr_m.RequestJob();
                 lock (lock1)
                 {
-                    curr = curr_m;
+                    setcurr(curr_m);
                 }
             }
             
@@ -122,7 +137,7 @@ namespace Mozkomor.GrinGoldMiner
 
         public static void ReconnectMain()
         {
-            Logger.Log(LogLevel.INFO, "trying to reconnect...");
+            Logger.Log(LogLevel.INFO, "trying to reconnect main...");
            // curr_m.StratumClose(); //already in watchdog
             curr_m = null;
             ConnectMain();
@@ -246,7 +261,6 @@ namespace Mozkomor.GrinGoldMiner
         private static object lock1 = "";
         public static Job GetJob()
         {
-            //bude muset poznat z kteryho connectu to jde, aby ho pak mohl submitnout na spravny pool (dev, user..)
             lock (lock1)
             {
                 if (curr != null)
@@ -293,9 +307,13 @@ namespace Mozkomor.GrinGoldMiner
             else
             {
                 if (conn.IsConnected)
+                {
+                    Logger.Log(LogLevel.INFO, $"Submitting solution. Connection id {conn.id}");
                     conn.SendSolution(solution);
+
+                }
                 else
-                    Logger.Log(LogLevel.WARNING, "Cant send solution, stratum connect not connected.");
+                    Logger.Log(LogLevel.WARNING, $"Cant send solution, stratum connect not connected. Connection id {conn.id}");
             }
 
             if (conn.id == 1 || conn.id == 2)
@@ -359,7 +377,7 @@ namespace Mozkomor.GrinGoldMiner
                 }
                 if (curr_mf != null)
                 {
-                    curr = curr_mf;
+                    setcurr(curr_mf);
 
                     if (curr.id != 1 && curr.id != 2) //one time
                         solutionCounter++;
@@ -392,7 +410,7 @@ namespace Mozkomor.GrinGoldMiner
                     }
 
                     solutionCounter += 5;
-                    SwitchEpoch();
+                    SwitchEpoch(); //waited this one out, so jump to next epoch
                 }
 
             }
@@ -423,7 +441,7 @@ namespace Mozkomor.GrinGoldMiner
                 }
                 if (curr_gf != null)
                 {
-                    curr = curr_gf;
+                    setcurr(curr_gf);
 
                     //if (curr.id != 1 && curr.id != 2) //one time
                         solutionCounter++;
@@ -470,16 +488,7 @@ namespace Mozkomor.GrinGoldMiner
                 }
                 //main 2
                 Logger.Log(LogLevel.DEBUG, "SWITCHER: switch to main 2");
-                curr = curr_m;
-                DateTime now = DateTime.Now;
-                while (curr_m == null || (curr.id != 1 && curr.id != 2))
-                {
-                    //kdyz bude spojeni blokovany, aby to tady nezustalo navzdy viset
-                    // jeste nejak zakazat posilatsolutions for main
-                    if ((DateTime.Now - now).TotalSeconds > 60)
-                        break;
-                }
-                curr = curr_m;
+                
                 if (curr_gf != null && curr_gf.IsConnected)
                     curr_gf.StratumClose();
 

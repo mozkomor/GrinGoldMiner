@@ -29,6 +29,7 @@ namespace Mozkomor.GrinGoldMiner
         public string login;
         public string password;
         public byte id;
+        public bool notifyWorkers = false;
 
         /// <summary>
         /// is listening to TCP client in listener loop
@@ -165,7 +166,7 @@ namespace Mozkomor.GrinGoldMiner
                     Console.WriteLine();
                     Logger.Log(LogLevel.INFO, "TCP IN: " + message + Environment.NewLine);
                     Console.ResetColor();
-                
+
                     try
                     {
                         JObject msg = JsonConvert.DeserializeObject(message, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore }) as JObject;
@@ -183,21 +184,23 @@ namespace Mozkomor.GrinGoldMiner
                                 if (msg.ContainsKey("result"))
                                 {
                                     PrevJob = CurrentJob ?? null;
-                                    CurrentJob = new Job( JsonConvert.DeserializeObject<JobTemplate>(msg["result"].ToString(), new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore }));
+                                    CurrentJob = new Job(JsonConvert.DeserializeObject<JobTemplate>(msg["result"].ToString(), new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore }));
                                     if (CurrentJob != null && CurrentJob.pre_pow != null && CurrentJob.pre_pow != "")
                                     {
                                         lastComm = DateTime.Now;
-                                        WorkerManager.newJobReceived(CurrentJob);
+                                        if (notifyWorkers)
+                                            WorkerManager.newJobReceived(CurrentJob);
                                     }
                                 }
                                 break;
                             case "job":
                                 PrevJob = CurrentJob ?? null;
-                                CurrentJob = new Job( JsonConvert.DeserializeObject<JobTemplate>(para, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore }));
+                                CurrentJob = new Job(JsonConvert.DeserializeObject<JobTemplate>(para, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore }));
                                 if (CurrentJob != null && CurrentJob.pre_pow != null && CurrentJob.pre_pow != "")
                                 {
                                     lastComm = DateTime.Now;
-                                    WorkerManager.newJobReceived(CurrentJob);
+                                    if (notifyWorkers)
+                                        WorkerManager.newJobReceived(CurrentJob);
                                 }
                                 break;
                             case "submit":
@@ -218,12 +221,16 @@ namespace Mozkomor.GrinGoldMiner
                                 }
                                 break;
                             default:
-                                Console.WriteLine(para); 
+                                Console.WriteLine(para);
                                 break;
                         }
 
 
                     }
+                    catch (System.IO.IOException)
+                    { }
+                    catch (System.Net.Sockets.SocketException)
+                    { }
                     catch (Exception ex)
                     {
                         Logger.Log(ex);
