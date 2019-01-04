@@ -1,4 +1,4 @@
-﻿// Cuckaroo Cycle, a memory-hard proof-of-work by John Tromp and team Grin
+// Cuckaroo Cycle, a memory-hard proof-of-work by John Tromp and team Grin
 // Copyright (c) 2018 Jiri Photon Vadura and John Tromp
 // This GGM miner file is covered by the FAIR MINING license
 
@@ -398,7 +398,7 @@ __kernel void FluffyTail(const __global uint2 * source, __global uint2 * destina
 }
 
 __attribute__((reqd_work_group_size(256, 1, 1)))
-__kernel   void FluffyRecovery(const u64 v0i, const u64 v1i, const u64 v2i, const u64 v3i, const __global u64 * recovery, __global ulong4 * buffer, __global int * indexes)
+__kernel   void FluffyRecovery(const u64 v0i, const u64 v1i, const u64 v2i, const u64 v3i, const __global u64 * recovery, __global int * indexes)
 {
 	const int gid = get_global_id(0);
 	const short lid = get_local_id(0);

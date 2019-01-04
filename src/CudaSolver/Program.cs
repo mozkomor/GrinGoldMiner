@@ -385,8 +385,10 @@ namespace CudaSolver
                                     else
                                         Logger.Log(LogLevel.Warning, "CPU overloaded!");
                                 }
-                                catch
-                                { }
+                                catch (Exception ex)
+                                {
+                                    Logger.Log(LogLevel.Error, "Cycle finder crashed", ex);
+                                }
                                 finally
                                 {
                                     findersInFlight--;
@@ -397,7 +399,7 @@ namespace CudaSolver
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(LogLevel.Error, "Critical error in main loop", ex);
+                    Logger.Log(LogLevel.Error, "Critical error in main cuda loop", ex);
                     Task.Delay(5000).Wait();
                 }
             }

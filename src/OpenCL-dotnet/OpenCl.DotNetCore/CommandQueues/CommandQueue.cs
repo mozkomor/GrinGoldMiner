@@ -107,19 +107,40 @@ namespace OpenCl.DotNetCore.CommandQueues
             IntPtr waitEventPointer;
             Result result =  EnqueuedCommandsNativeApi.EnqueueFillBuffer(this.Handle, memoryObject.Handle, pattern, new UIntPtr((uint)4), UIntPtr.Zero, new UIntPtr((uint)size), 0, null, out waitEventPointer);
 
-
             // Checks if the read operation was queued successfuly, if not, an exception is thrown
             if (result != Result.Success)
                 throw new OpenClException("The memory object could not be read.", result);
         }
 
-            /// <summary>
-            /// Reads the specified memory object associated with this command queue.
-            /// </summary>
-            /// <param name="memoryObject">The memory object that is to be read.</param>
-            /// <param name="outputSize">The number of array elements that are to be returned.</param>
-            /// <typeparam name="T">The type of the array that is to be returned.</typeparam>
-            /// <returns>Returns the value of the memory object.</param>
+
+        public void EnqueueWriteBufferEdges(MemoryObject memoryObject, long[] edges)
+        {
+            IntPtr waitEventPointer;
+            IntPtr edgesPtr = Marshal.AllocHGlobal(8 * 42);
+
+            try
+            {
+                Marshal.Copy(edges, 0, edgesPtr, 42);
+
+                Result result = EnqueuedCommandsNativeApi.EnqueueWriteBuffer(this.Handle, memoryObject.Handle, 1, new UIntPtr((uint)0), new UIntPtr((uint)42*8), edgesPtr, 0, null, out waitEventPointer);
+
+                // Checks if the read operation was queued successfuly, if not, an exception is thrown
+                if (result != Result.Success)
+                    throw new OpenClException("The memory object could not be read.", result);
+            }
+            finally
+            {
+                Marshal.FreeHGlobal(edgesPtr);
+            }
+        }
+
+        /// <summary>
+        /// Reads the specified memory object associated with this command queue.
+        /// </summary>
+        /// <param name="memoryObject">The memory object that is to be read.</param>
+        /// <param name="outputSize">The number of array elements that are to be returned.</param>
+        /// <typeparam name="T">The type of the array that is to be returned.</typeparam>
+        /// <returns>Returns the value of the memory object.</param>
         public T[] EnqueueReadBuffer<T>(MemoryObject memoryObject, int outputSize) where T : struct
         {
             // Tries to read the memory object

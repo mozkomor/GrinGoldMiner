@@ -14,6 +14,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using CudaSolver;
 using SharedSerialization;
+using System.Collections.Concurrent;
 
 namespace OclSolver
 {
@@ -52,7 +53,10 @@ namespace OclSolver
         static Job nextJob;
         static Stopwatch timer = new Stopwatch();
 
-        public static Queue<Solution> graphSolutions = new Queue<Solution>();
+        public static ConcurrentQueue<Solution> graphSolutions = new ConcurrentQueue<Solution>();
+        private volatile static int findersInFlight = 0;
+        static volatile int trims = 0;
+        static volatile int solutions = 0;
 
         static void Main(string[] args)
         {
@@ -116,7 +120,7 @@ namespace OclSolver
                     k1 = 0xe6d45de39c2a5a3eL,
                     k2 = 0xcbf626a8afee35f6L,
                     k3 = 0x4307b94b1a0c9980L,
-                    pre_pow = "0001000000000000100f000000005c1fea7f0208c1ae873960d0f98e0d3b837fc9a08b898d8b2f5d067f98e74b7f0cedeed42b1158649fc4638f5bc548f6296f57e09966c0968be97780b8a842957c329b2291c8e3dcf52d2558586a6eaecb416693567fe1841b2a9375ff448b7003de59752678e01774981e487a7aec9f198d5dba2acc4a50cac9b4d7f0b82768ed26721cabbe6df16becaed640c169289e7a66a15641a3b1a584aa2d192b9bdfbac99f6d86f43075896fa93cb50b85dbbb1405059e5402c5eeb1614c71c48f81d3add3520000000000002ee40000000000002770000000001cb576280000028f"
+                    pre_pow = "0001000000000000202e000000005c2e43ce014ca55dc4e0dffe987ee3eef9ca78e517f5ae7383c40797a4e8a9dd75ddf57eafac5471135202aa6054a2cc66aa5510ebdd58edcda0662a9e02d8232a4c90e90b7bddec1f32031d2894d76e3c390fc12b2dcc7a6f12b52be1d7aea70eac7b8ae0dc3f0ffb267e39b95a77e44e66d523399312a812d538afd00c7fd87275f4be7ef2f447ca918435d537c3db3c1d3e5d4f3b830432e5a283fab48917a5695324a319860a329cb1f6d1520ad0078c0f1dd9147f347f4c34e26d3063f117858d75000000000000babd0000000000007f23000000001ac67b3b00000155"
                 };
             }
             else
@@ -220,7 +224,10 @@ namespace OclSolver
 
                                         bufferR = context.CreateBuffer<uint>(MemoryFlag.ReadOnly, 42*2);
                                     }
-                                    catch { }
+                                    catch (Exception ex)
+                                    {
+                                        Logger.Log(LogLevel.Error, "Unable to allocate buffers, out of memory?", ex);
+                                    }
 
                                     using (Kernel kernelSeedA = program.CreateKernel("FluffySeed2A"))
                                     using (Kernel kernelSeedB1 = program.CreateKernel("FluffySeed2B"))
@@ -278,6 +285,13 @@ namespace OclSolver
                                         kernelTail.SetKernelArgument(2, bufferI1);
                                         kernelTail.SetKernelArgument(3, bufferI2);
 
+                                        kernelRecovery.SetKernelArgumentGeneric(0, currentJob.k0);
+                                        kernelRecovery.SetKernelArgumentGeneric(1, currentJob.k1);
+                                        kernelRecovery.SetKernelArgumentGeneric(2, currentJob.k2);
+                                        kernelRecovery.SetKernelArgumentGeneric(3, currentJob.k3);
+                                        kernelRecovery.SetKernelArgument(4, bufferR);
+                                        kernelRecovery.SetKernelArgument(5, bufferI2);
+
                                         const int runs = 1;
 
                                         if (runs > 1)
@@ -297,70 +311,130 @@ namespace OclSolver
                                             commandQueue.EnqueueNDRangeKernel(kernelTail, 1, 4096 * 1024, 1024, 0);
                                             OpenCl.DotNetCore.Interop.CommandQueues.CommandQueuesNativeApi.Finish(commandQueue.Handle);
                                         }
-                                        sw.Start();
+                                        
 
-                                        for (int i = 0; i < runs; i++)
+                                        int loopCnt = 0;
+                                        //for (int i = 0; i < runs; i++)
+                                        while (!Comms.IsTerminated)
                                         {
-                                            commandQueue.EnqueueClearBuffer(bufferI2, 64 * 64 * 4, clearPattern);
-                                            commandQueue.EnqueueClearBuffer(bufferI1, 64 * 64 * 4, clearPattern);
-                                            commandQueue.EnqueueNDRangeKernel(kernelSeedA, 1, 2048 * 128, 128, 0);
-                                            commandQueue.EnqueueNDRangeKernel(kernelSeedB1, 1, 1024 * 128, 128, 0);
-                                            commandQueue.EnqueueNDRangeKernel(kernelSeedB2, 1, 1024 * 128, 128, 0);
-                                            commandQueue.EnqueueClearBuffer(bufferI1, 64 * 64 * 4, clearPattern);
-                                            commandQueue.EnqueueNDRangeKernel(kernelRound1, 1, 4096 * 1024, 1024, 0);
-
-                                            for (int r = 0; r < 80; r++)
+                                            try
                                             {
-                                                commandQueue.EnqueueClearBuffer(bufferI2, 64 * 64 * 4, clearPattern);
-                                                commandQueue.EnqueueNDRangeKernel(kernelRoundNA, 1, 4096 * 1024, 1024, 0);
-                                                commandQueue.EnqueueClearBuffer(bufferI1, 64 * 64 * 4, clearPattern);
-                                                commandQueue.EnqueueNDRangeKernel(kernelRoundNB, 1, 4096 * 1024, 1024, 0);
-                                            }
-
-                                            commandQueue.EnqueueClearBuffer(bufferI2, 64 * 64 * 4, clearPattern);
-                                            commandQueue.EnqueueNDRangeKernel(kernelTail, 1, 4096 * 1024, 1024, 0);
-
-                                            edgesCount = commandQueue.EnqueueReadBuffer<uint>(bufferI2, 1);
-                                            edgesCount[0] = edgesCount[0] > 1000000 ? 1000000 : edgesCount[0];
-                                            edgesLeft = commandQueue.EnqueueReadBuffer<int>(bufferA1, (int)edgesCount[0]*2);
-
-                                            OpenCl.DotNetCore.Interop.CommandQueues.CommandQueuesNativeApi.Flush(commandQueue.Handle);
-                                            OpenCl.DotNetCore.Interop.CommandQueues.CommandQueuesNativeApi.Finish(commandQueue.Handle);
-
-                                            CGraph cg = new CGraph();
-                                            cg.SetEdges(edgesLeft, (int)edgesCount[0]);
-                                            cg.SetHeader(currentJob);
-
-                                            Task.Factory.StartNew(() =>
-                                            {
-                                                if (edgesCount[0] < 200000)
+                                                if (!TEST && (Comms.nextJob.pre_pow == null || Comms.nextJob.pre_pow == ""))
                                                 {
-                                                    trims++;
-                                                    Queue<Solution> q = new Queue<Solution>();
-                                                    try
-                                                    {
-                                                        cg.FindSolutions(q);
-                                                    }
-                                                    catch { }
+                                                    Logger.Log(LogLevel.Info, string.Format("Waiting for job...."));
+                                                    Task.Delay(1000).Wait();
+                                                    continue;
                                                 }
 
-                                                //sw.Stop();
+                                                // test runs only once
+                                                if (TEST && loopCnt++ > 10)
+                                                    Comms.IsTerminated = true;
 
-                                                ////totalMsCycle += sw.ElapsedMilliseconds;
-                                                //Console.WriteLine("Finder completed in {0}ms on {1} edges", sw.ElapsedMilliseconds, edgesCount[0]);
-                                                //Console.WriteLine("Duped edges: {0}", cg.dupes);
-                                                //Console.WriteLine();
-                                            });
+                                                if (!TEST && (currentJob.pre_pow != Comms.nextJob.pre_pow))
+                                                {
+                                                    currentJob = Comms.nextJob;
+                                                }
+                                                currentJob = currentJob.Next();
+
+                                                kernelSeedA.SetKernelArgumentGeneric(0, currentJob.k0);
+                                                kernelSeedA.SetKernelArgumentGeneric(1, currentJob.k1);
+                                                kernelSeedA.SetKernelArgumentGeneric(2, currentJob.k2);
+                                                kernelSeedA.SetKernelArgumentGeneric(3, currentJob.k3);
+
+                                                Logger.Log(LogLevel.Info, string.Format("Trimming #{4}: {0} {1} {2} {3}", currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, currentJob.jobID));
+
+                                                Solution s;
+                                                if (graphSolutions.TryDequeue(out s))
+                                                {
+                                                    kernelRecovery.SetKernelArgumentGeneric(0, s.job.k0);
+                                                    kernelRecovery.SetKernelArgumentGeneric(1, s.job.k1);
+                                                    kernelRecovery.SetKernelArgumentGeneric(2, s.job.k2);
+                                                    kernelRecovery.SetKernelArgumentGeneric(3, s.job.k3);
+                                                    commandQueue.EnqueueWriteBufferEdges(bufferR, s.GetLongEdges());
+                                                    commandQueue.EnqueueClearBuffer(bufferI2, 64 * 64 * 4, clearPattern);
+                                                    commandQueue.EnqueueNDRangeKernel(kernelRecovery, 1, 2048 * 256, 256, 0);
+                                                    s.nonces = commandQueue.EnqueueReadBuffer<uint>(bufferI2, 42);
+                                                    OpenCl.DotNetCore.Interop.CommandQueues.CommandQueuesNativeApi.Finish(commandQueue.Handle);
+                                                    s.nonces = s.nonces.OrderBy(n => n).ToArray();
+                                                    Comms.graphSolutionsOut.Enqueue(s);
+                                                    Comms.SetEvent();
+                                                }
+
+                                                sw.Restart();
+
+                                                commandQueue.EnqueueClearBuffer(bufferI2, 64 * 64 * 4, clearPattern);
+                                                commandQueue.EnqueueClearBuffer(bufferI1, 64 * 64 * 4, clearPattern);
+                                                commandQueue.EnqueueNDRangeKernel(kernelSeedA, 1, 2048 * 128, 128, 0);
+                                                commandQueue.EnqueueNDRangeKernel(kernelSeedB1, 1, 1024 * 128, 128, 0);
+                                                commandQueue.EnqueueNDRangeKernel(kernelSeedB2, 1, 1024 * 128, 128, 0);
+                                                commandQueue.EnqueueClearBuffer(bufferI1, 64 * 64 * 4, clearPattern);
+                                                commandQueue.EnqueueNDRangeKernel(kernelRound1, 1, 4096 * 1024, 1024, 0);
+
+                                                for (int r = 0; r < 80; r++)
+                                                {
+                                                    commandQueue.EnqueueClearBuffer(bufferI2, 64 * 64 * 4, clearPattern);
+                                                    commandQueue.EnqueueNDRangeKernel(kernelRoundNA, 1, 4096 * 1024, 1024, 0);
+                                                    commandQueue.EnqueueClearBuffer(bufferI1, 64 * 64 * 4, clearPattern);
+                                                    commandQueue.EnqueueNDRangeKernel(kernelRoundNB, 1, 4096 * 1024, 1024, 0);
+                                                }
+
+                                                commandQueue.EnqueueClearBuffer(bufferI2, 64 * 64 * 4, clearPattern);
+                                                commandQueue.EnqueueNDRangeKernel(kernelTail, 1, 4096 * 1024, 1024, 0);
+
+                                                edgesCount = commandQueue.EnqueueReadBuffer<uint>(bufferI2, 1);
+                                                edgesCount[0] = edgesCount[0] > 1000000 ? 1000000 : edgesCount[0];
+                                                edgesLeft = commandQueue.EnqueueReadBuffer<int>(bufferA1, (int)edgesCount[0] * 2);
+
+                                                OpenCl.DotNetCore.Interop.CommandQueues.CommandQueuesNativeApi.Flush(commandQueue.Handle);
+                                                OpenCl.DotNetCore.Interop.CommandQueues.CommandQueuesNativeApi.Finish(commandQueue.Handle);
+
+                                                sw.Stop();
+
+                                                Logger.Log(LogLevel.Info, string.Format("Trimmed in {0}ms to {1} edges", sw.ElapsedMilliseconds, edgesCount[0]));
+
+                                                CGraph cg = new CGraph();
+                                                cg.SetEdges(edgesLeft, (int)edgesCount[0]);
+                                                cg.SetHeader(currentJob);
+
+                                                Task.Factory.StartNew(() =>
+                                                {
+                                                    if (edgesCount[0] < 200000)
+                                                    {
+                                                        try
+                                                        {
+                                                            if (findersInFlight++ < 3)
+                                                            {
+                                                                cg.FindSolutions(graphSolutions);
+                                                                if (graphSolutions.Count > 0) solutions++;
+                                                            }
+                                                            else
+                                                                Logger.Log(LogLevel.Warning, "CPU overloaded!");
+                                                        }
+                                                        catch (Exception ex)
+                                                        {
+                                                            Logger.Log(LogLevel.Error, "Cycle finder crashed", ex);
+                                                        }
+                                                        finally
+                                                        {
+                                                            findersInFlight--;
+                                                        }
+                                                    }
+                                                });
+
+                                            }
+                                            catch (Exception ex)
+                                            {
+                                                Logger.Log(LogLevel.Error, "Critical error in main ocl loop", ex);
+                                                Task.Delay(5000).Wait();
+                                            }
                                         }
 
-                                        sw.Stop();
-
-                                        uint[] resultArray = commandQueue.EnqueueReadBuffer<uint>(bufferI1, 64 * 64);
-                                        uint[] resultArray2 = commandQueue.EnqueueReadBuffer<uint>(bufferI2, 64 * 64);
-                                        Console.WriteLine("SeedA: " + resultArray.Sum(e => e) + " in " + sw.ElapsedMilliseconds / runs);
-                                        Console.WriteLine("SeedB: " + resultArray2.Sum(e => e) + " in " + sw.ElapsedMilliseconds / runs);
-                                        Task.Delay(1000).Wait();
-                                        Console.WriteLine("");
+                                        //uint[] resultArray = commandQueue.EnqueueReadBuffer<uint>(bufferI1, 64 * 64);
+                                        //uint[] resultArray2 = commandQueue.EnqueueReadBuffer<uint>(bufferI2, 64 * 64);
+                                        //Console.WriteLine("SeedA: " + resultArray.Sum(e => e) + " in " + sw.ElapsedMilliseconds / runs);
+                                        //Console.WriteLine("SeedB: " + resultArray2.Sum(e => e) + " in " + sw.ElapsedMilliseconds / runs);
+                                        //Task.Delay(1000).Wait();
+                                        //Console.WriteLine("");
                                     }
                                 }
                                 finally
@@ -371,10 +445,6 @@ namespace OclSolver
                                 }
                             }
                         }
-
-
-
-
                     }
                 }
             }
@@ -393,6 +463,7 @@ namespace OclSolver
                     bufferB.Dispose();
                     bufferI1.Dispose();
                     bufferI2.Dispose();
+                    bufferR.Dispose();
                 }
                 catch { }
             }

@@ -33,9 +33,13 @@ namespace Mozkomor.GrinGoldMiner
         private long workerTotalLogs = 0;
         private volatile bool IsTerminated;
 
+<<<<<<< HEAD
+        public Worker(WorkerType gpuType, int gpuID, int platformID)
+=======
         private int errors = 0;
 
- 	public Worker(WorkerType gpuType, int gpuID, int platformID)
+        public Worker(WorkerType gpuType, int gpuID)
+>>>>>>> origin/dev
         {
             type = gpuType;
             workerDeviceID = gpuID;
