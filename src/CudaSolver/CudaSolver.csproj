@@ -14,12 +14,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\x64\Release\kernel\kernel_x64.ptx" Link="kernel_x64.ptx" />
+    <None Remove="kernel_x64.ptx" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="kernel_x64.ptx" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ManagedCuda.NETStandard" Version="9.1.300" />
-    <PackageReference Include="NETStandard.Library" Version="2.1.0-prerelease.18603.1" />
+    <PackageReference Include="NETStandard.Library" Version="2.0.3" />
   </ItemGroup>
 
   <ItemGroup>
