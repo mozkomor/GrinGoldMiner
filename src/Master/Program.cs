@@ -28,12 +28,13 @@ namespace Mozkomor.GrinGoldMiner
             }
             else
             {
-                Console.WriteLine("ERROR: missing config.xml");
+                Console.WriteLine($"ERROR: missing config.xml, created new empty config.xml in directory with miner ({dir}), please set the values in this file");
                 Serialization.Serialize<Config>(Config.GetEmptyConfig(), configPath);
                 Console.ReadLine();
             }
 
-            WorkerManager.Init();
+            Logger.SetLogOptions(config.LogOptions);
+            WorkerManager.Init(config);
             ConnectionManager.Init(config);
 
             while (Console.ReadKey().Key != ConsoleKey.Q)

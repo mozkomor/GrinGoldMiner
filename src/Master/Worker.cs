@@ -16,14 +16,15 @@ namespace Mozkomor.GrinGoldMiner
     {
         private const bool DEBUG = true;
 
-        private static Process worker;
-        private static TcpClient client;
-        private static NetworkStream stream;
-        private static Task listener;
-        private static AutoResetEvent flushEvent;
+        private Process worker;
+        private TcpClient client;
+        private NetworkStream stream;
+        private Task listener;
+        private AutoResetEvent flushEvent;
 
         private WorkerType type;
         private int workerDeviceID;
+        private int workerPlatformID;
         private int workerCommPort;
 
         private DateTime workerStartTime = DateTime.Now;
@@ -32,10 +33,11 @@ namespace Mozkomor.GrinGoldMiner
         private long workerTotalLogs = 0;
         private volatile bool IsTerminated;
 
-        public Worker(WorkerType gpuType, int gpuID)
+        public Worker(WorkerType gpuType, int gpuID, int platformID)
         {
             type = gpuType;
             workerDeviceID = gpuID;
+            workerPlatformID = platformID;
             workerCommPort = 13500 + (int)gpuType + gpuID;
         }
 

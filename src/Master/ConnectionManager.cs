@@ -16,7 +16,7 @@ namespace Mozkomor.GrinGoldMiner
         private static string gfpwd = "";
         
         private static int solutionCounter = 0;
-        private static int solutionRound = 50;
+        private static int solutionRound = 25;
         private static int solverswitchmin = 5;
         private static int solverswitch = 10;
         private static int prepConn = 2;
@@ -137,7 +137,7 @@ namespace Mozkomor.GrinGoldMiner
 
         public static void ReconnectMain()
         {
-            Logger.Log(LogLevel.INFO, "trying to reconnect main...");
+            Logger.Log(LogLevel.DEBUG, "trying to reconnect main...");
            // curr_m.StratumClose(); //already in watchdog
             curr_m = null;
             ConnectMain();
@@ -447,6 +447,10 @@ namespace Mozkomor.GrinGoldMiner
                         solutionCounter++;
 
                     Logger.Log(LogLevel.DEBUG, "SWITCHER: switched to gf");
+
+                    if (curr_mf != null && curr_mf.IsConnected)
+                        Task.Run(() => Task.Delay(5000).ContinueWith(_ => curr_mf.StratumClose()));
+
                     activeEpisode = Episode.gf;
                 }
                 else
@@ -492,6 +496,7 @@ namespace Mozkomor.GrinGoldMiner
                 if (curr_gf != null && curr_gf.IsConnected)
                     curr_gf.StratumClose();
 
+                setcurr(curr_m);
                 activeEpisode = Episode.main_second;
             }
             else if (solutionCounter > solverswitch + 10 && solutionCounter < solutionRound)

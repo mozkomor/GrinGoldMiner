@@ -78,7 +78,7 @@ namespace Mozkomor.GrinGoldMiner
 #if DEBUG
                     logOptions = new LogOptions() { FileMinimumLogLevel = LogLevel.DEBUG, ConsoleMinimumLogLevel = LogLevel.DEBUG };
 #else
-                logOptions = new LogOptions() { FileMinimumLogLevel = LogLevel.INFO, ConsoleMinimumLogLevel = LogLevel.INFO };
+                logOptions = new LogOptions() { FileMinimumLogLevel = LogLevel.WARNING, ConsoleMinimumLogLevel = LogLevel.INFO };
 #endif
                 }
 

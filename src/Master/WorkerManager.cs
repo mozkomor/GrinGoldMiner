@@ -8,12 +8,17 @@ namespace Mozkomor.GrinGoldMiner
     {
         static List<Worker> workers = new List<Worker>();
 
-        public static void Init()
+        public static void Init(Config config)
         {
-            Worker w = new Worker(SharedSerialization.WorkerType.NVIDIA, 0);
-            workers.Add(w);
+            foreach(var gpu in config.GPUOptions)
+            {
+                Worker w = new Worker(gpu.GPUType, gpu.DeviceID, gpu.PlatformID);
+                workers.Add(w);
+                w.Start();
+            }
+            
 
-            var cards = w.Start();
+            //var cards = w.Start();
             ;
         }
 
