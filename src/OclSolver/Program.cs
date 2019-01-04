@@ -34,8 +34,10 @@ namespace OclSolver
 
         const long INDEX_SIZE = 256 * 256 * 4;
 
+        // set this in dry debug runs
         static int platformID = 0;
         static int deviceID = 0;
+
         static int port = 13500;
         static bool TEST = false;
 
@@ -76,6 +78,8 @@ namespace OclSolver
             {
                 if (args.Length > 0)
                     deviceID = int.Parse(args[0]);
+                if (args.Length > 2)
+                    platformID = int.Parse(args[2]);
             }
             catch (Exception ex)
             {
@@ -90,7 +94,10 @@ namespace OclSolver
                     Comms.ConnectToMaster(port);
                 }
                 else
+                {
                     TEST = true;
+                    CGraph.ShowCycles = true;
+                }
             }
             catch (Exception ex)
             {
@@ -292,27 +299,6 @@ namespace OclSolver
                                         kernelRecovery.SetKernelArgument(4, bufferR);
                                         kernelRecovery.SetKernelArgument(5, bufferI2);
 
-                                        const int runs = 1;
-
-                                        if (runs > 1)
-                                        {
-                                            commandQueue.EnqueueClearBuffer(bufferI2, 64 * 64 * 4, clearPattern);
-                                            commandQueue.EnqueueClearBuffer(bufferI1, 64 * 64 * 4, clearPattern);
-                                            commandQueue.EnqueueNDRangeKernel(kernelSeedA, 1, 2048 * 128, 128, 0);
-                                            commandQueue.EnqueueNDRangeKernel(kernelSeedB1, 1, 1024 * 128, 128, 0);
-                                            commandQueue.EnqueueNDRangeKernel(kernelSeedB2, 1, 1024 * 128, 128, 0);
-                                            commandQueue.EnqueueClearBuffer(bufferI1, 64 * 64 * 4, clearPattern);
-                                            commandQueue.EnqueueNDRangeKernel(kernelRound1, 1, 4096 * 1024, 1024, 0);
-                                            commandQueue.EnqueueClearBuffer(bufferI2, 64 * 64 * 4, clearPattern);
-                                            commandQueue.EnqueueNDRangeKernel(kernelRoundNA, 1, 4096 * 1024, 1024, 0);
-                                            commandQueue.EnqueueClearBuffer(bufferI1, 64 * 64 * 4, clearPattern);
-                                            commandQueue.EnqueueNDRangeKernel(kernelRoundNB, 1, 4096 * 1024, 1024, 0);
-                                            commandQueue.EnqueueClearBuffer(bufferI2, 64 * 64 * 4, clearPattern);
-                                            commandQueue.EnqueueNDRangeKernel(kernelTail, 1, 4096 * 1024, 1024, 0);
-                                            OpenCl.DotNetCore.Interop.CommandQueues.CommandQueuesNativeApi.Finish(commandQueue.Handle);
-                                        }
-                                        
-
                                         int loopCnt = 0;
                                         //for (int i = 0; i < runs; i++)
                                         while (!Comms.IsTerminated)
@@ -327,7 +313,7 @@ namespace OclSolver
                                                 }
 
                                                 // test runs only once
-                                                if (TEST && loopCnt++ > 10)
+                                                if (TEST && loopCnt++ > 100)
                                                     Comms.IsTerminated = true;
 
                                                 if (!TEST && (currentJob.pre_pow != Comms.nextJob.pre_pow))
@@ -405,7 +391,11 @@ namespace OclSolver
                                                             if (findersInFlight++ < 3)
                                                             {
                                                                 cg.FindSolutions(graphSolutions);
-                                                                if (graphSolutions.Count > 0) solutions++;
+                                                                if (graphSolutions.Count > 0)
+                                                                {
+                                                                    solutions++;
+                                                                    currentJob.solvedAt = DateTime.Now;
+                                                                }
                                                             }
                                                             else
                                                                 Logger.Log(LogLevel.Warning, "CPU overloaded!");
