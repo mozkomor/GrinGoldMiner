@@ -63,7 +63,7 @@ namespace Mozkomor.GrinGoldMinerCLI
 
                     foreach (var dev in devices)
                     {
-                        if ( ( dev.memory > (long)1024 * 1024 * 1024 * 3) && dev.platformName.ToLower().Contains("amd") )
+                        if ((dev.memory > (long)1024 * 1024 * 1024 * 3) && dev.platformName.ToLower().Contains("amd"))
                         {
                             generated_config.GPUOptions.Add(new SharedSerialization.GPUOption()
                             {
@@ -80,6 +80,7 @@ namespace Mozkomor.GrinGoldMinerCLI
                 Serialization.Serialize<Config>(generated_config, configPath);
                 Console.WriteLine($"ERROR: missing config.xml, created new config.xml in directory with miner ({configPath}), please set the values in this file");
                 Console.ReadLine();
+                Close();
             }
 
             Logger.SetLogOptions(config.LogOptions);
@@ -91,7 +92,7 @@ namespace Mozkomor.GrinGoldMinerCLI
             }
             Close();
 
-            
+
             Console.WriteLine();
         }
 
@@ -99,6 +100,14 @@ namespace Mozkomor.GrinGoldMinerCLI
         {
             ConnectionManager.CloseAll();
             Environment.Exit(0);
+        }
+
+        private void WriteGUI()
+        {
+            Console.Clear();
+            Console.WriteLine("Grin Gold Miner v0.0.0.0.0.0.8");
+            Console.WriteLine("------------------------------");
+
         }
     }
 }

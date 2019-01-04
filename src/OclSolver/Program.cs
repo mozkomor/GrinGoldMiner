@@ -26,7 +26,7 @@ namespace OclSolver
     class Program
     {
         const long DUCK_SIZE_A = 129; // AMD 126 + 3
-        const long DUCK_SIZE_B = 82;
+        const long DUCK_SIZE_B = 83;
         const long BUFFER_SIZE_A1 = DUCK_SIZE_A * 1024 * (4096-128) * 2;
         const long BUFFER_SIZE_A2 = DUCK_SIZE_A * 1024 * 256 * 2;
         const long BUFFER_SIZE_B = DUCK_SIZE_B * 1024 * 4096 * 2;

@@ -91,7 +91,7 @@ namespace CudaSolver
                     {
                         case Job job:
                             nextJob = job;
-                            Console.WriteLine($"New job received: {job.pre_pow}");
+                            Logger.Log(LogLevel.Debug, $"New job received: {job.pre_pow}");
                             break;
                     }
                 }

@@ -29,6 +29,7 @@ namespace Mozkomor.GrinGoldMiner
         private static string _logPath;
         private static DateTime _lastDayLogCreated;
         private static Dictionary<string,int> msgcnt = new Dictionary<string,int>();
+        public static string[] last5msg = new string[5];
         private static string LogPath
         {
             get
@@ -96,15 +97,26 @@ namespace Mozkomor.GrinGoldMiner
 
                 if (level >= logOptions.ConsoleMinimumLogLevel)
                 {
-                    if ((level == LogLevel.ERROR) || (level == LogLevel.WARNING))
-                        Console.ForegroundColor = ConsoleColor.Red;
+                    //if ((level == LogLevel.ERROR) || (level == LogLevel.WARNING))
+                    //    Console.ForegroundColor = ConsoleColor.Red;
 
-                    Console.WriteLine($"{level.ToString()}    {msg}");
-                    Console.ResetColor();
+                    //Console.WriteLine($"{level.ToString()}    {msg}");
+                    pushMessage($"{level.ToString()}    {msg}");
+                    //Console.ResetColor();
                 }
             }
             catch { } //epic fail
         }
+
+        private static void pushMessage(string msg)
+        {
+            last5msg[4] = last5msg[3];
+            last5msg[3] = last5msg[2];
+            last5msg[2] = last5msg[1];
+            last5msg[1] = last5msg[0];
+            last5msg[0] = msg;
+        }
+
 
         //surround by lock when calling
         public static bool OverloadCheck(string msg)

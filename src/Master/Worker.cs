@@ -105,13 +105,13 @@ namespace Mozkomor.GrinGoldMiner
                 TcpListener l = new TcpListener(IPAddress.Parse("127.0.0.1"), workerCommPort);
 #endif
                 l.Start();
-                //worker = Process.Start(new ProcessStartInfo()
-                //{
-                //    FileName = (type == WorkerType.NVIDIA) ? Path.Combine("solvers","CudaSolver.exe") : Path.Combine("solvers","OclSolver.exe"),
-                //    Arguments = string.Format("{0} {1}", workerDeviceID, workerCommPort),
-                //    CreateNoWindow = !DEBUG,
-                //    UseShellExecute = false
-                //});
+                worker = Process.Start(new ProcessStartInfo()
+                {
+                    FileName = (type == WorkerType.NVIDIA) ? Path.Combine("solvers", "CudaSolver.exe") : Path.Combine("solvers", "OclSolver.exe"),
+                    Arguments = string.Format("{0} {1}", workerDeviceID, workerCommPort),
+                    CreateNoWindow = !DEBUG,
+                    UseShellExecute = false
+                });
                 client = l.AcceptTcpClient();
                 l.Stop();
                 stream = client.GetStream();

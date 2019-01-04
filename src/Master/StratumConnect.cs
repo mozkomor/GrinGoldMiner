@@ -162,10 +162,10 @@ namespace Mozkomor.GrinGoldMiner
                         continue;
                     }
 
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine();
+                    //Console.ForegroundColor = ConsoleColor.Green;
+                    //Console.WriteLine();
                     Logger.Log(LogLevel.DEBUG, $"(sc id {id}):TCP IN: {message} {Environment.NewLine}");
-                    Console.ResetColor();
+                    //Console.ResetColor();
 
                     try
                     {
@@ -212,16 +212,16 @@ namespace Mozkomor.GrinGoldMiner
                                 }
                                 else if (msg.ContainsKey("result") && msg["result"].ToString().StartsWith("blockfound"))
                                 {
-                                    Console.ForegroundColor = ConsoleColor.Cyan;
-                                    Console.WriteLine("###################################");
+                                    //Console.ForegroundColor = ConsoleColor.Cyan;
+                                    //Console.WriteLine("###################################");
                                     Logger.Log(LogLevel.INFO, "######  Block mined!  #" + (++mined).ToString("D4") + "  ######"); // 8 chars
-                                    Console.WriteLine("###################################");
-                                    Console.ResetColor();
+                                    //Console.WriteLine("###################################");
+                                    //Console.ResetColor();
                                     statistics.mined++;
                                 }
                                 break;
                             default:
-                                Console.WriteLine(para);
+                                Logger.Log(LogLevel.INFO, para);
                                 break;
                         }
 

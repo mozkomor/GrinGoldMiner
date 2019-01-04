@@ -15,7 +15,7 @@ typedef u64 nonce_t;
 
 
 #define DUCK_SIZE_A 129L
-#define DUCK_SIZE_B 82L
+#define DUCK_SIZE_B 83L
 
 #define DUCK_A_EDGES (DUCK_SIZE_A * 1024L)
 #define DUCK_A_EDGES_64 (DUCK_A_EDGES * 64L)
