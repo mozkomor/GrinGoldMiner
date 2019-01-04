@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Mozkomor.GrinGoldMiner
 {
-    class ConnectionManager
+    public class ConnectionManager
     {
         private static string gflogin = "grindev";
         private static string gfpwd = "";
@@ -248,7 +248,7 @@ namespace Mozkomor.GrinGoldMiner
             ConnectGf();
         }
 
-        internal static void CloseAll()
+        public static void CloseAll()
         {
             con_m1.StratumClose();
             con_m2.StratumClose();

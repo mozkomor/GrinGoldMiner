@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Mozkomor.GrinGoldMiner
 {
-    class WorkerManager
+    public class WorkerManager
     {
         static List<Worker> workers = new List<Worker>();
 

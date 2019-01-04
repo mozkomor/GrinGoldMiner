@@ -16,9 +16,9 @@ namespace Mozkomor.GrinGoldMiner
         public LogOptions LogOptions { get; set; }
         public List<GPUOption> GPUOptions { get; set; }
 
-        public static Config GetEmptyConfig()
+        public static Config GetDefaultConfig()
         {
-            var c1 = new Connection() { ConnectionAddress = "pooladdress", ConnectionPort = 13416, Login = "login", Password = "password", Ssl =false };
+            var c1 = new Connection() { ConnectionAddress = "us-east.stratum.grinmint.com", ConnectionPort = 13416, Login = "satoshi@nakamoto.com/rig21", Password = "myverystrongpassword", Ssl =false };
             var c2 = new Connection() { ConnectionAddress = "backup_pooladdress", ConnectionPort = 13416, Login = "login", Password = "password", Ssl = false };
             var logOptions = new LogOptions() { ConsoleMinimumLogLevel = LogLevel.INFO, FileMinimumLogLevel = LogLevel.WARNING };
             List<GPUOption> gpuOptions = new List<GPUOption>() { new GPUOption() { DeviceID = 0, Enabled = true, GPUType = WorkerType.NVIDIA, PlatformID = 0 } };

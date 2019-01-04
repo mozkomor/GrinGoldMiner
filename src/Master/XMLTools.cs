@@ -31,7 +31,7 @@ namespace Mozkomor.GrinGoldMiner
         }
     }
 
-    class Serialization
+    public class Serialization
     {
         public static bool Serialize<T>(T input, string outputFile)
         {

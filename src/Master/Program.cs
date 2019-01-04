@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 namespace Mozkomor.GrinGoldMiner
 {
+    
     class Program
     {
         static void Main(string[] args)
@@ -18,6 +19,14 @@ namespace Mozkomor.GrinGoldMiner
                 Console.WriteLine("Ctrl+C - Exitting");
                 Close();
             };
+
+            if (DateTime.Today >= new DateTime(2019,1,14))
+            {
+                Console.WriteLine("!!! This version of GrinGoldMiner is outdated. Please go to https://github.com/mozkomor/GrinGoldMiner/releases and downlaod the latest release.");
+                Logger.Log(LogLevel.ERROR,"!!! This version of GrinGoldMiner is outdated. Please go to https://github.com/mozkomor/GrinGoldMiner/releases and downlaod the latest release.");
+                Console.ReadLine();
+                Close();
+            }
 
             var dir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             var configPath = Path.Combine(dir, "config.xml");
@@ -29,7 +38,7 @@ namespace Mozkomor.GrinGoldMiner
             else
             {
                 Console.WriteLine($"ERROR: missing config.xml, created new empty config.xml in directory with miner ({dir}), please set the values in this file");
-                Serialization.Serialize<Config>(Config.GetEmptyConfig(), configPath);
+                Serialization.Serialize<Config>(Config.GetDefaultConfig(), configPath);
                 Console.ReadLine();
             }
 
