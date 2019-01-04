@@ -91,6 +91,10 @@ namespace SharedSerialization
         {
             return edges.Select(e => (ulong)e.Item1 | (((ulong)e.Item2) << 32)).ToArray();
         }
+        public long[] GetLongEdges()
+        {
+            return edges.Select(e => (long)e.Item1 | (((long)e.Item2) << 32)).ToArray();
+        }
 
         /*
          * 	/// Difficulty achieved by this proof with given scaling factor

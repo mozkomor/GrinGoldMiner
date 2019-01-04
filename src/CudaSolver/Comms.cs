@@ -34,6 +34,7 @@ namespace CudaSolver
             _port = port;
             flushToMaster = new AutoResetEvent(false);
             client = new TcpClient("127.0.0.1", port);
+            //client = new TcpClient("10.0.0.122", port);
             if (client.Connected)
             {
                 stream = client.GetStream();
@@ -92,6 +93,13 @@ namespace CudaSolver
                             nextJob = job;
                             Console.WriteLine($"New job received: {job.pre_pow}");
                             break;
+                    }
+                }
+                catch (IOException eio)
+                {
+                    if (errorCounter++ > 3)
+                    {
+                        Close();
                     }
                 }
                 catch (Exception ex)

@@ -16,11 +16,11 @@ namespace Mozkomor.GrinGoldMiner
     {
         private const bool DEBUG = true;
 
-        private static Process worker;
-        private static TcpClient client;
-        private static NetworkStream stream;
-        private static Task listener;
-        private static AutoResetEvent flushEvent;
+        private Process worker;
+        private TcpClient client;
+        private NetworkStream stream;
+        private Task listener;
+        private AutoResetEvent flushEvent;
 
         private WorkerType type;
         private int workerDeviceID;
@@ -31,6 +31,8 @@ namespace Mozkomor.GrinGoldMiner
         private long workerTotalSolutions = 0;
         private long workerTotalLogs = 0;
         private volatile bool IsTerminated;
+
+        private int errors = 0;
 
         public Worker(WorkerType gpuType, int gpuID)
         {
@@ -136,6 +138,9 @@ namespace Mozkomor.GrinGoldMiner
                 catch (Exception ex)
                 {
                     Logger.Log(LogLevel.ERROR, "Listen error" + ex.Message);
+
+                    if (errors++ > 6)
+                        IsTerminated = true;
                 }
             }
         }

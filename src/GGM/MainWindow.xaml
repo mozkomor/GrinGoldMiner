@@ -5,8 +5,29 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GGM"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="GrinGoldMiner" Height="450" Width="800" Icon="logo.jpg">
     <Grid>
-        
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="8*"/>
+        </Grid.RowDefinitions>
+        <ToggleButton Content="Button"/>
+        <ToggleButton Content="Button" Grid.Column="1" />
+        <ToggleButton Content="Button" Grid.Column="2" />
+        <ToggleButton Content="Button" Grid.Column="3" />
+        <Button Content="Settings" Grid.Column="4" />
+        <Grid Grid.Row="1" Grid.ColumnSpan="5">
+            <Viewbox>
+                <StackPanel CanVerticallyScroll="True"/>
+            </Viewbox>
+        </Grid>
+
     </Grid>
 </Window>
