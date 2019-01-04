@@ -10,7 +10,7 @@ namespace CudaSolver
 {
     public class CGraph
     {
-        private bool ShowCycles = false;
+        public static bool ShowCycles = false;
 
         private Dictionary<uint, uint> graphU;
         private Dictionary<uint, uint> graphV;

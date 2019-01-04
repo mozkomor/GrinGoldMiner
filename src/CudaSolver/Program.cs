@@ -380,7 +380,11 @@ namespace CudaSolver
                                     if (findersInFlight++ < 3)
                                     {
                                         cg.FindSolutions(graphSolutions);
-                                        if (graphSolutions.Count > 0) solutions++;
+                                        if (graphSolutions.Count > 0)
+                                        {
+                                            currentJob.solvedAt = DateTime.Now;
+                                            solutions++;
+                                        }
                                     }
                                     else
                                         Logger.Log(LogLevel.Warning, "CPU overloaded!");

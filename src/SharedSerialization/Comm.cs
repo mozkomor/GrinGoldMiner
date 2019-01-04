@@ -17,11 +17,13 @@ namespace SharedSerialization
             jobID = _job.job_id;
             pre_pow = _job.pre_pow;
             height = _job.height;
+            timestamp = DateTime.Now;
         }
 
         private static Random rnd = new Random((int)DateTime.Now.Ticks);
 
         public DateTime timestamp;
+        public DateTime solvedAt;
         public UInt64 nonce, height, difficulty, jobID;
         public UInt64 hnonce;
         public UInt64 k0;
