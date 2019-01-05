@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 using Mozkomor.GrinGoldMiner;
 
 namespace Mozkomor.GrinGoldMinerCLI
@@ -45,6 +46,7 @@ namespace Mozkomor.GrinGoldMinerCLI
                         {
                             generated_config.GPUOptions.Add(new SharedSerialization.GPUOption()
                             {
+                                GPUName = dev.name,
                                 DeviceID = dev.deviceID,
                                 Enabled = true,
                                 GPUType = SharedSerialization.WorkerType.NVIDIA,
@@ -54,6 +56,8 @@ namespace Mozkomor.GrinGoldMinerCLI
                     }
                 }
                 catch { }
+
+                Task.Delay(2000).Wait();
 
                 // AMD
                 try
@@ -67,6 +71,7 @@ namespace Mozkomor.GrinGoldMinerCLI
                         {
                             generated_config.GPUOptions.Add(new SharedSerialization.GPUOption()
                             {
+                                GPUName = dev.name,
                                 DeviceID = dev.deviceID,
                                 Enabled = true,
                                 GPUType = SharedSerialization.WorkerType.AMD,
@@ -75,7 +80,10 @@ namespace Mozkomor.GrinGoldMinerCLI
                         }
                     }
                 }
-                catch { }
+                catch
+                {
+                    ;
+                }
 
                 Serialization.Serialize<Config>(generated_config, configPath);
                 Console.WriteLine($"ERROR: missing config.xml, created new config.xml in directory with miner ({configPath}), please set the values in this file");

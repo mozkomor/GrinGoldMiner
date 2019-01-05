@@ -82,7 +82,10 @@ namespace CudaSolver
                     Comms.ConnectToMaster(port);
                 }
                 else
+                {
                     TEST = true;
+                    CGraph.ShowCycles = true;
+                }
             }
             catch (Exception ex)
             {
@@ -233,7 +236,7 @@ namespace CudaSolver
                     }
                     currentJob = currentJob.Next();
 
-                    Logger.Log(LogLevel.Info, string.Format("Trimming #{4}: {0} {1} {2} {3}", currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, currentJob.jobID));
+                    Logger.Log(LogLevel.Debug, string.Format("GPU NV{4}:Trimming #{4}: {0} {1} {2} {3}", currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, currentJob.jobID, deviceID));
 
                     Solution s;
                     if (graphSolutions.TryDequeue(out s))
@@ -305,7 +308,7 @@ namespace CudaSolver
                     currentJob.trimTime = timer.ElapsedMilliseconds;
 
                     //Console.WriteLine("Trimmed in {0}ms to {1} edges", timer.ElapsedMilliseconds, count[0]);
-                    Logger.Log(LogLevel.Info, string.Format("Trimmed in {0}ms to {1} edges", timer.ElapsedMilliseconds, count[0]));
+                    Logger.Log(LogLevel.Info, string.Format("GPU NV{2}:Trimmed in {0}ms to {1} edges", timer.ElapsedMilliseconds, count[0], deviceID));
 
                     if (TEST)
                     {

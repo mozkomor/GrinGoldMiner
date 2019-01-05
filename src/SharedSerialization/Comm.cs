@@ -193,6 +193,7 @@ namespace SharedSerialization
 
     public class GPUOption
     {
+        public string GPUName { get; set; }
         public WorkerType GPUType { get; set; }
         public int DeviceID { get; set; }
         public int PlatformID { get; set; }

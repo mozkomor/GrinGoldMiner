@@ -104,7 +104,7 @@ namespace CudaSolver
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(LogLevel.Warning, "Listen error", ex);
+                    Logger.Log(LogLevel.Warning, "Listen error! ", ex);
                     if (errorCounter++ > 3)
                     {
                         Close();

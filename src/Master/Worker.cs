@@ -108,7 +108,7 @@ namespace Mozkomor.GrinGoldMiner
                 worker = Process.Start(new ProcessStartInfo()
                 {
                     FileName = (type == WorkerType.NVIDIA) ? Path.Combine("solvers", "CudaSolver.exe") : Path.Combine("solvers", "OclSolver.exe"),
-                    Arguments = string.Format("{0} {1}", workerDeviceID, workerCommPort),
+                    Arguments = string.Format("{0} {1} {2}", workerDeviceID, workerCommPort, workerPlatformID),
                     CreateNoWindow = !DEBUG,
                     UseShellExecute = false
                 });

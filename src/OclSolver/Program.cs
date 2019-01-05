@@ -62,18 +62,6 @@ namespace OclSolver
 
         static void Main(string[] args)
         {
-            //Environment.SetEnvironmentVariable("GPU_FORCE_64BIT_PTR", "1", EnvironmentVariableTarget.Machine);
-            //Environment.SetEnvironmentVariable("GPU_MAX_HEAP_SIZE", "100", EnvironmentVariableTarget.Machine);
-            //Environment.SetEnvironmentVariable("GPU_USE_SYNC_OBJECTS", "1", EnvironmentVariableTarget.Machine);
-            //Environment.SetEnvironmentVariable("GPU_MAX_ALLOC_PERCENT", "100", EnvironmentVariableTarget.Machine);
-            //Environment.SetEnvironmentVariable("GPU_SINGLE_ALLOC_PERCENT", "100", EnvironmentVariableTarget.Machine);
-            //Environment.SetEnvironmentVariable("GPU_64BIT_ATOMICS", "1", EnvironmentVariableTarget.Machine);
-            //Environment.SetEnvironmentVariable("AMD_OCL_BUILD_OPTIONS_APPEND", "-cl-std=CL2.0", EnvironmentVariableTarget.Machine);
-            //var ev =Environment.GetEnvironmentVariables();
-
-            Console.WriteLine("Solver starting!");
-            Console.WriteLine();
-
             try
             {
                 if (args.Length > 0)
@@ -152,6 +140,14 @@ namespace OclSolver
                 {
                     try
                     {
+                        //Environment.SetEnvironmentVariable("GPU_FORCE_64BIT_PTR", "1", EnvironmentVariableTarget.Machine);
+                        Environment.SetEnvironmentVariable("GPU_MAX_HEAP_SIZE", "100", EnvironmentVariableTarget.User);
+                        Environment.SetEnvironmentVariable("GPU_USE_SYNC_OBJECTS", "1", EnvironmentVariableTarget.User);
+                        Environment.SetEnvironmentVariable("GPU_MAX_ALLOC_PERCENT", "100", EnvironmentVariableTarget.User);
+                        Environment.SetEnvironmentVariable("GPU_SINGLE_ALLOC_PERCENT", "100", EnvironmentVariableTarget.User);
+                        Environment.SetEnvironmentVariable("GPU_64BIT_ATOMICS", "1", EnvironmentVariableTarget.User);
+                        //Environment.SetEnvironmentVariable("AMD_OCL_BUILD_OPTIONS_APPEND", "-cl-std=CL2.0", EnvironmentVariableTarget.Machine);
+
                         GpuDevicesMessage gpum = new GpuDevicesMessage() { devices = new List<GpuDevice>() };
                         //foreach (Platform platform in platforms)
                         for (int p = 0; p < platforms.Count(); p++)
@@ -327,7 +323,7 @@ namespace OclSolver
                                                 kernelSeedA.SetKernelArgumentGeneric(2, currentJob.k2);
                                                 kernelSeedA.SetKernelArgumentGeneric(3, currentJob.k3);
 
-                                                Logger.Log(LogLevel.Info, string.Format("Trimming #{4}: {0} {1} {2} {3}", currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, currentJob.jobID));
+                                                Logger.Log(LogLevel.Debug, string.Format("GPU AMD{4}:Trimming #{4}: {0} {1} {2} {3}", currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, currentJob.jobID, deviceID));
 
                                                 Solution s;
                                                 if (graphSolutions.TryDequeue(out s))
@@ -376,7 +372,7 @@ namespace OclSolver
 
                                                 sw.Stop();
 
-                                                Logger.Log(LogLevel.Info, string.Format("Trimmed in {0}ms to {1} edges", sw.ElapsedMilliseconds, edgesCount[0]));
+                                                Logger.Log(LogLevel.Info, string.Format("GPU AMD{2}:Trimmed in {0}ms to {1} edges", sw.ElapsedMilliseconds, edgesCount[0], deviceID));
 
                                                 CGraph cg = new CGraph();
                                                 cg.SetEdges(edgesLeft, (int)edgesCount[0]);
