@@ -7,6 +7,8 @@ namespace Mozkomor.GrinGoldMinerCLI
 {
     class Program
     {
+        private static volatile bool IsTerminated;
+
         static void Main(string[] args)
         {
             Console.CancelKeyPress += delegate
@@ -95,6 +97,8 @@ namespace Mozkomor.GrinGoldMinerCLI
             WorkerManager.Init(config);
             ConnectionManager.Init(config);
 
+            Task.Factory.StartNew(() => { WriteGUI(); }, TaskCreationOptions.LongRunning);
+
             while (Console.ReadKey().Key != ConsoleKey.Q)
             {
             }
@@ -106,16 +110,79 @@ namespace Mozkomor.GrinGoldMinerCLI
 
         public static void Close()
         {
-            ConnectionManager.CloseAll();
-            Environment.Exit(0);
+            try
+            {
+                IsTerminated = true;
+                ConnectionManager.CloseAll();
+                Environment.Exit(0);
+            }
+            catch { }
         }
 
-        private void WriteGUI()
+        private static void WriteGUI()
         {
-            Console.Clear();
-            Console.WriteLine("Grin Gold Miner v0.0.0.0.0.0.8");
-            Console.WriteLine("------------------------------");
+            while (!IsTerminated)
+            {
+                //Console.Clear();
+                Console.CursorVisible = false;
+                Console.SetCursorPosition(0, 0);
 
+                Console.WriteLine("Grin Gold Miner 2.0");
+                Console.WriteLine("------------------------------------------------------------------------------------------");
+                WipeLine();
+                Console.Write("Mining for: ");
+                Console.CursorLeft = 20;
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.Write("USER"); Console.ResetColor();
+                Console.CursorLeft = 35;
+                Console.WriteLine("Stratum Server: stratum.pool.com");
+                WipeLine();
+                Console.Write("Connection status: ");
+                Console.CursorLeft = 20;
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.Write("CONNECTED"); Console.ResetColor();
+
+                Console.CursorLeft = 35;
+                Console.WriteLine("Last job in:    35 seconds");
+                WipeLine();
+                Console.Write("Submitted shares: ");
+                Console.CursorLeft = 20;
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.Write("578"); Console.ResetColor();
+
+                Console.CursorLeft = 35;
+                Console.WriteLine("Last share:     10 seconds");
+                WipeLine();
+                Console.WriteLine("------------------------------------------------------------------------------------------");
+                WipeLine();
+                foreach (var w in WorkerManager.workers)
+                {
+                    w.PrintStatusLinesToConsole();
+                }
+                Console.WriteLine("------------------------------------------------------------------------------------------");
+                //Console.ForegroundColor = ConsoleColor.Yellow;
+                //Console.WriteLine("Last log messages:"); Console.ResetColor();
+                WipeLines(5);
+                Console.WriteLine(Logger.GetlastLogs());
+                WipeLine();
+
+                Task.Delay(500).Wait();
+            }
+        }
+
+        private static void WipeLine()
+        {
+            Console.Write("                                                                                                              ");
+            Console.CursorLeft = 0;
+        }
+        private static void WipeLines(int cnt)
+        {
+            for (int i = 0; i < cnt; i++)
+            {
+                Console.WriteLine("                                                                                                              ");
+                Console.CursorLeft = 0;
+            }
+            Console.CursorTop -= cnt;
         }
     }
 }

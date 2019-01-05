@@ -6,20 +6,17 @@ namespace Mozkomor.GrinGoldMiner
 {
     public class WorkerManager
     {
-        static List<Worker> workers = new List<Worker>();
+        public static List<Worker> workers = new List<Worker>();
 
         public static void Init(Config config)
         {
+            int i = 0;
             foreach(var gpu in config.GPUOptions)
             {
-                Worker w = new Worker(gpu.GPUType, gpu.DeviceID, gpu.PlatformID);
+                Worker w = new Worker(gpu, i++);
                 workers.Add(w);
                 w.Start();
             }
-            
-
-            //var cards = w.Start();
-            ;
         }
 
         //worker found solution

@@ -14,7 +14,7 @@ namespace Mozkomor.GrinGoldMiner
 {
     public class Worker
     {
-        private const bool DEBUG = true;
+        private const bool DEBUG = false;
 
         private Process worker;
         private TcpClient client;
@@ -33,14 +33,124 @@ namespace Mozkomor.GrinGoldMiner
         private long workerTotalLogs = 0;
         private volatile bool IsTerminated;
 
+        private SharedSerialization.LogMessage lastLog = new LogMessage() { message = "-", time = DateTime.MinValue };
+        private SharedSerialization.LogMessage lastDebugLog;
+        private Solution lastSolution = null;
+        private volatile uint totalSols = 0;
+
         private int errors = 0;
 
- 	public Worker(WorkerType gpuType, int gpuID, int platformID)
+        public int ID { get; }
+
+        private GPUOption gpu;
+
+        public Worker(WorkerType gpuType, int gpuID, int platformID)
         {
             type = gpuType;
             workerDeviceID = gpuID;
             workerPlatformID = platformID;
-            workerCommPort = 13500 + (int)gpuType + gpuID;
+            workerCommPort = 13500 + (int)gpuType + gpuID * platformID;
+        }
+
+        public Worker(GPUOption gpu, int id)
+        {
+            this.ID = id;
+            this.gpu = gpu;
+            type = gpu.GPUType;
+            workerDeviceID = gpu.DeviceID;
+            workerPlatformID = gpu.PlatformID;
+            workerCommPort = 13500 + (int)gpu.GPUType + gpu.DeviceID * gpu.PlatformID;
+        }
+
+        private float GetGPS()
+        {
+            if (lastSolution != null && lastSolution.job != null)
+            {
+                var interval = lastSolution.job.solvedAt - lastSolution.job.timestamp;
+                var attempts = lastSolution.job.graphAttempts;
+
+                if (interval.TotalSeconds > 0)
+                    return (float)attempts / (float)interval.TotalSeconds;
+                return 0;
+            }
+            else
+                return 0;
+        }
+
+        public void PrintStatusLinesToConsole()
+        {
+            try
+            {
+                Console.Write($"GPU {ID}: {gpu.GPUName}");
+                Console.CursorLeft = 30;
+                switch (GetStatus())
+                {
+                    case GPUStatus.STARTING:
+                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        Console.Write($"STARTING");
+                        break;
+                    case GPUStatus.ONLINE:
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.Write($"ONLINE");
+                        break;
+                    case GPUStatus.OFFLINE:
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write($"OFFLINE");
+                        break;
+                    case GPUStatus.DISABLED:
+                        Console.ForegroundColor = ConsoleColor.DarkGray;
+                        Console.Write($"DISABLED");
+                        break;
+                    case GPUStatus.ERROR:
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write($"ERROR");
+                        break;
+                }
+                Console.ResetColor();
+                Console.CursorLeft = 45;
+                Console.Write($"Mining at {GetGPS():F2} gps");
+                Console.CursorLeft = 75;
+                Console.WriteLine($"Solutions: {totalSols}");
+                WipeLine();
+                Console.CursorLeft = 7; Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.WriteLine($"Last Message: {lastLog.ToShortString()}"); Console.ResetColor();
+                WipeLine();
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"ERROR GPU {ID}, MSG: {ex.Message}");
+                Console.ResetColor();
+                WipeLine();
+            }
+        }
+
+        private static void WipeLine()
+        {
+            Console.Write("                                                                                                              ");
+            Console.CursorLeft = 0;
+        }
+
+        private GPUStatus GetStatus()
+        {
+            try
+            {
+
+                if (lastLog.time == DateTime.MinValue || lastSolution == null)
+                    return GPUStatus.STARTING;
+                else if (!gpu.Enabled)
+                    return GPUStatus.DISABLED;
+                else if (lastLog.time.AddMinutes(10) > DateTime.Now && lastSolution.job.timestamp.AddMinutes(10) < DateTime.Now)
+                    return GPUStatus.ERROR;
+                else if (lastSolution.job.timestamp.AddMinutes(10) < DateTime.Now)
+                    return GPUStatus.OFFLINE;
+                else
+                    return GPUStatus.ONLINE;
+            }
+            catch
+            {
+                return GPUStatus.ERROR;
+            }
         }
 
         public List<GpuDevice> GetDevices()
@@ -99,6 +209,9 @@ namespace Mozkomor.GrinGoldMiner
         {
             try
             {
+                if (!gpu.Enabled)
+                    return true;
+
 #if DEBUG
                 TcpListener l = new TcpListener(IPAddress.Parse("0.0.0.0"), workerCommPort);
 #else
@@ -137,7 +250,15 @@ namespace Mozkomor.GrinGoldMiner
                     switch (payload)
                     {
                         case SharedSerialization.Solution sol:
+                            totalSols++;
+                            lastSolution = sol;
                             WorkerManager.SubmitSolution(sol);
+                            break;
+                        case SharedSerialization.LogMessage log:
+                            if (log.level == SharedSerialization.LogLevel.Debug)
+                                lastDebugLog = log;
+                            else
+                                lastLog = log;
                             break;
                     }
                 }
@@ -165,5 +286,12 @@ namespace Mozkomor.GrinGoldMiner
         }
     }
 
-
+    public enum GPUStatus
+    {
+        STARTING,
+        DISABLED,
+        ONLINE,
+        OFFLINE,
+        ERROR
+    }
 }

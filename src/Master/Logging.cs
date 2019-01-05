@@ -95,7 +95,7 @@ namespace Mozkomor.GrinGoldMiner
                     }
                 }
 
-                if (level >= logOptions.ConsoleMinimumLogLevel)
+                //if (level >= logOptions.ConsoleMinimumLogLevel)
                 {
                     //if ((level == LogLevel.ERROR) || (level == LogLevel.WARNING))
                     //    Console.ForegroundColor = ConsoleColor.Red;
@@ -117,6 +117,21 @@ namespace Mozkomor.GrinGoldMiner
             last5msg[0] = msg;
         }
 
+        public static string GetlastLogs()
+        {
+            return $"{Shorten(last5msg[0])}\n{Shorten(last5msg[1])}\n{Shorten(last5msg[2] )}\n{Shorten(last5msg[3])}\n{Shorten(last5msg[4])}";
+        }
+
+        public static string Shorten(string s)
+        {
+            if (s == null)
+                return "";
+
+            if (s.Length > 100)
+                return s.Substring(0, 100) + "...";
+
+            return s;
+        }
 
         //surround by lock when calling
         public static bool OverloadCheck(string msg)
