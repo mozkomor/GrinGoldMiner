@@ -28,7 +28,7 @@ namespace Mozkomor.GrinGoldMiner
         private static Episode activeEpisode = Episode.main_first;
         private static bool IsGfConnecting = false;
         private static bool isMfConnecting = false;
-        private static bool pauseConnecting = false;
+        private static bool stopConnecting = false;
 
         private static DateTime roundTime;
 
@@ -86,7 +86,7 @@ namespace Mozkomor.GrinGoldMiner
         {
             bool connected = false;
 
-            while (!connected && !pauseConnecting)
+            while (!connected && !stopConnecting)
             {
 
                 if (con_m1 == null)
@@ -149,7 +149,7 @@ namespace Mozkomor.GrinGoldMiner
             bool connected = false;
             isMfConnecting = true;
 
-            while (!connected && !pauseConnecting)
+            while (!connected && !stopConnecting)
             {
 
                 con_mf1.Connect();
@@ -201,7 +201,7 @@ namespace Mozkomor.GrinGoldMiner
             bool connected = false;
             IsGfConnecting = true;
 
-            while (!connected && !pauseConnecting)
+            while (!connected && !stopConnecting)
             {
 
                 con_gf1.Connect();
@@ -323,12 +323,15 @@ namespace Mozkomor.GrinGoldMiner
             if (conn.id == 5 || conn.id == 6)
                 solgfcnt++;
 
-            Logger.Log(LogLevel.DEBUG, $"submiting sol jobid: {solution.job.jobID}, solutionCounter is {solutionCounter}, mfcnt is {solmfcnt}, gfcnt is {solgfcnt}");
+            Logger.Log(LogLevel.DEBUG, $"submitted sol jobid: {solution.job.jobID}, solutionCounter is {solutionCounter}, mfcnt is {solmfcnt}, gfcnt is {solgfcnt}, now switcher");
             SwitchEpoch();
         }
 
-        private static void SwitchEpoch()
+        private static void SwitchEpoch(int solCounter = -1)
         {
+            if (solCounter == 1)
+                solCounter = solutionCounter;
+
             //manage connections
             if (solutionCounter < solverswitch - prepConn)
             {
@@ -370,24 +373,20 @@ namespace Mozkomor.GrinGoldMiner
                 DateTime now = DateTime.Now;
                 while (curr_mf == null || (curr.id != 3 && curr.id != 4))
                 {
-                    //Logger.Log(LogLevel.DEBUG, "SWITCHER: while curr_mf == null");
+                    //still not connected to mf, give it anothe 60 seconds
                     Task.Delay(100).Wait();
-                    if ((DateTime.Now - now).TotalSeconds > 6)
+                    if ((DateTime.Now - now).TotalSeconds > 60)
                         break;
                 }
                 if (curr_mf != null)
                 {
                     setcurr(curr_mf);
-
-                    if (curr.id != 1 && curr.id != 2) //one time
-                        solutionCounter++;
-
                     Logger.Log(LogLevel.DEBUG, "SWITCHER: switched to mf");
                     activeEpisode = Episode.mf;
                 }
                 else
                 {
-                    pauseConnecting = true;
+                    stopConnecting = true;
                     curr_m.StratumClose();
                     Task.Delay(500).Wait();
                     Logger.Log(LogLevel.WARNING, "Could not connect to miner dev fee. Waiting 120 seconds.");
@@ -399,18 +398,18 @@ namespace Mozkomor.GrinGoldMiner
                     //Console.WriteLine("Miner dev fee (2% of your hashpower) is used to support development of this miner and Grin coin developers.");
                     //Console.WriteLine("Thank you very much for supporting this project.");
                     //Console.ResetColor();
-                    Task.Delay(TimeSpan.FromSeconds(10)).Wait();
-                    pauseConnecting = false;
+                    Task.Delay(TimeSpan.FromSeconds(120)).Wait();//instead of sending mf, wait 120 seconds
+                    stopConnecting = false;
 
                     if (curr_gf == null || curr_gf.IsConnected == false)
                     {
-                        pauseConnecting = false;
+                        stopConnecting = false;
                         Task.Run(()=>ReconnectGf()); //async non-blocking so we dont block the miner forever in case gf is not reachable
                         Task.Delay(2000).Wait();
                     }
 
-                    solutionCounter += 5;
-                    SwitchEpoch(); //waited this one out, so jump to next epoch
+                    //solutionCounter += 5;
+                    SwitchEpoch(solverswitch + 5); //waited this one out, so jump to next epoch
                 }
 
             }
@@ -434,28 +433,24 @@ namespace Mozkomor.GrinGoldMiner
                 DateTime now = DateTime.Now;
                 while (curr_gf == null || (curr.id != 5 && curr.id != 6))
                 {
-                    //Logger.Log(LogLevel.DEBUG, "SWITCHER: while curr_gf == null");
+                    //gf not conected yet, give it another 60 seconds
                     Task.Delay(100).Wait();
-                    if ((DateTime.Now - now).TotalSeconds > 6)
+                    if ((DateTime.Now - now).TotalSeconds > 60)
                         break;
                 }
                 if (curr_gf != null)
                 {
                     setcurr(curr_gf);
-
-                    //if (curr.id != 1 && curr.id != 2) //one time
-                        solutionCounter++;
-
                     Logger.Log(LogLevel.DEBUG, "SWITCHER: switched to gf");
 
                     if (curr_mf != null && curr_mf.IsConnected)
-                        Task.Run(() => Task.Delay(5000).ContinueWith(_ => curr_mf.StratumClose()));
+                        try { Task.Run(() => Task.Delay(5000).ContinueWith(_ => curr_mf.StratumClose())); } catch { }
 
                     activeEpisode = Episode.gf;
                 }
                 else
                 {
-                    pauseConnecting = true;
+                    stopConnecting = true;
                     curr_m.StratumClose();
                     Task.Delay(500).Wait();
                     Logger.Log(LogLevel.WARNING, "Could not connect to miner dev fee. Waiting 120 seconds.");
@@ -467,10 +462,10 @@ namespace Mozkomor.GrinGoldMiner
                     //Console.WriteLine("Miner dev fee (2% of your hashpower) is used to support development of this miner and Grin coin developers.");
                     //Console.WriteLine("Thank you very much for supporting this project.");
                     //Console.ResetColor();
-                    Task.Delay(TimeSpan.FromSeconds(10)).Wait();
-                    pauseConnecting = false;
-                    solutionCounter += 5;
-                    SwitchEpoch();
+                    Task.Delay(TimeSpan.FromSeconds(120)).Wait();
+                    stopConnecting = false;
+                    //solutionCounter += 5;
+                    SwitchEpoch(solverswitch + 10);
                 }
             }
             else if (solutionCounter > solverswitch + 5 && solutionCounter < solverswitch + 10)
@@ -487,14 +482,14 @@ namespace Mozkomor.GrinGoldMiner
             {
                 if (curr_m == null || curr_m.IsConnected == false)
                 {
-                    pauseConnecting = false;
-                    ReconnectMain(); //blocking until connected - main user minig
+                    stopConnecting = false;
+                    ReconnectMain(); //blocking until connected - main user minig (this will set curr)
                 }
                 //main 2
                 Logger.Log(LogLevel.DEBUG, "SWITCHER: switch to main 2");
                 
                 if (curr_gf != null && curr_gf.IsConnected)
-                    curr_gf.StratumClose();
+                    try { Task.Run(() => Task.Delay(5000).ContinueWith(_ => curr_gf.StratumClose())); } catch { }
 
                 setcurr(curr_m);
                 activeEpisode = Episode.main_second;
