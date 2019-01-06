@@ -35,6 +35,7 @@ namespace Mozkomor.GrinGoldMiner
 
         private SharedSerialization.LogMessage lastLog = new LogMessage() { message = "-", time = DateTime.MinValue };
         private SharedSerialization.LogMessage lastDebugLog;
+        private SharedSerialization.LogMessage lastErrLog = null;
         private Solution lastSolution = null;
         private volatile uint totalSols = 0;
 
@@ -135,12 +136,11 @@ namespace Mozkomor.GrinGoldMiner
         {
             try
             {
-
                 if (lastLog.time == DateTime.MinValue || lastSolution == null)
                     return GPUStatus.STARTING;
                 else if (!gpu.Enabled)
                     return GPUStatus.DISABLED;
-                else if (lastLog.time.AddMinutes(10) > DateTime.Now && lastSolution.job.timestamp.AddMinutes(10) < DateTime.Now)
+                else if (lastErrLog != null)
                     return GPUStatus.ERROR;
                 else if (lastSolution.job.timestamp.AddMinutes(10) < DateTime.Now)
                     return GPUStatus.OFFLINE;
@@ -202,7 +202,6 @@ namespace Mozkomor.GrinGoldMiner
                 Logger.Log(ex);
                 return false;
             }
-
         }
 
         public bool Start()
@@ -257,6 +256,8 @@ namespace Mozkomor.GrinGoldMiner
                         case SharedSerialization.LogMessage log:
                             if (log.level == SharedSerialization.LogLevel.Debug)
                                 lastDebugLog = log;
+                            else if (log.level == SharedSerialization.LogLevel.Error)
+                                lastErrLog = lastLog = log;
                             else
                                 lastLog = log;
                             break;

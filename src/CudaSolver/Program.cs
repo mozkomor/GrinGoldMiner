@@ -184,6 +184,8 @@ namespace CudaSolver
             catch (Exception ex)
             {
                 Logger.Log(LogLevel.Error, "Unable to create kernels", ex);
+                Task.Delay(500).Wait();
+                return;
             }
 
             try
@@ -207,6 +209,8 @@ namespace CudaSolver
             catch (Exception ex)
             {
                 Logger.Log(LogLevel.Error, "Unable to create buffers, out of memory?", ex);
+                Task.Delay(500).Wait();
+                return;
             }
 
             try
@@ -216,6 +220,8 @@ namespace CudaSolver
             catch (Exception ex)
             {
                 Logger.Log(LogLevel.Error, "Unable to create pinned memory.", ex);
+                Task.Delay(500).Wait();
+                return;
             }
 
             int loopCnt = 0;
@@ -260,7 +266,6 @@ namespace CudaSolver
                     currentJob = currentJob.Next();
 
                     Logger.Log(LogLevel.Debug, string.Format("GPU NV{4}:Trimming #{4}: {0} {1} {2} {3}", currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, currentJob.jobID, deviceID));
-
 
                     timer.Restart();
 
@@ -421,6 +426,8 @@ namespace CudaSolver
             // clean up
             try
             {
+                Comms.Close();
+
                 d_buffer.Dispose();
                 d_indexesA.Dispose();
                 d_indexesB.Dispose();
