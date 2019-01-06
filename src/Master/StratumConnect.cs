@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using SharedSerialization;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -45,6 +46,8 @@ namespace Mozkomor.GrinGoldMiner
         private StreamReader reader;
         private Task watchdog = null;
         private Task listener = null;
+        public static AutoResetEvent flushToStratum;
+        public static ConcurrentQueue<StratumRpcRequest> solutionQueue = new ConcurrentQueue<StratumRpcRequest>();
         //private CancellationTokenSource wdSource = new CancellationTokenSource();
         //private CancellationTokenSource listenerSource = new CancellationTokenSource();
         //private CancellationToken wdCancel;
@@ -57,6 +60,7 @@ namespace Mozkomor.GrinGoldMiner
         private volatile bool terminated = false;
         private int mined = 0;
         internal Stats statistics;
+        private object sender;
 
         public Action ReconnectAction { get; internal set; }
 
@@ -83,6 +87,8 @@ namespace Mozkomor.GrinGoldMiner
             {
                 if (client != null)
                     client.Dispose();
+
+                flushToStratum = new AutoResetEvent(false);
 
                 System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
 
@@ -115,6 +121,10 @@ namespace Mozkomor.GrinGoldMiner
 
                     if (listener == null)
                         listener = Task.Factory.StartNew(() => { Listen(); }, TaskCreationOptions.LongRunning);
+
+                    if (sender == null)
+                        sender = Task.Factory.StartNew(() => { Sender(); }, TaskCreationOptions.LongRunning);
+
                     //listener = Task.Factory.StartNew(() => { Listen(); }, listenerCancel, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
                 }
@@ -387,13 +397,30 @@ namespace Mozkomor.GrinGoldMiner
                 StratumRpcRequest request = new StratumRpcRequest(StratumCommand.Solution);
                 request.SetParams(pow);
 
-                if (GrinSend<StratumRpcRequest>(request))
+                //if (GrinSend<StratumRpcRequest>(request))
+                lock(solutionQueue)
                 {
-                    totalShares++;
-                    lastShare = DateTime.Now;
+                    solutionQueue.Enqueue(request);
+                    flushToStratum.Set();
                 }
+                totalShares++;
+                lastShare = DateTime.Now;
+
             }
             catch(Exception ex) { Logger.Log(ex); }
+        }
+
+        private void Sender()
+        {
+            while (!terminated)
+            {
+                flushToStratum.WaitOne();
+
+                if (solutionQueue.TryDequeue(out StratumRpcRequest r))
+                {
+                    GrinSend<StratumRpcRequest>(r);
+                }
+            }
         }
 
         internal void KeepAlive()

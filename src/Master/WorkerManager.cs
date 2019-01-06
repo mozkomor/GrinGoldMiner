@@ -7,7 +7,6 @@ namespace Mozkomor.GrinGoldMiner
     public class WorkerManager
     {
         public static List<Worker> workers = new List<Worker>();
-
         public static DateTime lastJob = DateTime.Now;
 
         public static void Init(Config config)

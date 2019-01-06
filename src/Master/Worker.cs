@@ -60,7 +60,7 @@ namespace Mozkomor.GrinGoldMiner
             type = gpu.GPUType;
             workerDeviceID = gpu.DeviceID;
             workerPlatformID = gpu.PlatformID;
-            workerCommPort = 13500 + (int)gpu.GPUType + gpu.DeviceID * gpu.PlatformID;
+            workerCommPort = 13500 + (int)gpu.GPUType + id;
         }
 
         private float GetGPS()
@@ -142,7 +142,7 @@ namespace Mozkomor.GrinGoldMiner
                     return GPUStatus.DISABLED;
                 else if (lastErrLog != null)
                     return GPUStatus.ERROR;
-                else if (lastSolution.job.timestamp.AddMinutes(10) < DateTime.Now)
+                else if (lastSolution.job.timestamp.AddMinutes(15) < DateTime.Now)
                     return GPUStatus.OFFLINE;
                 else
                     return GPUStatus.ONLINE;

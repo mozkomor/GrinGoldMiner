@@ -219,6 +219,7 @@ namespace Mozkomor.GrinGoldMinerCLI
 
                                 status = conn.IsConnected ? "CONNECTED" : "DISCONNECTED";
                             }
+                            who = ConnectionManager.IsInFee() ? "FEE" : "USER";
 
                             Console.WriteLine("Grin Gold Miner 2.0");
                             Console.WriteLine("------------------------------------------------------------------------------------------");
