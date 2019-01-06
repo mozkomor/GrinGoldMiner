@@ -8,8 +8,12 @@ namespace Mozkomor.GrinGoldMiner
     {
         public static List<Worker> workers = new List<Worker>();
 
+        public static DateTime lastJob = DateTime.Now;
+
         public static void Init(Config config)
         {
+            if (config == null) return;
+
             int i = 0;
             foreach(var gpu in config.GPUOptions)
             {
@@ -23,12 +27,14 @@ namespace Mozkomor.GrinGoldMiner
         public static void SubmitSolution(SharedSerialization.Solution sol)
         {
             //todo wrap Solution into richer class with internal info
+            // diff check !!
             ConnectionManager.SubmitSol(sol);
         }
 
         //new job received from stratum connection
         public static void newJobReceived(SharedSerialization.Job job)
         {
+            lastJob = DateTime.Now;
             //update workers..
             foreach (var worker in workers)
             {

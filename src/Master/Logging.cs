@@ -18,6 +18,12 @@ namespace Mozkomor.GrinGoldMiner
         WARNING,
         ERROR
     }
+    public enum ConsoleOutputMode
+    {
+        STATIC_TUI,
+        ROLLING_LOG,
+        WORKER_MSG
+    }
     public class LogOptions
     {
         public LogLevel FileMinimumLogLevel { get; set; }
@@ -30,6 +36,8 @@ namespace Mozkomor.GrinGoldMiner
         private static DateTime _lastDayLogCreated;
         private static Dictionary<string,int> msgcnt = new Dictionary<string,int>();
         public static string[] last5msg = new string[5];
+        public static volatile ConsoleOutputMode consoleMode = ConsoleOutputMode.STATIC_TUI;
+
         private static string LogPath
         {
             get
@@ -95,15 +103,21 @@ namespace Mozkomor.GrinGoldMiner
                     }
                 }
 
-                //if (level >= logOptions.ConsoleMinimumLogLevel)
-                {
-                    //if ((level == LogLevel.ERROR) || (level == LogLevel.WARNING))
-                    //    Console.ForegroundColor = ConsoleColor.Red;
+                msg = msg.Trim();
+                pushMessage($"{level.ToString(),-8}{msg}");
 
-                    //Console.WriteLine($"{level.ToString()}    {msg}");
-                    pushMessage($"{level.ToString()}    {msg}");
-                    //Console.ResetColor();
+                if (consoleMode == ConsoleOutputMode.ROLLING_LOG)
+                {
+                    if (level >= logOptions.ConsoleMinimumLogLevel)
+                    {
+                        if ((level == LogLevel.ERROR) || (level == LogLevel.WARNING))
+                            Console.ForegroundColor = ConsoleColor.Red;
+
+                        Console.WriteLine($"{level.ToString(),-8}{msg}");
+                        Console.ResetColor();
+                    }
                 }
+
             }
             catch { } //epic fail
         }

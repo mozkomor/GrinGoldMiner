@@ -426,6 +426,8 @@ namespace CudaSolver
             // clean up
             try
             {
+                Task.Delay(500).Wait();
+
                 Comms.Close();
 
                 d_buffer.Dispose();
@@ -441,8 +443,6 @@ namespace CudaSolver
                     ctx.Dispose();
             }
             catch { }
-
-            Task.Delay(500).Wait();
         }
 
         static void AllocateHostMemory(bool bPinGenericMemory, ref int[] pp_a, ref CudaPageLockedHostMemory<int> pp_Aligned_a, int nbytes)

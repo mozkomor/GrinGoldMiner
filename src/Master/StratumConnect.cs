@@ -22,14 +22,17 @@ namespace Mozkomor.GrinGoldMiner
     /// <summary>
     /// Hey, hey, heeeey
     /// </summary>
-    class StratumConnet
+    public class StratumConnet
     {
-        string ip;
-        int port;
+        public string ip;
+        public int port;
         public string login;
         public string password;
         public byte id;
         public bool notifyWorkers = false;
+
+        public static DateTime lastShare = DateTime.Now;
+        public static volatile uint totalShares = 0;
 
         /// <summary>
         /// is listening to TCP client in listener loop
@@ -162,10 +165,10 @@ namespace Mozkomor.GrinGoldMiner
                         continue;
                     }
 
-                    //Console.ForegroundColor = ConsoleColor.Green;
-                    //Console.WriteLine();
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine();
                     Logger.Log(LogLevel.DEBUG, $"(sc id {id}):TCP IN: {message} {Environment.NewLine}");
-                    //Console.ResetColor();
+                    Console.ResetColor();
 
                     try
                     {
@@ -212,16 +215,17 @@ namespace Mozkomor.GrinGoldMiner
                                 }
                                 else if (msg.ContainsKey("result") && msg["result"].ToString().StartsWith("blockfound"))
                                 {
-                                    //Console.ForegroundColor = ConsoleColor.Cyan;
+                                    Console.ForegroundColor = ConsoleColor.Cyan;
                                     //Console.WriteLine("###################################");
                                     Logger.Log(LogLevel.INFO, "######  Block mined!  #" + (++mined).ToString("D4") + "  ######"); // 8 chars
                                     //Console.WriteLine("###################################");
-                                    //Console.ResetColor();
+                                    Console.ResetColor();
                                     statistics.mined++;
                                 }
                                 break;
                             default:
-                                Logger.Log(LogLevel.INFO, para);
+                                if (method != "keepalive")
+                                    Logger.Log(LogLevel.INFO, para);
                                 break;
                         }
 
@@ -385,7 +389,8 @@ namespace Mozkomor.GrinGoldMiner
 
                 if (GrinSend<StratumRpcRequest>(request))
                 {
-
+                    totalShares++;
+                    lastShare = DateTime.Now;
                 }
             }
             catch(Exception ex) { Logger.Log(ex); }

@@ -44,7 +44,7 @@ namespace Mozkomor.GrinGoldMiner
         private static StratumConnet con_gf1;
         private static StratumConnet con_gf2;
 
-        private static StratumConnet curr;
+        public static StratumConnet curr;
         private static void setcurr(StratumConnet value)
         {
             lock (lock1)

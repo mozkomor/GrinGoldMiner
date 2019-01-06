@@ -138,6 +138,7 @@ namespace OclSolver
                 {
                     Console.WriteLine("Master connection failed, aborting");
                     Logger.Log(LogLevel.Error, "No master connection, exitting!");
+                    Task.Delay(500).Wait();
                     return;
                 }
 
@@ -178,6 +179,7 @@ namespace OclSolver
                     catch (Exception ex)
                     {
                         Logger.Log(LogLevel.Error, "Unable to enumerate OpenCL devices", ex);
+                        Task.Delay(500).Wait();
                         return;
                     }
                 }
@@ -195,6 +197,7 @@ namespace OclSolver
                 catch (Exception ex)
                 {
                     Logger.Log(LogLevel.Error, $"Unable to select OpenCL device {deviceID} on platform {platformID} ", ex);
+                    Task.Delay(500).Wait();
                     return;
                 }
 
@@ -235,7 +238,7 @@ namespace OclSolver
                                     catch (Exception ex)
                                     {
                                         Logger.Log(LogLevel.Error, "Unable to allocate buffers, out of memory?", ex);
-                                        Task.Delay(5000).Wait();
+                                        Task.Delay(500).Wait();
                                         return;
                                     }
 
@@ -453,6 +456,8 @@ namespace OclSolver
             }
             finally
             {
+                Task.Delay(500).Wait();
+
                 try
                 {
                     Comms.Close();
