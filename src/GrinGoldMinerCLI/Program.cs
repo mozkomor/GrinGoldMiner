@@ -64,6 +64,7 @@ namespace Mozkomor.GrinGoldMinerCLI
                 }
                 catch { }
 
+                int nvcnt = generated_config.GPUOptions.Count;
                 Console.WriteLine($"Detected {generated_config.GPUOptions.Count} suitable nvidia devices");
                 Task.Delay(2000).Wait();
 
@@ -88,7 +89,7 @@ namespace Mozkomor.GrinGoldMinerCLI
                         }
                     }
 
-                    Console.WriteLine($"Detected {devices.Count} suitable AMD devices");
+                    Console.WriteLine($"Detected {generated_config.GPUOptions.Count - nvcnt} suitable AMD devices");
                 }
                 catch
                 {
