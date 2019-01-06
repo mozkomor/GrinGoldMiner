@@ -87,6 +87,7 @@ namespace OclSolver
                 {
                     TEST = true;
                     CGraph.ShowCycles = true;
+                    Logger.CopyToConsole = true;
                 }
             }
             catch (Exception ex)

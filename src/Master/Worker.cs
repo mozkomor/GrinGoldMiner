@@ -221,7 +221,7 @@ namespace Mozkomor.GrinGoldMiner
                 {
                     FileName = (type == WorkerType.NVIDIA) ? Path.Combine("solvers", "CudaSolver.exe") : Path.Combine("solvers", "OclSolver.exe"),
                     Arguments = string.Format("{0} {1} {2}", workerDeviceID, workerCommPort, workerPlatformID),
-                    CreateNoWindow = !DEBUG,
+                    CreateNoWindow = true,
                     UseShellExecute = false
                 });
                 client = l.AcceptTcpClient();

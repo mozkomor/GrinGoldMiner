@@ -86,6 +86,7 @@ namespace CudaSolver
                 else
                 {
                     TEST = true;
+                    Logger.CopyToConsole = true;
                     CGraph.ShowCycles = true;
                 }
             }
