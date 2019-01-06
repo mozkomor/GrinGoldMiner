@@ -85,7 +85,7 @@ namespace Mozkomor.GrinGoldMiner
                 if (logOptions == null)
                 {
 #if DEBUG
-                    logOptions = new LogOptions() { FileMinimumLogLevel = LogLevel.DEBUG, ConsoleMinimumLogLevel = LogLevel.DEBUG };
+                logOptions = new LogOptions() { FileMinimumLogLevel = LogLevel.DEBUG, ConsoleMinimumLogLevel = LogLevel.DEBUG };
 #else
                 logOptions = new LogOptions() { FileMinimumLogLevel = LogLevel.WARNING, ConsoleMinimumLogLevel = LogLevel.INFO };
 #endif
@@ -102,13 +102,12 @@ namespace Mozkomor.GrinGoldMiner
                         }
                     }
                 }
-
-                msg = msg.Trim();
-                pushMessage($"{level.ToString(),-8}{msg}");
-
-                if (consoleMode == ConsoleOutputMode.ROLLING_LOG)
+                if (level >= logOptions.ConsoleMinimumLogLevel)
                 {
-                    if (level >= logOptions.ConsoleMinimumLogLevel)
+                    msg = msg.Trim();
+                    pushMessage($"{level.ToString(),-8}{msg}");
+
+                    if (consoleMode == ConsoleOutputMode.ROLLING_LOG)
                     {
                         if ((level == LogLevel.ERROR) || (level == LogLevel.WARNING))
                             Console.ForegroundColor = ConsoleColor.Red;
