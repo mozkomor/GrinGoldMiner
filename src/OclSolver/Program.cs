@@ -375,14 +375,15 @@ namespace OclSolver
                                                 commandQueue.EnqueueClearBuffer(bufferI2, 64 * 64 * 4, clearPattern);
                                                 commandQueue.EnqueueNDRangeKernel(kernelTail, 1, 4096 * 1024, 1024, 0);
 
-                                                edgesCount = commandQueue.EnqueueReadBuffer<uint>(bufferI2, 1);
+                                                edgesCount = commandQueue.EnqueueReadBuffer<uint>(bufferI2, 1); 
                                                 edgesCount[0] = edgesCount[0] > 1000000 ? 1000000 : edgesCount[0];
-                                                edgesLeft = commandQueue.EnqueueReadBuffer<int>(bufferA1, (int)edgesCount[0] * 2);
+                                                edgesLeft = commandQueue.EnqueueReadBuffer(bufferA1, (int)edgesCount[0] * 2);
 
                                                 OpenCl.DotNetCore.Interop.CommandQueues.CommandQueuesNativeApi.Flush(commandQueue.Handle);
                                                 OpenCl.DotNetCore.Interop.CommandQueues.CommandQueuesNativeApi.Finish(commandQueue.Handle);
 
                                                 sw.Stop();
+
                                                 currentJob.trimTime = sw.ElapsedMilliseconds;
                                                 currentJob.solvedAt = DateTime.Now;
 

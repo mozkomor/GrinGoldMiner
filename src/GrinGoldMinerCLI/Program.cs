@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Mozkomor.GrinGoldMiner;
 
@@ -9,6 +10,7 @@ namespace Mozkomor.GrinGoldMinerCLI
     {
         private static volatile bool IsTerminated;
         public static Config config;
+        public static readonly bool IsLinux = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
         static void Main(string[] args)
         {
@@ -183,6 +185,7 @@ namespace Mozkomor.GrinGoldMinerCLI
             catch { }
             finally
             {
+                Console.CursorVisible = true;
                 Environment.Exit(0);
             }
         }

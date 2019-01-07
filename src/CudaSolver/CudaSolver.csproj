@@ -15,10 +15,14 @@
 
   <ItemGroup>
     <None Remove="kernel_x64.ptx" />
+    <None Remove="kernel_x64_Turing.ptx" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="kernel_x64.ptx" />
+    <EmbeddedResource Include="kernel_x64.ptx">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </EmbeddedResource>
+    <EmbeddedResource Include="kernel_x64_Turing.ptx" />
   </ItemGroup>
 
   <ItemGroup>

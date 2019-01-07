@@ -239,7 +239,7 @@ namespace CudaSolver
                     }
 
                     // test runs only once
-                    if (TEST && loopCnt++ > 10000)
+                    if (TEST && loopCnt++ > 100)
                         Comms.IsTerminated = true;
 
                     Solution s;

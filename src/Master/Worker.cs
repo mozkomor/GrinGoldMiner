@@ -136,12 +136,12 @@ namespace Mozkomor.GrinGoldMiner
         {
             try
             {
-                if (lastLog.time == DateTime.MinValue || lastSolution == null)
-                    return GPUStatus.STARTING;
-                else if (!gpu.Enabled)
+                if (!gpu.Enabled)
                     return GPUStatus.DISABLED;
                 else if (lastErrLog != null)
                     return GPUStatus.ERROR;
+                else if (lastLog.time == DateTime.MinValue || lastSolution == null)
+                    return GPUStatus.STARTING;
                 else if (lastSolution.job.timestamp.AddMinutes(15) < DateTime.Now)
                     return GPUStatus.OFFLINE;
                 else
@@ -223,6 +223,9 @@ namespace Mozkomor.GrinGoldMiner
                     Arguments = string.Format("{0} {1} {2}", workerDeviceID, workerCommPort, workerPlatformID),
                     CreateNoWindow = true,
                     UseShellExecute = false
+                    //, RedirectStandardOutput =true
+                    //WindowStyle = ProcessWindowStyle.Hidden
+                    
                 });
                 client = l.AcceptTcpClient();
                 l.Stop();
