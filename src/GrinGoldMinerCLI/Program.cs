@@ -96,41 +96,81 @@ namespace Mozkomor.GrinGoldMinerCLI
                     ;
                 }
 
-                Console.WriteLine($"Enter your mining pool stratum address:");
-                string pool = Console.ReadLine();
-                generated_config.PrimaryConnection.ConnectionAddress = pool;
+                string pool = "";
                 string port = "13416";
-                if (pool.Contains(":"))
+                Console.WriteLine($"Select minig pool (press number):");
+                Console.WriteLine($"[1] grinmint.com");
+                Console.WriteLine($"[2] mwgrinpool.com");
+                Console.WriteLine($"[3] Custom stratum address");
+                var key = Console.ReadLine();
+
+                if (key == "1")
                 {
-                    // get port from url
-                    try
-                    {
-                        generated_config.PrimaryConnection.ConnectionAddress = pool.Split(':')[0];
-                        port = pool.Split(':')[1];
-                    }
-                    catch { }
+                    generated_config.PrimaryConnection.ConnectionAddress = "us-east.stratum.grinmint.com";
+                    generated_config.PrimaryConnection.ConnectionPort = 13416;
+                    generated_config.PrimaryConnection.Ssl = false;
+                    Console.WriteLine($"Enter your email (pool login):");
+                    var email = Console.ReadLine();
+                    Console.WriteLine($"Enter your rig name (e.g. rig1):");
+                    var rig = Console.ReadLine();
+                    if (string.IsNullOrWhiteSpace(rig)) rig = "rig1";
+                    generated_config.PrimaryConnection.Login = $"{email}/{rig}";
+                    Console.WriteLine($"Enter your pool password:");
+                    generated_config.PrimaryConnection.Password = Console.ReadLine();
+                }
+                else if (key == "2")
+                {
+                    generated_config.PrimaryConnection.ConnectionAddress = "stratum.MWGrinPool.com";
+                    generated_config.PrimaryConnection.ConnectionPort = 3333;
+                    generated_config.PrimaryConnection.Ssl = false;
+                    Console.WriteLine($"Enter your email (pool login):");
+                    var email = Console.ReadLine();
+                    generated_config.PrimaryConnection.Login = $"{email}";
+                    Console.WriteLine($"Enter your pool password:");
+                    generated_config.PrimaryConnection.Password = Console.ReadLine();
                 }
                 else
                 {
-                    Console.WriteLine($"Enter your mining pool stratum port:");
-                    port = Console.ReadLine();
-                }
-                try
-                {
-                    generated_config.PrimaryConnection.ConnectionPort = int.Parse(port.Trim());
-                }
-                catch
-                {
-                    Console.WriteLine($"Unable to parse port, please edit the config manually.");
-                }                
 
-                Console.WriteLine($"Use TLS? (y/n)         [Note that the pool:port must support TLS]");
-                string ssl = Console.ReadLine();
-                generated_config.PrimaryConnection.Ssl = ssl == "y" || ssl == "Y" || ssl == "YES" || ssl == "yes";
-                Console.WriteLine($"Enter your pool login:");
-                generated_config.PrimaryConnection.Login = Console.ReadLine();
-                Console.WriteLine($"Enter your pool password:");
-                generated_config.PrimaryConnection.Password = Console.ReadLine();
+                    Console.WriteLine($"Enter your mining pool stratum address:");
+                     pool = Console.ReadLine();
+                    generated_config.PrimaryConnection.ConnectionAddress = pool;
+                     port = "13416";
+                    if (pool.Contains(":"))
+                    {
+                        // get port from url
+                        try
+                        {
+                            generated_config.PrimaryConnection.ConnectionAddress = pool.Split(':')[0];
+                            port = pool.Split(':')[1];
+                        }
+                        catch { }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Enter your mining pool stratum port:");
+                        port = Console.ReadLine();
+                    }
+                
+                    try
+                    {
+                        generated_config.PrimaryConnection.ConnectionPort = int.Parse(port.Trim());
+                    }
+                    catch
+                    {
+                        Console.WriteLine($"Unable to parse port, please edit the config manually.");
+                    }
+
+                    Console.WriteLine($"Use TLS? (y/n)         [Note that the pool:port must support TLS]");
+                    string ssl = Console.ReadLine();
+                    generated_config.PrimaryConnection.Ssl = ssl == "y" || ssl == "Y" || ssl == "YES" || ssl == "yes";
+                    Console.WriteLine($"Enter your pool login:");
+                    generated_config.PrimaryConnection.Login = Console.ReadLine();
+                    Console.WriteLine($"Enter your pool password:");
+                    generated_config.PrimaryConnection.Password = Console.ReadLine();
+                }
+
+                
 
                 Serialization.Serialize<Config>(generated_config, configPath);
                 Console.WriteLine();
