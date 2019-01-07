@@ -191,23 +191,31 @@ namespace Mozkomor.GrinGoldMinerCLI
             // this blocks on no connection ?
             ConnectionManager.Init(config);
 
-            ConsoleKey kk;
-            while ((kk = Console.ReadKey().Key) != ConsoleKey.Q)
+            bool checkKey = true;
+            while (checkKey)
             {
-                Console.Clear();
-
-                switch (kk)
+                if (Console.KeyAvailable)
                 {
-                    case ConsoleKey.L:
-                        // show full log flow
-                        if (Logger.consoleMode == ConsoleOutputMode.STATIC_TUI)
-                        {
-                            Logger.consoleMode = ConsoleOutputMode.ROLLING_LOG;
-                            Console.WriteLine("Rolling log mode: enabled");
-                        }
-                        else
-                            Logger.consoleMode = ConsoleOutputMode.STATIC_TUI;
-                        break;
+                    ConsoleKeyInfo key = Console.ReadKey(true);
+                    Console.Clear();
+                    switch (key.Key)
+                    {
+                        case ConsoleKey.L:
+                            // show full log flow
+                            if (Logger.consoleMode == ConsoleOutputMode.STATIC_TUI)
+                            {
+                                Logger.consoleMode = ConsoleOutputMode.ROLLING_LOG;
+                                Console.WriteLine("Rolling log mode: enabled");
+                            }
+                            else
+                                Logger.consoleMode = ConsoleOutputMode.STATIC_TUI;
+                            break;
+                        case ConsoleKey.Q:
+                            checkKey = false;
+                            break;
+                        default:
+                            break;
+                    }
                 }
             }
             Close();
