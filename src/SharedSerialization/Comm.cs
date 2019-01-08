@@ -184,7 +184,7 @@ namespace SharedSerialization
         public string ToShortString()
         {
             if (message == "-")
-                return "Starting up...";
+                return "Idle...";
 
             return $"{time.ToString("HH:mm:ss")}:\t{message ?? "-"}";
         }

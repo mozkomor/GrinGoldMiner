@@ -325,6 +325,9 @@ namespace OclSolver
 
                                                 Logger.Log(LogLevel.Debug, string.Format("GPU AMD{4}:Trimming #{4}: {0} {1} {2} {3}", currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, currentJob.jobID, deviceID));
 
+                                                //Stopwatch srw = new Stopwatch();
+                                                //srw.Start();
+
                                                 Solution s;
                                                 if (graphSolutions.TryDequeue(out s))
                                                 {
@@ -341,6 +344,9 @@ namespace OclSolver
                                                     Comms.graphSolutionsOut.Enqueue(s);
                                                     Comms.SetEvent();
                                                 }
+
+                                                //srw.Stop();
+                                                //Console.WriteLine("RECOVERY " + srw.ElapsedMilliseconds);
 
                                                 if (!TEST && (currentJob.pre_pow != Comms.nextJob.pre_pow))
                                                 {
