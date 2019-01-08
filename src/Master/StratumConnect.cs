@@ -63,14 +63,16 @@ namespace Mozkomor.GrinGoldMiner
         private object sender;
 
         public Action ReconnectAction { get; internal set; }
+        private static bool UseSsl;
 
-        public StratumConnet(string _ip, int _port, byte _id, string _login, string _pwd)
+        public StratumConnet(string _ip, int _port, byte _id, string _login, string _pwd, bool _ssl = false)
         {
             this.ip = _ip;
             this.port = _port;
             id = _id;
             login = _login;
             password = _pwd;
+            UseSsl = _ssl;
 
             //wdCancel = wdSource.Token;
             //listenerCancel = listenerSource.Token;
@@ -103,7 +105,7 @@ namespace Mozkomor.GrinGoldMiner
                     BadPacketCnt = 0;
                     IsConnected = true;
                     terminated = false;
-                    if (port < 23416)
+                    if (UseSsl)
                     {
                         stream = client.GetStream();
                         reader = new StreamReader(stream);

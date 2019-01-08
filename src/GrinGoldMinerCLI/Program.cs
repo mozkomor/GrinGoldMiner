@@ -109,14 +109,23 @@ namespace Mozkomor.GrinGoldMinerCLI
                 if (key == "1")
                 {
                     generated_config.PrimaryConnection.ConnectionAddress = "us-east.stratum.grinmint.com";
-                    generated_config.PrimaryConnection.ConnectionPort = 13416;
-                    generated_config.PrimaryConnection.Ssl = false;
+                    generated_config.PrimaryConnection.ConnectionPort = 23416;
+                    generated_config.PrimaryConnection.Ssl = true;
                     Console.WriteLine($"Enter your email (pool login):");
                     var email = Console.ReadLine();
-                    Console.WriteLine($"Enter your rig name (e.g. rig1):");
-                    var rig = Console.ReadLine();
-                    if (string.IsNullOrWhiteSpace(rig)) rig = "rig1";
-                    generated_config.PrimaryConnection.Login = $"{email}/{rig}";
+                   
+                    if (email.Contains("/"))
+                    {
+                        generated_config.PrimaryConnection.Login = email;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Enter your rig name (e.g. rig1):");
+                        var rig = Console.ReadLine();
+                        if (string.IsNullOrWhiteSpace(rig)) rig = "rig1";
+                        generated_config.PrimaryConnection.Login = $"{email}/{rig}";
+                    }
+
                     Console.WriteLine($"Enter your pool password:");
                     generated_config.PrimaryConnection.Password = Console.ReadLine();
                 }
@@ -217,6 +226,8 @@ namespace Mozkomor.GrinGoldMinerCLI
                             break;
                     }
                 }
+                else
+                    Task.Delay(10);
             }
             Close();
 
