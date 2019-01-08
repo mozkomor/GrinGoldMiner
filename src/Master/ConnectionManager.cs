@@ -74,13 +74,13 @@ namespace Mozkomor.GrinGoldMiner
         public static void Init(Config config)
         {
             //main
-            con_m1 = new StratumConnet(config.PrimaryConnection.ConnectionAddress, config.PrimaryConnection.ConnectionPort, 1, config.PrimaryConnection.Login, config.PrimaryConnection.Password);
-            con_m2 = new StratumConnet(config.SecondaryConnection.ConnectionAddress, config.SecondaryConnection.ConnectionPort, 1, config.SecondaryConnection.Login, config.SecondaryConnection.Password);
+            con_m1 = new StratumConnet(config.PrimaryConnection.ConnectionAddress, config.PrimaryConnection.ConnectionPort, 1, config.PrimaryConnection.Login, config.PrimaryConnection.Password, config.PrimaryConnection.Ssl);
+            con_m2 = new StratumConnet(config.SecondaryConnection.ConnectionAddress, config.SecondaryConnection.ConnectionPort, 1, config.SecondaryConnection.Login, config.SecondaryConnection.Password, config.SecondaryConnection.Ssl);
             //miner dev
-            con_mf1 = new StratumConnet("10.0.0.237", 13416, 3, "huflepuf", "azkaban");
+            //con_mf1 = new StratumConnet("10.0.0.237", 13416, 3, "huflepuf", "azkaban");
             con_mf2 = null; // new StratumConnet("10.0.0.237", 13416, 4, "huflepuf", "azkaban");
             //girn dev
-            con_gf1 = new StratumConnet("10.0.0.239", 13416, 5, gflogin, gfpwd);
+            //con_gf1 = new StratumConnet("10.0.0.239", 13416, 5, gflogin, gfpwd);
             con_gf2 = null; // new StratumConnet("10.0.0.237", 13416, 6);
 
             solutionCounter = 0;

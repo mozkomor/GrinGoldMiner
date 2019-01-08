@@ -101,7 +101,7 @@ namespace Mozkomor.GrinGoldMinerCLI
                 string pool = "";
                 string port = "13416";
                 Console.WriteLine($"Select minig pool (press number):");
-                Console.WriteLine($"[1] grinmint.com");
+                Console.WriteLine($"[1] US-east grinmint.com");
                 Console.WriteLine($"[2] mwgrinpool.com");
                 Console.WriteLine($"[3] Custom stratum address");
                 var key = Console.ReadLine();
@@ -109,14 +109,23 @@ namespace Mozkomor.GrinGoldMinerCLI
                 if (key == "1")
                 {
                     generated_config.PrimaryConnection.ConnectionAddress = "us-east.stratum.grinmint.com";
-                    generated_config.PrimaryConnection.ConnectionPort = 13416;
-                    generated_config.PrimaryConnection.Ssl = false;
+                    generated_config.PrimaryConnection.ConnectionPort = 23416;
+                    generated_config.PrimaryConnection.Ssl = true;
                     Console.WriteLine($"Enter your email (pool login):");
                     var email = Console.ReadLine();
-                    Console.WriteLine($"Enter your rig name (e.g. rig1):");
-                    var rig = Console.ReadLine();
-                    if (string.IsNullOrWhiteSpace(rig)) rig = "rig1";
-                    generated_config.PrimaryConnection.Login = $"{email}/{rig}";
+                   
+                    if (email.Contains("/"))
+                    {
+                        generated_config.PrimaryConnection.Login = email;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Enter your rig name (e.g. rig1):");
+                        var rig = Console.ReadLine();
+                        if (string.IsNullOrWhiteSpace(rig)) rig = "rig1";
+                        generated_config.PrimaryConnection.Login = $"{email}/{rig}";
+                    }
+
                     Console.WriteLine($"Enter your pool password:");
                     generated_config.PrimaryConnection.Password = Console.ReadLine();
                 }
@@ -217,6 +226,8 @@ namespace Mozkomor.GrinGoldMinerCLI
                             break;
                     }
                 }
+                else
+                    Task.Delay(100).Wait();
             }
             Close();
 
@@ -311,11 +322,11 @@ namespace Mozkomor.GrinGoldMinerCLI
                             WipeLines(5);
                             Console.WriteLine(Logger.GetlastLogs());
                             WipeLine();
-
-                            Task.Delay(500).Wait();
                         }
                         break;
                 }
+
+                Task.Delay(500).Wait();
             }
         }
 
