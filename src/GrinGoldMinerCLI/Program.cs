@@ -101,7 +101,7 @@ namespace Mozkomor.GrinGoldMinerCLI
                 string pool = "";
                 string port = "13416";
                 Console.WriteLine($"Select minig pool (press number):");
-                Console.WriteLine($"[1] grinmint.com");
+                Console.WriteLine($"[1] US-east grinmint.com");
                 Console.WriteLine($"[2] mwgrinpool.com");
                 Console.WriteLine($"[3] Custom stratum address");
                 var key = Console.ReadLine();
@@ -227,7 +227,7 @@ namespace Mozkomor.GrinGoldMinerCLI
                     }
                 }
                 else
-                    Task.Delay(10);
+                    Task.Delay(100).Wait();
             }
             Close();
 
@@ -322,11 +322,11 @@ namespace Mozkomor.GrinGoldMinerCLI
                             WipeLines(5);
                             Console.WriteLine(Logger.GetlastLogs());
                             WipeLine();
-
-                            Task.Delay(500).Wait();
                         }
                         break;
                 }
+
+                Task.Delay(500).Wait();
             }
         }
 
