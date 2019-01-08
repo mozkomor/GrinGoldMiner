@@ -40,5 +40,19 @@ namespace Mozkomor.GrinGoldMiner
                 worker.SendJob(job);
             }
         }
+
+        //tell workers to chill
+        internal static void PauseAllWorkers()
+        {
+            foreach (var worker in workers)
+            {
+                worker.SendJob(new SharedSerialization.Job()
+                    {
+                    pre_pow = "",
+                    jobID = 666,
+                    timestamp = DateTime.Now
+                });
+            }
+        }
     }
 }

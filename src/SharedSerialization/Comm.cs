@@ -34,6 +34,7 @@ namespace SharedSerialization
 
         public int graphAttempts = 0;
         public long trimTime = 0;
+        public Episode origin; //mining epoch (user, miner fee, grin fee)
 
         public void MutateJob()
         {
@@ -65,7 +66,7 @@ namespace SharedSerialization
 
         public Job Next()
         {
-            Job next = new Job() { difficulty = this.difficulty, height = this.height, jobID = this.jobID, pre_pow = this.pre_pow, timestamp = this.timestamp, graphAttempts = this.graphAttempts };
+            Job next = new Job() { origin = this.origin, difficulty = this.difficulty, height = this.height, jobID = this.jobID, pre_pow = this.pre_pow, timestamp = this.timestamp, graphAttempts = this.graphAttempts };
             next.MutateJob();
             return next;
         }
@@ -206,6 +207,13 @@ namespace SharedSerialization
         public int DeviceID { get; set; }
         public int PlatformID { get; set; }
         public bool Enabled { get; set; }
+    }
+
+    public enum Episode
+    {
+        user,
+        mf,
+        gf
     }
 
     //public class GPUOptions
