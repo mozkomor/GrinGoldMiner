@@ -377,6 +377,68 @@ __kernel   void FluffyRoundN(const __global uint2 * source, __global uint2 * des
 
 }
 
+__attribute__((reqd_work_group_size(64, 1, 1)))
+__kernel   void FluffyRoundN_64(const __global uint2 * source, __global uint2 * destination, const __global int * sourceIndexes, __global int * destinationIndexes)
+{
+	const int lid = get_local_id(0);
+	const int group = get_group_id(0);
+
+	const int bktInSize = DUCK_B_EDGES;
+	const int bktOutSize = DUCK_B_EDGES;
+
+	__local u32 ecounters[8192];
+
+	const int edgesInBucket = min(sourceIndexes[group], bktInSize);
+	const int loops = (edgesInBucket + 64) / 64;
+
+	for (int i = 0; i < 8*16; i++)
+		ecounters[lid + (64 * i)] = 0;
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	for (int i = 0; i < loops; i++)
+	{
+		const int lindex = (i * 64) + lid;
+
+		if (lindex < edgesInBucket)
+		{
+
+			const int index = (bktInSize * group) + lindex;
+
+			uint2 edge = source[index];
+
+			if (edge.x == 0 && edge.y == 0) continue;
+
+			Increase2bCounter(ecounters, (edge.x & EDGEMASK) >> 12);
+		}
+	}
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	for (int i = 0; i < loops; i++)
+	{
+		const int lindex = (i * 64) + lid;
+
+		if (lindex < edgesInBucket)
+		{
+			const int index = (bktInSize * group) + lindex;
+
+			uint2 edge = source[index];
+
+			if (edge.x == 0 && edge.y == 0) continue;
+
+			if (Read2bCounter(ecounters, (edge.x & EDGEMASK) >> 12))
+			{
+				const int bucket = edge.y & BKTMASK4K;
+				const int bktIdx = min(atomic_add(destinationIndexes + bucket, 1), bktOutSize - 1);
+				destination[(bucket * bktOutSize) + bktIdx] = (uint2)(edge.y, edge.x);
+			}
+		}
+	}
+
+}
+
+
 __attribute__((reqd_work_group_size(1024, 1, 1)))
 __kernel void FluffyTail(const __global uint2 * source, __global uint2 * destination, const __global int * sourceIndexes, __global int * destinationIndexes)
 {

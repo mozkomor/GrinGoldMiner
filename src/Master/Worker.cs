@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Threading;
@@ -15,6 +16,7 @@ namespace Mozkomor.GrinGoldMiner
     public class Worker
     {
         private const bool DEBUG = false;
+        public static readonly bool IsLinux = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
         private Process worker;
         private TcpClient client;
@@ -106,6 +108,10 @@ namespace Mozkomor.GrinGoldMiner
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.Write($"ERROR");
                         break;
+                    case GPUStatus.OOM:
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write($"NO MEMORY");
+                        break;
                 }
                 Console.ResetColor();
                 Console.CursorLeft = 45;
@@ -138,6 +144,8 @@ namespace Mozkomor.GrinGoldMiner
             {
                 if (!gpu.Enabled)
                     return GPUStatus.DISABLED;
+                else if (lastErrLog != null && lastErrLog.message.Contains("out of memory"))
+                    return GPUStatus.OOM;
                 else if (lastErrLog != null)
                     return GPUStatus.ERROR;
                 else if (lastLog.time == DateTime.MinValue || lastSolution == null)
@@ -263,7 +271,10 @@ namespace Mozkomor.GrinGoldMiner
                             if (log.level == SharedSerialization.LogLevel.Debug)
                                 lastDebugLog = log;
                             else if (log.level == SharedSerialization.LogLevel.Error)
+                            {
                                 lastErrLog = lastLog = log;
+                                Logger.Log(LogLevel.ERROR, $"GPU {gpu.GPUName} ID {gpu.DeviceID}: {log.message ?? "NULL"}");
+                            }
                             else
                                 lastLog = log;
                             break;
@@ -299,6 +310,7 @@ namespace Mozkomor.GrinGoldMiner
         DISABLED,
         ONLINE,
         OFFLINE,
-        ERROR
+        ERROR,
+        OOM
     }
 }
