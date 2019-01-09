@@ -119,7 +119,7 @@ namespace Mozkomor.GrinGoldMiner
                 Console.CursorLeft = 75;
                 Console.WriteLine($"Solutions: {totalSols}");
                 WipeLine();
-                Console.CursorLeft = 7; Console.ForegroundColor = ConsoleColor.DarkGray;
+                Console.CursorLeft = 7; Console.ForegroundColor = IsLinux ? ConsoleColor.Gray : ConsoleColor.DarkGray;
                 Console.WriteLine($"Last Message: {lastLog.ToShortString()}"); Console.ResetColor();
                 WipeLine();
             }
@@ -169,7 +169,9 @@ namespace Mozkomor.GrinGoldMiner
                 l.Start();
                 var process = Process.Start(new ProcessStartInfo()
                 {
-                    FileName = (type == WorkerType.NVIDIA) ? Path.Combine("solvers", "CudaSolver.exe") : Path.Combine("solvers", "OclSolver.exe"),
+                    FileName = (IsLinux ?
+                          ((type == WorkerType.NVIDIA) ? "CudaSolver" : "OclSolver")
+                        :  (type == WorkerType.NVIDIA) ? Path.Combine("solvers", "CudaSolver.exe") : Path.Combine("solvers", "OclSolver.exe")),
                     Arguments = string.Format("-1 13500"),
                     CreateNoWindow = true,
                     UseShellExecute = false
@@ -230,7 +232,9 @@ namespace Mozkomor.GrinGoldMiner
                 l.Start();
                 worker = Process.Start(new ProcessStartInfo()
                 {
-                    FileName = (type == WorkerType.NVIDIA) ? Path.Combine("solvers", "CudaSolver.exe") : Path.Combine("solvers", "OclSolver.exe"),
+                    FileName = (IsLinux ?
+                          ((type == WorkerType.NVIDIA) ? "CudaSolver" : "OclSolver")
+                        : (type == WorkerType.NVIDIA) ? Path.Combine("solvers", "CudaSolver.exe") : Path.Combine("solvers", "OclSolver.exe")),
                     Arguments = string.Format("{0} {1} {2}", workerDeviceID, workerCommPort, workerPlatformID),
                     CreateNoWindow = true,
                     UseShellExecute = false
