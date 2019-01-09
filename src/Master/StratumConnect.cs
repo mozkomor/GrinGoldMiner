@@ -33,6 +33,9 @@ namespace Mozkomor.GrinGoldMiner
 
         public static DateTime lastShare = DateTime.Now;
         public static volatile uint totalShares = 0;
+        public static volatile uint sharesTooLate = 0;
+        public static volatile uint sharesRejected = 0;
+        public static volatile uint sharesAccepted = 0;
 
         /// <summary>
         /// is listening to TCP client in listener loop
@@ -227,6 +230,7 @@ namespace Mozkomor.GrinGoldMiner
                                 {
                                     Console.ForegroundColor = ConsoleColor.Cyan;
                                     Logger.Log(LogLevel.INFO, $"(sc id {id}):Share accepted");
+                                    sharesAccepted++;
                                     Console.ResetColor();
                                 }
                                 else if (msg.ContainsKey("result") && msg["result"].ToString().StartsWith("blockfound"))
@@ -238,10 +242,48 @@ namespace Mozkomor.GrinGoldMiner
                                     Console.ResetColor();
                                     statistics.mined++;
                                 }
+                                if(msg.ContainsKey("error"))
+                                {
+                                    try
+                                    {
+                                        var code = (int)msg["error"]["code"];
+                                        switch (code)
+                                        {
+                                            case -32503:
+                                                Logger.Log(LogLevel.WARNING, "Solution submitted too late");
+                                                sharesTooLate++;
+                                                break;
+                                            case -32502:
+                                                Logger.Log(LogLevel.WARNING, "Failed to validate solution");
+                                                sharesRejected++;
+                                                break;
+                                            case -32501:
+                                                Logger.Log(LogLevel.WARNING, "Share rejected due to low difficulty");
+                                                sharesRejected++;
+                                                break;
+                                            default:
+                                                Logger.Log(LogLevel.WARNING, "Stratum " + (string)msg["error"]["message"]);
+                                                break;
+
+                                        }
+                                    }
+                                    catch { }
+                                }
+                                
                                 break;
                             default:
-                                if (method != "keepalive")
+                                if (method != "keepalive" && !string.IsNullOrEmpty(para))
                                     Logger.Log(LogLevel.INFO, para);
+                                if(msg.ContainsKey("error"))
+                                {
+                                    try
+                                    {
+                                        var errormsg = (string)msg["error"]["message"];
+                                        if (!string.IsNullOrEmpty(errormsg))
+                                            Logger.Log(LogLevel.WARNING, "Stratum " + errormsg);
+                                    }
+                                    catch { }
+                                }
                                 break;
                         }
 

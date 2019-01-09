@@ -272,19 +272,11 @@ namespace Mozkomor.GrinGoldMinerCLI
                             if (conn != null)
                             {
                                 remote = $"{conn.ip}:{conn.port}";
-                                if (config != null && 
-                                    (config.PrimaryConnection != null && config.PrimaryConnection.ConnectionAddress.Trim() == conn.ip) ||
-                                    (config.SecondaryConnection != null && config.SecondaryConnection.ConnectionAddress.Trim() == conn.ip)
-                                    )
-                                    who = "USER";
-                                else
-                                    who = "FEE";
-
                                 status = conn.IsConnected ? "CONNECTED" : "DISCONNECTED";
                             }
                             who = ConnectionManager.IsInFee() ? "FEE" : "USER";
 
-                            Console.WriteLine("Grin Gold Miner 2.0");
+                            Console.WriteLine("Grin Gold Miner 2.1");
                             Console.WriteLine("------------------------------------------------------------------------------------------");
                             WipeLine();
                             Console.Write("Mining for: ");
@@ -302,14 +294,28 @@ namespace Mozkomor.GrinGoldMinerCLI
                             Console.CursorLeft = 35;
                             Console.WriteLine($"Last job in:    {(DateTime.Now-WorkerManager.lastJob).TotalSeconds:F0} seconds");
                             WipeLine();
-                            Console.Write("Submitted shares: ");
+                            Console.Write("Shares (sub/acc/rej): ");
                             Console.CursorLeft = 20;
                             Console.ForegroundColor = ConsoleColor.Yellow;
-                            Console.Write($"{StratumConnet.totalShares}"); Console.ResetColor();
+                            Console.Write($"{StratumConnet.totalShares}"); Console.ResetColor(); Console.Write("/ ");
+                            if (StratumConnet.sharesAccepted > 0) Console.ForegroundColor = ConsoleColor.Green;
+                            Console.Write($"{StratumConnet.sharesAccepted}"); Console.ResetColor(); Console.Write("/ ");
+                            if (StratumConnet.sharesRejected + StratumConnet.sharesTooLate > 0) Console.ForegroundColor = ConsoleColor.Red;
+                            Console.Write($"{StratumConnet.sharesRejected + StratumConnet.sharesTooLate}"); Console.ResetColor();
+                            Console.ResetColor();
 
                             Console.CursorLeft = 35;
                             Console.WriteLine($"Last share:     {(DateTime.Now-StratumConnet.lastShare).TotalSeconds:F0} seconds");
                             WipeLine();
+                            if (who == "FEE")
+                            {
+                                Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                                Console.WriteLine("GGM collects 1% as fee for the Grin Development Fund and 1% for further miner development.");
+                                Console.WriteLine("Thank you very much for your support. It makes a difference.");
+                                //ConnectionManager.printHeart();
+                                Console.ResetColor();
+                                WipeLine();
+                            }
                             Console.WriteLine("------------------------------------------------------------------------------------------");
                             WipeLine();
                             foreach (var w in WorkerManager.workers)
