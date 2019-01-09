@@ -1,26 +1,28 @@
-# Grin GPU Miner for (mostly) Windows
+# Grin GPU Miner
 
-## UPDATE: New OpenCL/CUDA noob frindly miner in January
+Miner supports all AMD and NVIDIA 8GB cards. RTX 8GB cards need Linux or Windows7 at the moment because Windows reserves too much memory on those cards (should be resolved soon)
 
-Currently only supported cards are nvidia with at least 8GB of memory (6GB in the future). Miner can handle multiple cards at the same time in separate console windows - this helps with debugging each card. Supports all Grin pools, you can mine directly to a pool in just a few minutes. 
-
-Best results are with RTX cards. AMD cards are expected to have similar power efficiency as nvidia, but will be slower at max power.
+RTX 2080 and RTX 2080Ti are fastest, OpenCL code for AMD cards is being optimized. Cheap Celeron CPU is not recommended for many cards on the system.
 
 General GGM chat https://gitter.im/GrinGoldMiner/community
 
-For more information about grin see https://github.com/mimblewimble/grin
+For more information about grin, wallet and node downloads see https://github.com/mimblewimble/grin
+Node and wallet do not with with Windows Subsystem Linux, use Virtual Machine or dedicated machine. Windows node+wallet being developed here  https://github.com/GrinPlusPlus/GrinPlusPlus
 
 Contact us at mozkomorkaban@gmail.com; professional farm-friendly version of the miner is also in the development
 
-VIDEO GUIDE: How to run Grin node in Windows VM and mine directly in Windows on the same machine below. Only for advanced users on testnet. Updated videos will appear here before main launch.
+VIDEO GUIDE:
 <p>
-<a href="https://www.youtube.com/watch?v=Y-kF9RnkeJo">
+<a href="https://www.youtube.com/watch?v=e3mm60R5-ZE">
   <img src="https://img.youtube.com/vi/Y-kF9RnkeJo/0.jpg" align="center" height="128" width="164" >
 </a>
 </p>
 
 ------------------------------------
 
-![Screen](/img/cuda.png)
+![Screen](/img/GGM_Windows.png)
+![Screen](/img/GGM_Linux.png)
+
+Cuda and OpenCL solveres are released under FAIR MINING license https://github.com/tromp/cuckoo/blob/master/LICENSE.txt
 
 Thanks to OhGodACompany for sending GTX1080Ti
