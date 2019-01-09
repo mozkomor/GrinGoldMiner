@@ -475,6 +475,9 @@ namespace OclSolver
                     bufferI1.Dispose();
                     bufferI2.Dispose();
                     bufferR.Dispose();
+
+                    if (OpenCl.DotNetCore.CommandQueues.CommandQueue.resultValuePointer != IntPtr.Zero)
+                        Marshal.FreeHGlobal(OpenCl.DotNetCore.CommandQueues.CommandQueue.resultValuePointer);
                 }
                 catch { }
             }
