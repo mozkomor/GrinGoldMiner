@@ -20,7 +20,7 @@ namespace Mozkomor.GrinGoldMiner
         {
             var c1 = new Connection() { ConnectionAddress = "us-east.stratum.grinmint.com", ConnectionPort = 13416, Login = "satoshi@nakamoto.com/rig21", Password = "myverystrongpassword", Ssl =false };
             var c2 = new Connection() { ConnectionAddress = "backup_pooladdress", ConnectionPort = 13416, Login = "login", Password = "password", Ssl = false };
-            var logOptions = new LogOptions() { ConsoleMinimumLogLevel = LogLevel.INFO, FileMinimumLogLevel = LogLevel.WARNING };
+            var logOptions = new LogOptions() {ConsoleMinimumLogLevel = LogLevel.INFO, FileMinimumLogLevel = LogLevel.WARNING, KeepDays=1, DisableLogging = false };
             List<GPUOption> gpuOptions = new List<GPUOption>() { new GPUOption() { DeviceID = 0, Enabled = true, GPUType = WorkerType.NVIDIA, PlatformID = 0 } };
             return new Config() { PrimaryConnection = c1, SecondaryConnection = c2, GPUOptions = gpuOptions, LogOptions = logOptions };
         }

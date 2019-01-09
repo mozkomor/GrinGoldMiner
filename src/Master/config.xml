@@ -5,7 +5,7 @@
     <ConnectionPort>13416</ConnectionPort>
     <Ssl>false</Ssl>
     <Login>userlogin</Login>
-    <Password>secrepwd</Password>  
+    <Password>secretpwd</Password>  
   </PrimaryConnection>
   
   <SecondaryConnection>
@@ -13,12 +13,14 @@
     <ConnectionPort>13416</ConnectionPort>
     <Ssl>false</Ssl>
     <Login>userlogin</Login>
-    <Password>secrepwd</Password>  
+    <Password>secretpwd</Password>  
   </SecondaryConnection>
 
   <LogOptions>
+    <DisableLogging>false</DisableLogging>
     <FileMinimumLogLevel>ERROR</FileMinimumLogLevel>
     <ConsoleMinimumLogLevel>ERROR</ConsoleMinimumLogLevel>
+    <KeepDays>2</KeepDays>
   </LogOptions>
 
   <GPUOptions>

@@ -5,12 +5,44 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Mozkomor.GrinGoldMiner
 {
+    public static class FileInfoExtensions
+    {
+        public static DateTime TryGetDateFromFileName(this FileInfo f, DateTime defaultValue)
+        {
+            try
+            {
+                var name = f.Name;
+                DateTime parsed;
+                try
+                {
+                    if (name.Split('.').Count() > 1)
+                    {
+                        name = name.Split('.')[0];
+                    }
+                }
+                catch { }
+
+                if (DateTime.TryParseExact(name, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out parsed))
+                    return parsed;
+                else
+                    return defaultValue;
+            }
+            catch
+            {
+                return defaultValue;
+            }
+        }
+    }
     public enum LogLevel
     {
         DEBUG,
@@ -28,6 +60,14 @@ namespace Mozkomor.GrinGoldMiner
     {
         public LogLevel FileMinimumLogLevel { get; set; }
         public LogLevel ConsoleMinimumLogLevel { get; set; }
+        /// <summary>
+        /// How many days old logs to keep. Will delete older logs when "Logger.SetLogPath()" (once a day or on app first log write) is called.
+        /// </summary>
+        [DefaultValueAttribute(1)] 
+        public int KeepDays { get; set; }
+
+        [DefaultValueAttribute(false)]
+        public bool DisableLogging { get; set; }
     }
     public class Logger
     {
@@ -61,11 +101,34 @@ namespace Mozkomor.GrinGoldMiner
         {
             _lastDayLogCreated = DateTime.Today;
             var execdir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            var logdir = Path.Combine(execdir, "logs/");
+            var logdir = Path.Combine(execdir, "logs");
             if (!Directory.Exists(logdir))
                 Directory.CreateDirectory(logdir);
             var file = DateTime.Now.ToString("yyyyMMddHHmmss")+".txt";
             _logPath = Path.Combine(logdir, file);
+            Task.Run(() => { try { DeleteOldLogs(logdir,logOptions?.KeepDays ?? 1); } catch { } });
+        }
+
+        private static void DeleteOldLogs(string logdir, int olderThanDays)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(logdir) || olderThanDays == 0) //prevent default (0) from old configs
+                    return;
+
+                //foreach(var f in Directory.GetFiles(logdir))
+                //{
+                //    var fi = new FileInfo(f);
+                //    if (fi.CreationTime < DateTime.Now.AddDays(-1 * olderThanDays))
+                //        fi.Delete();
+                //}
+                Directory.GetFiles(logdir)
+                 .Select(f => new FileInfo(f))
+                 .Where(f => f.TryGetDateFromFileName(defaultValue: DateTime.Now) < DateTime.Now.AddDays(-1 * olderThanDays)) //if failed to parse date, set to "now" so it does NOT delete files we failed to parse
+                 .ToList()
+                 .ForEach(f => f.Delete());
+            }
+            catch { }
         }
      
         public static void SetLogOptions(LogOptions options)
@@ -85,11 +148,15 @@ namespace Mozkomor.GrinGoldMiner
                 if (logOptions == null)
                 {
 #if DEBUG
-                logOptions = new LogOptions() { FileMinimumLogLevel = LogLevel.DEBUG, ConsoleMinimumLogLevel = LogLevel.DEBUG };
+                logOptions = new LogOptions() {FileMinimumLogLevel = LogLevel.DEBUG, ConsoleMinimumLogLevel = LogLevel.DEBUG, KeepDays = 1, DisableLogging = false };
 #else
-                logOptions = new LogOptions() { FileMinimumLogLevel = LogLevel.WARNING, ConsoleMinimumLogLevel = LogLevel.INFO };
+                logOptions = new LogOptions() {FileMinimumLogLevel = LogLevel.ERROR, ConsoleMinimumLogLevel = LogLevel.INFO,  KeepDays = 1,  DisableLogging = false };
 #endif
                 }
+
+                if (logOptions.DisableLogging == true)
+                    return;
+
 
                 if (level >= logOptions.FileMinimumLogLevel)
                 {
