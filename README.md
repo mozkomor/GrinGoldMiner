@@ -11,6 +11,8 @@ Node and wallet do not work with with Windows Subsystem Linux (WSL), use Virtual
 
 Contact us at mozkomorkaban@gmail.com; professional farm-friendly version of the miner is also in the development
 
+GGM releases will collect 1% fee for the Grin Development Fund and 1% fee for further miner development
+
 VIDEO GUIDE:
 <p>
 <a href="https://www.youtube.com/watch?v=e3mm60R5-ZE">
