@@ -263,7 +263,7 @@ namespace Mozkomor.GrinGoldMinerCLI
                             Console.SetCursorPosition(0, 0);
                             WipeLine();
 
-                            var conn = ConnectionManager.curr;
+                            var conn = ConnectionManager.GetCurrConn();
 
                             string remote = "---";
                             string who = "USER";

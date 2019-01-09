@@ -30,7 +30,6 @@ namespace Mozkomor.GrinGoldMiner
         public string login;
         public string password;
         public byte id;
-        public bool notifyWorkers = false;
 
         public static DateTime lastShare = DateTime.Now;
         public static volatile uint totalShares = 0;
@@ -46,12 +45,8 @@ namespace Mozkomor.GrinGoldMiner
         private StreamReader reader;
         private Task watchdog = null;
         private Task listener = null;
-        public static AutoResetEvent flushToStratum;
-        public static ConcurrentQueue<StratumRpcRequest> solutionQueue = new ConcurrentQueue<StratumRpcRequest>();
-        //private CancellationTokenSource wdSource = new CancellationTokenSource();
-        //private CancellationTokenSource listenerSource = new CancellationTokenSource();
-        //private CancellationToken wdCancel;
-        //private CancellationToken listenerCancel;
+        public AutoResetEvent flushToStratum = new AutoResetEvent(false);
+        public ConcurrentQueue<StratumRpcRequest> solutionQueue = new ConcurrentQueue<StratumRpcRequest>();
         public Job CurrentJob = null;
         public Job PrevJob = null;
 
@@ -65,6 +60,9 @@ namespace Mozkomor.GrinGoldMiner
         public Action ReconnectAction { get; internal set; }
         private bool UseSsl;
 
+        /// <summary>
+        /// Create instance, but not connect yet.
+        /// </summary>
         public StratumConnet(string _ip, int _port, byte _id, string _login, string _pwd, bool _ssl = false)
         {
             this.ip = _ip;
@@ -74,23 +72,18 @@ namespace Mozkomor.GrinGoldMiner
             password = _pwd;
             UseSsl = _ssl;
 
-            //wdCancel = wdSource.Token;
-            //listenerCancel = listenerSource.Token;
-
             IsConnected = false;
         }
 
-       
-
-        //connect and ask for job
+        /// <summary>
+        /// connect and ask for job
+        /// </summary>
         public void Connect()
         {
             try
             {
                 if (client != null)
                     client.Dispose();
-
-                flushToStratum = new AutoResetEvent(false);
 
                 System.Net.ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
 
@@ -119,16 +112,12 @@ namespace Mozkomor.GrinGoldMiner
 
                     if (watchdog == null)
                         watchdog = Task.Factory.StartNew(() => { DisconnectMonitor(); }, TaskCreationOptions.LongRunning);
-                        //watchdog = Task.Factory.StartNew(() => { DisconnectMonitor(); }, wdCancel, TaskCreationOptions.LongRunning, TaskScheduler.Default);
 
                     if (listener == null)
                         listener = Task.Factory.StartNew(() => { Listen(); }, TaskCreationOptions.LongRunning);
 
                     if (sender == null)
                         sender = Task.Factory.StartNew(() => { Sender(); }, TaskCreationOptions.LongRunning);
-
-                    //listener = Task.Factory.StartNew(() => { Listen(); }, listenerCancel, TaskCreationOptions.LongRunning, TaskScheduler.Default);
-
                 }
                 else
                     IsConnected = false;
@@ -153,9 +142,22 @@ namespace Mozkomor.GrinGoldMiner
             return false;
         }
 
-        //should be started as long running
-        //waiting for messages from stream and reading them
-        public  void Listen()
+        /// <summary>
+        /// from what stratum connection originated job, will be send to workers and back with solution
+        /// </summary>
+        /// <returns></returns>
+        private Episode GetJobOrigine()
+        {
+            if (id == 1 || id == 2) return Episode.user;
+            if (id == 3 || id == 4) return Episode.mf;
+            if (id == 5 || id == 6) return Episode.gf;
+            return Episode.user;
+        }
+
+        /// <summary>
+        /// waiting for messages from stream and reading them
+        /// </summary>
+        public void Listen()
         {
             Logger.Log(LogLevel.DEBUG, $"begin listen for sc id {id} from thread {Environment.CurrentManagedThreadId}");
             try
@@ -179,7 +181,7 @@ namespace Mozkomor.GrinGoldMiner
 
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine();
-                    Logger.Log(LogLevel.DEBUG, $"(sc id {id}):TCP IN: {message} {Environment.NewLine}");
+                    //Logger.Log(LogLevel.DEBUG, $"(sc id {id}):TCP IN: {message} {Environment.NewLine}");
                     Console.ResetColor();
 
                     try
@@ -200,22 +202,24 @@ namespace Mozkomor.GrinGoldMiner
                                 {
                                     PrevJob = CurrentJob ?? null;
                                     CurrentJob = new Job(JsonConvert.DeserializeObject<JobTemplate>(msg["result"].ToString(), new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore }));
+                                    CurrentJob.origin = GetJobOrigine();
                                     if (CurrentJob != null && CurrentJob.pre_pow != null && CurrentJob.pre_pow != "")
                                     {
                                         lastComm = DateTime.Now;
-                                        if (notifyWorkers)
-                                            WorkerManager.newJobReceived(CurrentJob);
+                                        if (ConnectionManager.IsConnectionCurrent(id))
+                                            PushJobToWorkers();
                                     }
                                 }
                                 break;
                             case "job":
                                 PrevJob = CurrentJob ?? null;
                                 CurrentJob = new Job(JsonConvert.DeserializeObject<JobTemplate>(para, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore }));
+                                CurrentJob.origin = GetJobOrigine();
                                 if (CurrentJob != null && CurrentJob.pre_pow != null && CurrentJob.pre_pow != "")
                                 {
                                     lastComm = DateTime.Now;
-                                    if (notifyWorkers)
-                                        WorkerManager.newJobReceived(CurrentJob);
+                                    if (ConnectionManager.IsConnectionCurrent(id))
+                                        PushJobToWorkers();
                                 }
                                 break;
                             case "submit":
@@ -276,12 +280,19 @@ namespace Mozkomor.GrinGoldMiner
             }
         }
 
+        internal void PushJobToWorkers()
+        {
+            Logger.Log(LogLevel.DEBUG, $"({ConnectionManager.solutionCounter}) PushJobToWorkers: sc id {id}, job {CurrentJob.jobID}, job origine {CurrentJob.origin} job timestamp {CurrentJob.timestamp}");
+            WorkerManager.newJobReceived(CurrentJob);
+        }
+
         //close connections
         public void StratumClose()
         {
             try
             {
                 terminated = true;
+                flushToStratum.Set();
 
                 if (client != null && client.Connected)
                 {
@@ -298,11 +309,9 @@ namespace Mozkomor.GrinGoldMiner
                     client.Close();
                     client.Dispose();
                 }
-                //if (watchdog != null)
-                //    wdSource.Cancel();
-                //if (listener != null)
-                //    listenerSource.Cancel();
+                
                 listener = null;
+                sender = null;
                 //watchdog = null;
 
                 Logger.Log(LogLevel.DEBUG, $"Closed connection id {id}");
@@ -321,7 +330,9 @@ namespace Mozkomor.GrinGoldMiner
             }
         }
 
-        //watchdog, if we are disconnected, try to reconnect
+        /// <summary>
+        /// watchdog, if we are disconnected, try to reconnect
+        /// </summary>
         public void DisconnectMonitor()
         {
             Task.Delay(5000).Wait();
@@ -332,14 +343,7 @@ namespace Mozkomor.GrinGoldMiner
                     if (!IsConnected) //if (!client.Connected)
                     {
                         Logger.Log(LogLevel.DEBUG, $"Reconnecting from DisconnectMonitor, SC ID {id}");
-
-                        
-                        //wdSource.Cancel();
-                        //listenerSource.Cancel();
-                        //wdSource.Dispose();
-                        //listenerSource.Dispose();
                         StratumClose();
-                        
                         ReconnectAction();
                     }
                 }
@@ -357,8 +361,10 @@ namespace Mozkomor.GrinGoldMiner
             }
         }
 
-        //Send serialized class into tcp connection
-        //login, getjob...
+        /// <summary>
+        /// Send serialized class into tcp connection
+        /// login, getjob...
+        /// </summary>
         public bool GrinSend<T>(T message)
         {
             try
@@ -366,7 +372,7 @@ namespace Mozkomor.GrinGoldMiner
                 string output = JsonConvert.SerializeObject(message, Formatting.None, new JsonSerializerSettings() { NullValueHandling = NullValueHandling.Ignore });
 
                 Console.ForegroundColor = ConsoleColor.Green;
-                Logger.Log(LogLevel.DEBUG, $"(sc id {id}): TCP OUT: {output} {Environment.NewLine}");
+                //Logger.Log(LogLevel.DEBUG, $"(sc id {id}): TCP OUT: {output} {Environment.NewLine}");
                 Console.ResetColor();
 
                 byte[] bmsg = Encoding.UTF8.GetBytes(output + "\n");
@@ -402,6 +408,7 @@ namespace Mozkomor.GrinGoldMiner
                 //if (GrinSend<StratumRpcRequest>(request))
                 lock(solutionQueue)
                 {
+                    ///use concurent queue
                     solutionQueue.Enqueue(request);
                     flushToStratum.Set();
                 }
@@ -412,13 +419,20 @@ namespace Mozkomor.GrinGoldMiner
             catch(Exception ex) { Logger.Log(ex); }
         }
 
+        /// <summary>
+        /// To prevent writing to stream at the same time from two or more workers
+        /// when two solutions are found closely after each other (more cards, chance..)
+        /// we instead just put solutions to concurrent queue
+        /// and then take them one by one out and send to stream
+        /// </summary>
         private void Sender()
         {
             while (!terminated)
             {
-                flushToStratum.WaitOne();
+                flushToStratum.WaitOne(); //this is just non-blocking waiting for someone somewhere to call flushToStratum.Set()
 
-                if (solutionQueue.TryDequeue(out StratumRpcRequest r))
+                //take the message first out from queue and send it
+                if (!terminated && solutionQueue.TryDequeue(out StratumRpcRequest r))
                 {
                     GrinSend<StratumRpcRequest>(r);
                 }
@@ -453,7 +467,7 @@ namespace Mozkomor.GrinGoldMiner
 
                 if (GrinSend<StratumRpcRequest>(request))
                 {
-                    Logger.Log(LogLevel.DEBUG, $"Login sent for connection id {id}.");
+                    //Logger.Log(LogLevel.DEBUG, $"Login sent for connection id {id}.");
                 }
             }
             catch (Exception ex)
@@ -471,7 +485,7 @@ namespace Mozkomor.GrinGoldMiner
 
                 if (GrinSend<StratumRpcRequest>(request))
                 {
-                    Logger.Log(LogLevel.DEBUG, $"job request sent for connection id {id}");
+                    //Logger.Log(LogLevel.DEBUG, $"job request sent for connection id {id}");
                 }
             }
             catch (Exception ex)
