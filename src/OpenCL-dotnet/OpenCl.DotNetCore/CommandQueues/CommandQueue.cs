@@ -176,15 +176,18 @@ namespace OpenCl.DotNetCore.CommandQueues
             }
         }
 
+        //1000000
+        public static IntPtr resultValuePointer = Marshal.AllocHGlobal(1000000*8);
+        static int[] resultValue = new int[1000000*2];
         public int[] EnqueueReadBuffer(MemoryObject memoryObject, int outputSize)
         {
             // Tries to read the memory object
-            IntPtr resultValuePointer = IntPtr.Zero;
+            //IntPtr resultValuePointer = IntPtr.Zero;
             try
             {
                 // Allocates enough memory for the result value
                 int size = 4 * outputSize;
-                resultValuePointer = Marshal.AllocHGlobal(size);
+                //resultValuePointer = Marshal.AllocHGlobal(size);
 
                 // Reads the memory object, by enqueuing the read operation to the command queue
                 IntPtr waitEventPointer;
@@ -196,7 +199,7 @@ namespace OpenCl.DotNetCore.CommandQueues
                     throw new OpenClException("The memory object could not be read.", result);
 
                 // Goes through the result and converts the content of the result to an array
-                int[] resultValue = new int[outputSize];
+                //int[] resultValue = new int[outputSize];
                 Copy(resultValuePointer, resultValue, 0, outputSize);
                 //Marshal.Copy(resultValuePointer, 0, resultValue, outputSize);
                 //for (int i = 0; i < outputSize; i++)
@@ -208,8 +211,8 @@ namespace OpenCl.DotNetCore.CommandQueues
             finally
             {
                 // Finally the allocated memory has to be freed
-                if (resultValuePointer != IntPtr.Zero)
-                    Marshal.FreeHGlobal(resultValuePointer);
+                //if (resultValuePointer != IntPtr.Zero)
+                //    Marshal.FreeHGlobal(resultValuePointer);
             }
         }
 
