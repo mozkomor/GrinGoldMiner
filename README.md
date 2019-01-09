@@ -1,4 +1,4 @@
-# Grin GPU Miner
+# GGM - Grin GPU Miner
 
 Miner supports all AMD and NVIDIA 8GB cards. RTX 8GB cards need Linux or Windows7 at the moment because Windows reserves too much memory on those cards (should be resolved soon)
 
@@ -7,7 +7,7 @@ RTX 2080 and RTX 2080Ti are fastest, OpenCL code for AMD cards is being optimize
 General GGM chat https://gitter.im/GrinGoldMiner/community
 
 For more information about grin, wallet and node downloads see https://github.com/mimblewimble/grin
-Node and wallet do not with with Windows Subsystem Linux, use Virtual Machine or dedicated machine. Windows node+wallet being developed here  https://github.com/GrinPlusPlus/GrinPlusPlus
+Node and wallet do not work with with Windows Subsystem Linux (WSL), use Virtual Machine or dedicated machine. Windows node+wallet being developed here  https://github.com/GrinPlusPlus/GrinPlusPlus
 
 Contact us at mozkomorkaban@gmail.com; professional farm-friendly version of the miner is also in the development
 
