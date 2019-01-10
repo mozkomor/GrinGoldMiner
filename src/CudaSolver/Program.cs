@@ -62,6 +62,7 @@ namespace CudaSolver
 
         public static ConcurrentQueue<Solution> graphSolutions = new ConcurrentQueue<Solution>();
 
+        private static volatile int trimRounds = 80;
         const string TestPrePow = "0001000000000000202e000000005c2e43ce014ca55dc4e0dffe987ee3eef9ca78e517f5ae7383c40797a4e8a9dd75ddf57eafac5471135202aa6054a2cc66aa5510ebdd58edcda0662a9e02d8232a4c90e90b7bddec1f32031d2894d76e3c390fc12b2dcc7a6f12b52be1d7aea70eac7b8ae0dc3f0ffb267e39b95a77e44e66d523399312a812d538afd00c7fd87275f4be7ef2f447ca918435d537c3db3c1d3e5d4f3b830432e5a283fab48917a5695324a319860a329cb1f6d1520ad0078c0f1dd9147f347f4c34e26d3063f117858d75000000000000babd0000000000007f23000000001ac67b3b00000155";
 
         static void Main(string[] args)
@@ -289,7 +290,7 @@ namespace CudaSolver
                     d_indexesB.MemsetAsync(0, streamPrimary.Stream);
                     meanRound.RunAsync(streamPrimary.Stream, d_buffer.DevicePointer, d_bufferB.DevicePointer, d_indexesA.DevicePointer, d_indexesB.DevicePointer, DUCK_EDGES_B / 2, DUCK_EDGES_B / 4);
 
-                    for (int i = 0; i < 80; i++)
+                    for (int i = 0; i < trimRounds; i++)
                     {
                         d_indexesA.MemsetAsync(0, streamPrimary.Stream);
                         meanRound.RunAsync(streamPrimary.Stream, d_bufferB.DevicePointer, d_buffer.DevicePointer, d_indexesB.DevicePointer, d_indexesA.DevicePointer, DUCK_EDGES_B / 4, DUCK_EDGES_B / 4);
@@ -345,7 +346,11 @@ namespace CudaSolver
                                    {
                                        if (findersInFlight++ < 3)
                                        {
+                                           Stopwatch cycleTime = new Stopwatch();
+                                           cycleTime.Start();
                                            cg.FindSolutions(graphSolutions);
+                                           cycleTime.Stop();
+                                           AdjustTrims(cycleTime.ElapsedMilliseconds);
                                            if (graphSolutions.Count > 0) solutions++;
                                        }
                                        else
@@ -396,7 +401,11 @@ namespace CudaSolver
                                 {
                                     if (findersInFlight++ < 3)
                                     {
+                                        Stopwatch cycleTime = new Stopwatch();
+                                        cycleTime.Start();
                                         cg.FindSolutions(graphSolutions);
+                                        cycleTime.Stop();
+                                        AdjustTrims(cycleTime.ElapsedMilliseconds);
                                         if (graphSolutions.Count > 0)
                                         {
                                             solutions++;
@@ -455,6 +464,18 @@ namespace CudaSolver
 
             pp_Aligned_a = new CudaPageLockedHostMemory<int>(nbytes / sizeof(int));
             pp_a = new int[nbytes / sizeof(int)];
+        }
+
+        private static void AdjustTrims(long elapsedMilliseconds)
+        {
+            int target = 20 * Environment.ProcessorCount;
+            if (elapsedMilliseconds > target)
+                trimRounds += 10;
+            else
+                trimRounds -= 10;
+
+            trimRounds = Math.Max(80, trimRounds);
+            trimRounds = Math.Min(256, trimRounds);
         }
     }
 
