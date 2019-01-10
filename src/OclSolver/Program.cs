@@ -493,7 +493,7 @@ namespace OclSolver
 
         private static void AdjustTrims(long elapsedMilliseconds)
         {
-            int target = 40 * Environment.ProcessorCount;
+            int target = 30 * Environment.ProcessorCount;
             if (elapsedMilliseconds > target)
                 trimRounds += 10;
             else

@@ -468,14 +468,14 @@ namespace CudaSolver
 
         private static void AdjustTrims(long elapsedMilliseconds)
         {
-            int target = 20 * Environment.ProcessorCount;
+            int target = 15 * Environment.ProcessorCount;
             if (elapsedMilliseconds > target)
                 trimRounds += 10;
             else
                 trimRounds -= 10;
 
             trimRounds = Math.Max(80, trimRounds);
-            trimRounds = Math.Min(256, trimRounds);
+            trimRounds = Math.Min(300, trimRounds);
         }
     }
 
