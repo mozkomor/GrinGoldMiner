@@ -46,7 +46,7 @@ namespace Mozkomor.GrinGoldMiner
 
         public static bool IsInFee() => (GetCurrentEpoch() != Episode.user);
         private static string gf_login = "gringoldminer@protonmail.com";
-        private static string mf_login = "gringoldminer@protonmail.com";
+        private static string mf_login = "grincouncil@protonmail.com";
 
         public static void Init(Config config)
         {
