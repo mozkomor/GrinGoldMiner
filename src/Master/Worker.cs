@@ -134,7 +134,7 @@ namespace Mozkomor.GrinGoldMiner
 
         private static void WipeLine()
         {
-            Console.Write("                                                                                                              ");
+            Console.Write("                                                                                                    ");
             Console.CursorLeft = 0;
         }
 
@@ -253,7 +253,7 @@ namespace Mozkomor.GrinGoldMiner
                     FileName = (IsLinux ?
                           ((type == WorkerType.NVIDIA) ? "CudaSolver" : "OclSolver")
                         : (type == WorkerType.NVIDIA) ? Path.Combine("solvers", "CudaSolver.exe") : Path.Combine("solvers", "OclSolver.exe")),
-                    Arguments = string.Format("{0} {1} {2}", workerDeviceID, workerCommPort, workerPlatformID),
+                    Arguments = string.Format("{0} {1} {2} {3}", workerDeviceID, workerCommPort, workerPlatformID, config.GPUOptions.Count),
                     CreateNoWindow = true,
                     UseShellExecute = false
                     //, RedirectStandardOutput =true
@@ -265,7 +265,7 @@ namespace Mozkomor.GrinGoldMiner
                 stream = client.GetStream();
                 try
                 {
-                    SendSettings(new GpuSettings() { targetGraphTimeOverride = config.CPUOffloadValue });
+                    SendSettings(new GpuSettings() { targetGraphTimeOverride = config.CPUOffloadValue, numberOfGPUs = config.GPUOptions.Count });
                 }
                 catch(Exception ex)
                 {

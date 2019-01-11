@@ -28,6 +28,7 @@ namespace CudaSolver
         public static volatile bool IsTerminated = false;
 
         public static volatile int cycleFinderTargetOverride = 0;
+        public static volatile int numberOfGPUs = 0;
 
         static int errorCounter = 0;
 
@@ -97,6 +98,7 @@ namespace CudaSolver
                             break;
                         case GpuSettings settings:
                             cycleFinderTargetOverride = settings.targetGraphTimeOverride;
+                            numberOfGPUs = settings.numberOfGPUs;
                             break;
                     }
                 }

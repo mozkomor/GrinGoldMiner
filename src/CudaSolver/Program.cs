@@ -62,6 +62,8 @@ namespace CudaSolver
 
         public static ConcurrentQueue<Solution> graphSolutions = new ConcurrentQueue<Solution>();
 
+        private static int gpuCount = 0;
+        private static bool fastCuda = false;
         private static volatile int trimRounds = 80;
         const string TestPrePow = "0001000000000000202e000000005c2e43ce014ca55dc4e0dffe987ee3eef9ca78e517f5ae7383c40797a4e8a9dd75ddf57eafac5471135202aa6054a2cc66aa5510ebdd58edcda0662a9e02d8232a4c90e90b7bddec1f32031d2894d76e3c390fc12b2dcc7a6f12b52be1d7aea70eac7b8ae0dc3f0ffb267e39b95a77e44e66d523399312a812d538afd00c7fd87275f4be7ef2f447ca918435d537c3db3c1d3e5d4f3b830432e5a283fab48917a5695324a319860a329cb1f6d1520ad0078c0f1dd9147f347f4c34e26d3063f117858d75000000000000babd0000000000007f23000000001ac67b3b00000155";
 
@@ -95,6 +97,20 @@ namespace CudaSolver
             {
                 Logger.Log(LogLevel.Error, "Master connection error");
             }
+
+            try
+            {
+                if (args.Length > 3)
+                {
+                    gpuCount = int.Parse(args[3]);
+                    fastCuda = gpuCount <= (Environment.ProcessorCount / 2);
+                    Logger.Log(LogLevel.Info, "Using single GPU blocking mode");
+                }
+            }
+            catch
+            {
+                
+            } 
 
             if (TEST)
             {
@@ -156,7 +172,7 @@ namespace CudaSolver
                 var assembly = Assembly.GetEntryAssembly();
                 var resourceStream = assembly.GetManifestResourceStream("CudaSolver.kernel_x64.ptx");
 
-                ctx = new CudaContext(deviceID, CUCtxFlags.BlockingSync | CUCtxFlags.MapHost);
+                ctx = new CudaContext(deviceID, gpuCount != 1 ? (CUCtxFlags.BlockingSync | CUCtxFlags.MapHost) : CUCtxFlags.MapHost );
                 meanSeedA = ctx.LoadKernelPTX(resourceStream, "FluffySeed2A");
                 meanSeedA.BlockDimensions = 128;
                 meanSeedA.GridDimensions = 2048;
