@@ -104,8 +104,8 @@ namespace OpenCl.DotNetCore.CommandQueues
 
         public void EnqueueClearBuffer(MemoryObject memoryObject, int size, IntPtr pattern)
         {
-            IntPtr waitEventPointer;
-            Result result =  EnqueuedCommandsNativeApi.EnqueueFillBuffer(this.Handle, memoryObject.Handle, pattern, new UIntPtr((uint)4), UIntPtr.Zero, new UIntPtr((uint)size), 0, null, out waitEventPointer);
+            IntPtr waitEventPointer = IntPtr.Zero;
+            Result result =  EnqueuedCommandsNativeApi.EnqueueFillBuffer(this.Handle, memoryObject.Handle, pattern, new UIntPtr((uint)4), UIntPtr.Zero, new UIntPtr((uint)size), 0, null, waitEventPointer);
 
             // Checks if the read operation was queued successfuly, if not, an exception is thrown
             if (result != Result.Success)
@@ -115,14 +115,14 @@ namespace OpenCl.DotNetCore.CommandQueues
 
         public void EnqueueWriteBufferEdges(MemoryObject memoryObject, long[] edges)
         {
-            IntPtr waitEventPointer;
+            IntPtr waitEventPointer = IntPtr.Zero;
             IntPtr edgesPtr = Marshal.AllocHGlobal(8 * 42);
 
             try
             {
                 Marshal.Copy(edges, 0, edgesPtr, 42);
 
-                Result result = EnqueuedCommandsNativeApi.EnqueueWriteBuffer(this.Handle, memoryObject.Handle, 1, new UIntPtr((uint)0), new UIntPtr((uint)42*8), edgesPtr, 0, null, out waitEventPointer);
+                Result result = EnqueuedCommandsNativeApi.EnqueueWriteBuffer(this.Handle, memoryObject.Handle, 1, new UIntPtr((uint)0), new UIntPtr((uint)42*8), edgesPtr, 0, null, waitEventPointer);
 
                 // Checks if the read operation was queued successfuly, if not, an exception is thrown
                 if (result != Result.Success)
@@ -152,8 +152,8 @@ namespace OpenCl.DotNetCore.CommandQueues
                 resultValuePointer = Marshal.AllocHGlobal(size);
 
                 // Reads the memory object, by enqueuing the read operation to the command queue
-                IntPtr waitEventPointer;
-                Result result = EnqueuedCommandsNativeApi.EnqueueReadBuffer(this.Handle, memoryObject.Handle, 1, UIntPtr.Zero, new UIntPtr((uint)size), resultValuePointer, 0, null, out waitEventPointer);
+                IntPtr waitEventPointer = IntPtr.Zero;
+                Result result = EnqueuedCommandsNativeApi.EnqueueReadBuffer(this.Handle, memoryObject.Handle, 1, UIntPtr.Zero, new UIntPtr((uint)size), resultValuePointer, 0, null, waitEventPointer);
 
 
                 // Checks if the read operation was queued successfuly, if not, an exception is thrown
@@ -190,8 +190,8 @@ namespace OpenCl.DotNetCore.CommandQueues
                 //resultValuePointer = Marshal.AllocHGlobal(size);
 
                 // Reads the memory object, by enqueuing the read operation to the command queue
-                IntPtr waitEventPointer;
-                Result result = EnqueuedCommandsNativeApi.EnqueueReadBuffer(this.Handle, memoryObject.Handle, 1, UIntPtr.Zero, new UIntPtr((uint)size), resultValuePointer, 0, null, out waitEventPointer);
+                IntPtr waitEventPointer = IntPtr.Zero;
+                Result result = EnqueuedCommandsNativeApi.EnqueueReadBuffer(this.Handle, memoryObject.Handle, 1, UIntPtr.Zero, new UIntPtr((uint)size), resultValuePointer, 0, null, waitEventPointer);
 
 
                 // Checks if the read operation was queued successfuly, if not, an exception is thrown
@@ -284,8 +284,8 @@ namespace OpenCl.DotNetCore.CommandQueues
         public void EnqueueNDRangeKernel(Kernel kernel, int workDimension, int globalSize, int localSize, int offset = 0)
         {
             // Enqueues the kernel
-            IntPtr waitEventPointer;
-            Result result = EnqueuedCommandsNativeApi.EnqueueNDRangeKernel(this.Handle, kernel.Handle, (uint)workDimension, new IntPtr[] { new IntPtr(offset) }, new IntPtr[] { new IntPtr(globalSize) }, new IntPtr[] { new IntPtr(localSize) }, 0, null, out waitEventPointer);
+            IntPtr waitEventPointer = IntPtr.Zero;
+            Result result = EnqueuedCommandsNativeApi.EnqueueNDRangeKernel(this.Handle, kernel.Handle, (uint)workDimension, new IntPtr[] { new IntPtr(offset) }, new IntPtr[] { new IntPtr(globalSize) }, new IntPtr[] { new IntPtr(localSize) }, 0, null, waitEventPointer);
 
             // Checks if the kernel was enqueued successfully, if not, then an exception is thrown
             if (result != Result.Success)

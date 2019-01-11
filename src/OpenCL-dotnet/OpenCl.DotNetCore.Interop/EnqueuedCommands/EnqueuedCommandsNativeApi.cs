@@ -47,6 +47,20 @@ namespace OpenCl.DotNetCore.Interop.EnqueuedCommands
             [Out] out IntPtr waitEvent
         );
 
+        [IntroducedInOpenCl(1, 0)]
+        [DllImport("OpenCL", EntryPoint = "clEnqueueReadBuffer")]
+        public static extern Result EnqueueReadBuffer(
+            [In] IntPtr commandQueue,
+            [In] IntPtr buffer,
+            [In] [MarshalAs(UnmanagedType.U4)] uint blockingRead,
+            [In] UIntPtr offset,
+            [In] UIntPtr size,
+            [In] IntPtr pointer,
+            [In] [MarshalAs(UnmanagedType.U4)] uint numberOfEventsInWaitList,
+            [In] [MarshalAs(UnmanagedType.LPArray)] IntPtr[] eventWaitList,
+            [In] IntPtr waitEvent
+        );
+
         /// <summary>
         /// Enqueue command to read from a 2D or 3D rectangular region from a buffer object to host memory.
         /// </summary>
@@ -147,7 +161,21 @@ namespace OpenCl.DotNetCore.Interop.EnqueuedCommands
             [In] [MarshalAs(UnmanagedType.LPArray)] IntPtr[] eventWaitList,
             [Out] out IntPtr waitEvent
         );
-        
+
+        [IntroducedInOpenCl(1, 0)]
+        [DllImport("OpenCL", EntryPoint = "clEnqueueWriteBuffer")]
+        public static extern Result EnqueueWriteBuffer(
+            [In] IntPtr commandQueue,
+            [In] IntPtr buffer,
+            [In] [MarshalAs(UnmanagedType.U4)] uint blockingWrite,
+            [In] UIntPtr offset,
+            [In] UIntPtr size,
+            [In] IntPtr pointer,
+            [In] [MarshalAs(UnmanagedType.U4)] uint numberOfEventsInWaitList,
+            [In] [MarshalAs(UnmanagedType.LPArray)] IntPtr[] eventWaitList,
+            [In] IntPtr waitEvent
+        );
+
         /// <summary>
         /// Enqueue command to write a 2D or 3D rectangular region to a buffer object from host memory.
         /// </summary>
@@ -245,6 +273,20 @@ namespace OpenCl.DotNetCore.Interop.EnqueuedCommands
             [In] [MarshalAs(UnmanagedType.U4)] uint numberOfEventsInWaitList,
             [In] [MarshalAs(UnmanagedType.LPArray)] IntPtr[] eventWaitList,
             [Out] out IntPtr waitEvent
+        );
+
+        [IntroducedInOpenCl(1, 2)]
+        [DllImport("OpenCL", EntryPoint = "clEnqueueFillBuffer")]
+        public static extern Result EnqueueFillBuffer(
+            [In] IntPtr commandQueue,
+            [In] IntPtr buffer,
+            [In] IntPtr pattern,
+            [In] UIntPtr patternSize,
+            [In] UIntPtr offset,
+            [In] UIntPtr size,
+            [In] [MarshalAs(UnmanagedType.U4)] uint numberOfEventsInWaitList,
+            [In] [MarshalAs(UnmanagedType.LPArray)] IntPtr[] eventWaitList,
+            [In] IntPtr waitEvent
         );
 
         /// <summary>
@@ -844,6 +886,20 @@ namespace OpenCl.DotNetCore.Interop.EnqueuedCommands
             [In] [MarshalAs(UnmanagedType.U4)] uint numberOfEventsInWaitList,
             [In] [MarshalAs(UnmanagedType.LPArray)] IntPtr[] eventWaitList,
             [Out] out IntPtr waitEvent
+        );
+
+        [IntroducedInOpenCl(1, 0)]
+        [DllImport("OpenCL", EntryPoint = "clEnqueueNDRangeKernel")]
+        public static extern Result EnqueueNDRangeKernel(
+            [In] IntPtr commandQueue,
+            [In] IntPtr kernel,
+            [In] [MarshalAs(UnmanagedType.U4)] uint workDimension,
+            [In] IntPtr[] globalWorkOffset,
+            [In] IntPtr[] globalWorkSize,
+            [In] IntPtr[] localWorkSize,
+            [In] [MarshalAs(UnmanagedType.U4)] uint numberOfEventsInWaitList,
+            [In] [MarshalAs(UnmanagedType.LPArray)] IntPtr[] eventWaitList,
+            [In] IntPtr waitEvent
         );
 
         /// <summary>

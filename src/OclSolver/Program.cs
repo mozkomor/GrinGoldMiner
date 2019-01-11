@@ -118,6 +118,10 @@ namespace OclSolver
                     k1 = 0xe6d45de39c2a5a3eL,
                     k2 = 0xcbf626a8afee35f6L,
                     k3 = 0x4307b94b1a0c9980L,
+                    //k0 = 0x10ef16eadd6aa061L,
+                    //k1 = 0x563f07e7a3c788b3L,
+                    //k2 = 0xe8d7c8db1518f29aL,
+                    //k3 = 0xc0ab7d1b4ca1adffL,
                     pre_pow = TestPrePow,
                     timestamp = DateTime.Now
                 };
@@ -249,9 +253,10 @@ namespace OclSolver
                                     using (Kernel kernelSeedB1 = program.CreateKernel("FluffySeed2B"))
                                     using (Kernel kernelSeedB2 = program.CreateKernel("FluffySeed2B"))
                                     using (Kernel kernelRound1 = program.CreateKernel("FluffyRound1"))
-                                    using (Kernel kernelRoundNA = program.CreateKernel("FluffyRoundN"))
-                                    using (Kernel kernelRoundNB = program.CreateKernel("FluffyRoundN"))
-                                    using (Kernel kernelTail = program.CreateKernel("FluffyTail"))
+                                    using (Kernel kernelRoundO = program.CreateKernel("FluffyRoundNO1"))
+                                    using (Kernel kernelRoundNA = program.CreateKernel("FluffyRoundNON"))
+                                    using (Kernel kernelRoundNB = program.CreateKernel("FluffyRoundNON"))
+                                    using (Kernel kernelTail = program.CreateKernel("FluffyTailO"))
                                     using (Kernel kernelRecovery = program.CreateKernel("FluffyRecovery"))
                                     {
                                         Stopwatch sw = new Stopwatch();
@@ -285,6 +290,11 @@ namespace OclSolver
                                         kernelRound1.SetKernelArgument(4, bufferI1);
                                         kernelRound1.SetKernelArgumentGeneric(5, (uint)DUCK_SIZE_A * 1024);
                                         kernelRound1.SetKernelArgumentGeneric(6, (uint)DUCK_SIZE_B * 1024);
+
+                                        kernelRoundO.SetKernelArgument(0, bufferB);
+                                        kernelRoundO.SetKernelArgument(1, bufferA1);
+                                        kernelRoundO.SetKernelArgument(2, bufferI1);
+                                        kernelRoundO.SetKernelArgument(3, bufferI2);
 
                                         kernelRoundNA.SetKernelArgument(0, bufferB);
                                         kernelRoundNA.SetKernelArgument(1, bufferA1);
@@ -321,8 +331,15 @@ namespace OclSolver
                                                     continue;
                                                 }
 
+                                                if (!TEST && (currentJob.timestamp.AddMinutes(30) < DateTime.Now))
+                                                {
+                                                    Logger.Log(LogLevel.Info, string.Format("Job too old..."));
+                                                    Task.Delay(1000).Wait();
+                                                    continue;
+                                                }
+
                                                 // test runs only once
-                                                if (TEST && loopCnt++ > 100)
+                                                if (TEST && loopCnt++ > 100000)
                                                     Comms.IsTerminated = true;
 
                                                 Logger.Log(LogLevel.Debug, string.Format("GPU AMD{4}:Trimming #{4}: {0} {1} {2} {3}", currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, currentJob.jobID, deviceID));
@@ -331,7 +348,7 @@ namespace OclSolver
                                                 //srw.Start();
 
                                                 Solution s;
-                                                if (graphSolutions.TryDequeue(out s))
+                                                while (graphSolutions.TryDequeue(out s))
                                                 {
                                                     kernelRecovery.SetKernelArgumentGeneric(0, s.job.k0);
                                                     kernelRecovery.SetKernelArgumentGeneric(1, s.job.k1);
@@ -372,6 +389,11 @@ namespace OclSolver
                                                 commandQueue.EnqueueClearBuffer(bufferI1, 64 * 64 * 4, clearPattern);
                                                 commandQueue.EnqueueNDRangeKernel(kernelRound1, 1, 4096 * 1024, 1024, 0);
 
+                                                commandQueue.EnqueueClearBuffer(bufferI2, 64 * 64 * 4, clearPattern);
+                                                commandQueue.EnqueueNDRangeKernel(kernelRoundO, 1, 4096 * 1024, 1024, 0);
+                                                commandQueue.EnqueueClearBuffer(bufferI1, 64 * 64 * 4, clearPattern);
+                                                commandQueue.EnqueueNDRangeKernel(kernelRoundNB, 1, 4096 * 1024, 1024, 0);
+
                                                 for (int r = 0; r < trimRounds; r++)
                                                 {
                                                     commandQueue.EnqueueClearBuffer(bufferI2, 64 * 64 * 4, clearPattern);
@@ -383,7 +405,7 @@ namespace OclSolver
                                                 commandQueue.EnqueueClearBuffer(bufferI2, 64 * 64 * 4, clearPattern);
                                                 commandQueue.EnqueueNDRangeKernel(kernelTail, 1, 4096 * 1024, 1024, 0);
 
-                                                edgesCount = commandQueue.EnqueueReadBuffer<uint>(bufferI2, 1); 
+                                                edgesCount = commandQueue.EnqueueReadBuffer<uint>(bufferI2, 1);
                                                 edgesCount[0] = edgesCount[0] > 1000000 ? 1000000 : edgesCount[0];
                                                 edgesLeft = commandQueue.EnqueueReadBuffer(bufferA1, (int)edgesCount[0] * 2);
 
@@ -414,6 +436,17 @@ namespace OclSolver
                                                                 cg.FindSolutions(graphSolutions);
                                                                 cycleTime.Stop();
                                                                 AdjustTrims(cycleTime.ElapsedMilliseconds);
+                                                                if (TEST)
+                                                                {
+                                                                    Logger.Log(LogLevel.Info, string.Format("Finder completed in {0}ms on {1} edges with {2} solution(s) and {3} dupes", sw.ElapsedMilliseconds, edgesCount[0], graphSolutions.Count, cg.dupes));
+
+                                                                    if (++trims % 50 == 0)
+                                                                    {
+                                                                        Console.ForegroundColor = ConsoleColor.Green;
+                                                                        Console.WriteLine("SOLS: {0}/{1} - RATE: {2:F1}", solutions, trims, (float)trims / solutions);
+                                                                        Console.ResetColor();
+                                                                    }
+                                                                }
                                                                 if (graphSolutions.Count > 0)
                                                                 {
                                                                     solutions++;
@@ -493,14 +526,14 @@ namespace OclSolver
 
         private static void AdjustTrims(long elapsedMilliseconds)
         {
-            int target = 30 * Environment.ProcessorCount;
+            int target = Comms.cycleFinderTargetOverride > 0 ? Comms.cycleFinderTargetOverride : 20 * Environment.ProcessorCount;
             if (elapsedMilliseconds > target)
                 trimRounds += 10;
             else
                 trimRounds -= 10;
 
             trimRounds = Math.Max(80, trimRounds);
-            trimRounds = Math.Min(256, trimRounds);
+            trimRounds = Math.Min(300, trimRounds);
         }
     }
 }

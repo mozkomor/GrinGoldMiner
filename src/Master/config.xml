@@ -22,7 +22,9 @@
     <ConsoleMinimumLogLevel>ERROR</ConsoleMinimumLogLevel>
     <KeepDays>2</KeepDays>
   </LogOptions>
-
+  <CPUOffloadValue>
+    0
+  </CPUOffloadValue>
   <GPUOptions>
     <GPUOption>
       <GPUType>NVIDIA</GPUType>

@@ -474,7 +474,7 @@ namespace Mozkomor.GrinGoldMiner
                 flushToStratum.WaitOne(); //this is just non-blocking waiting for someone somewhere to call flushToStratum.Set()
 
                 //take the message first out from queue and send it
-                if (!terminated && solutionQueue.TryDequeue(out StratumRpcRequest r))
+                while (!terminated && solutionQueue.TryDequeue(out StratumRpcRequest r))
                 {
                     GrinSend<StratumRpcRequest>(r);
                 }

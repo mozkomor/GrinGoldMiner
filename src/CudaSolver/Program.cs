@@ -239,12 +239,19 @@ namespace CudaSolver
                         continue;
                     }
 
+                    if (!TEST && (currentJob.timestamp.AddMinutes(30) < DateTime.Now ))
+                    {
+                        Logger.Log(LogLevel.Info, string.Format("Job too old..."));
+                        Task.Delay(1000).Wait();
+                        continue;
+                    }
+
                     // test runs only once
                     if (TEST && loopCnt++ > 100)
                         Comms.IsTerminated = true;
 
                     Solution s;
-                    if (graphSolutions.TryDequeue(out s))
+                    while (graphSolutions.TryDequeue(out s))
                     {
                         meanRecover.SetConstantVariable<ulong>("recovery", s.GetUlongEdges());
                         d_indexesB.MemsetAsync(0, streamPrimary.Stream);
@@ -468,7 +475,7 @@ namespace CudaSolver
 
         private static void AdjustTrims(long elapsedMilliseconds)
         {
-            int target = 15 * Environment.ProcessorCount;
+            int target = Comms.cycleFinderTargetOverride > 0 ? Comms.cycleFinderTargetOverride :  15 * Environment.ProcessorCount;
             if (elapsedMilliseconds > target)
                 trimRounds += 10;
             else

@@ -216,6 +216,12 @@ namespace SharedSerialization
         gf
     }
 
+    [SerializableAttribute]
+    public class GpuSettings
+    {
+        public int targetGraphTimeOverride;
+    }
+
     //public class GPUOptions
     //{
     //    public List<GPUOption> Cards { get; set; }

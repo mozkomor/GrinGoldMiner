@@ -27,6 +27,8 @@ namespace CudaSolver
         public static Job nextJob = new Job();
         public static volatile bool IsTerminated = false;
 
+        public static volatile int cycleFinderTargetOverride = 0;
+
         static int errorCounter = 0;
 
         internal static void ConnectToMaster(int port)
@@ -52,7 +54,7 @@ namespace CudaSolver
                     flushToMaster.WaitOne();
 
                     Solution s;
-                    if (graphSolutionsOut.TryDequeue(out s))
+                    while (graphSolutionsOut.TryDequeue(out s))
                     {
                         (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, s);
                     }
@@ -65,7 +67,7 @@ namespace CudaSolver
                         stream.Flush();
                     }
                     LogMessage lm;
-                    if (logsOut.TryDequeue(out lm))
+                    while (logsOut.TryDequeue(out lm))
                     {
                          (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, lm);
                     }
@@ -92,6 +94,9 @@ namespace CudaSolver
                         case Job job:
                             nextJob = job;
                             Logger.Log(LogLevel.Debug, $"New job received: {job.pre_pow}");
+                            break;
+                        case GpuSettings settings:
+                            cycleFinderTargetOverride = settings.targetGraphTimeOverride;
                             break;
                     }
                 }

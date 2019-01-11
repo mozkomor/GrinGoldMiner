@@ -217,7 +217,25 @@ namespace Mozkomor.GrinGoldMiner
             }
         }
 
-        public bool Start()
+        //send job to worker
+        public bool SendSettings(SharedSerialization.GpuSettings settings)
+        {
+            try
+            {
+                if (!gpu.Enabled)
+                    return true;
+
+                (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, settings);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex);
+                return false;
+            }
+        }
+
+        public bool Start(Config config)
         {
             try
             {
@@ -240,11 +258,19 @@ namespace Mozkomor.GrinGoldMiner
                     UseShellExecute = false
                     //, RedirectStandardOutput =true
                     //WindowStyle = ProcessWindowStyle.Hidden
-                    
+
                 });
                 client = l.AcceptTcpClient();
                 l.Stop();
                 stream = client.GetStream();
+                try
+                {
+                    SendSettings(new GpuSettings() { targetGraphTimeOverride = config.CPUOffloadValue });
+                }
+                catch(Exception ex)
+                {
+                    Logger.Log(LogLevel.ERROR, "Unable to push settings to worker: " + ex.Message);
+                }
                 listener = Task.Factory.StartNew(() => { Listen(); }, TaskCreationOptions.LongRunning);
                 return true;
             }

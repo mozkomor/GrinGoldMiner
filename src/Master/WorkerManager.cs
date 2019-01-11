@@ -18,7 +18,7 @@ namespace Mozkomor.GrinGoldMiner
             {
                 Worker w = new Worker(gpu, i++);
                 workers.Add(w);
-                w.Start();
+                w.Start(config);
             }
         }
 

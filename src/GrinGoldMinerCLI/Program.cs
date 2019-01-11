@@ -101,14 +101,15 @@ namespace Mozkomor.GrinGoldMinerCLI
                 string pool = "";
                 string port = "13416";
                 Console.WriteLine($"Select minig pool (press number):");
-                Console.WriteLine($"[1] US-east grinmint.com");
-                Console.WriteLine($"[2] mwgrinpool.com");
-                Console.WriteLine($"[3] Custom stratum address");
+                Console.WriteLine($"[1] Custom stratum address");
+                Console.WriteLine($"[2] US-east grinmint.com");
+                Console.WriteLine($"[3] EU-west grinmint.com");
+                Console.WriteLine($"[4] mwgrinpool.com");
                 var key = Console.ReadLine();
 
-                if (key == "1")
+                if (key == "2" || key == "3")
                 {
-                    generated_config.PrimaryConnection.ConnectionAddress = "us-east.stratum.grinmint.com";
+                    generated_config.PrimaryConnection.ConnectionAddress = key == "2" ? "us-east-stratum.grinmint.com" : "eu-west-stratum.grinmint.com";
                     generated_config.PrimaryConnection.ConnectionPort = 4416;
                     generated_config.PrimaryConnection.Ssl = true;
                     Console.WriteLine($"Enter your email (pool login):");
@@ -129,11 +130,11 @@ namespace Mozkomor.GrinGoldMinerCLI
                     Console.WriteLine($"Enter your pool password:");
                     generated_config.PrimaryConnection.Password = Console.ReadLine();
                 }
-                else if (key == "2")
+                else if (key == "4")
                 {
                     generated_config.PrimaryConnection.ConnectionAddress = "stratum.MWGrinPool.com";
-                    generated_config.PrimaryConnection.ConnectionPort = 3333;
-                    generated_config.PrimaryConnection.Ssl = false;
+                    generated_config.PrimaryConnection.ConnectionPort = 3334;
+                    generated_config.PrimaryConnection.Ssl = true;
                     Console.WriteLine($"Enter your email (pool login):");
                     var email = Console.ReadLine();
                     generated_config.PrimaryConnection.Login = $"{email}";

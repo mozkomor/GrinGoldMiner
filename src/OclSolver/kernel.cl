@@ -438,7 +438,6 @@ __kernel   void FluffyRoundN_64(const __global uint2 * source, __global uint2 * 
 
 }
 
-
 __attribute__((reqd_work_group_size(1024, 1, 1)))
 __kernel void FluffyTail(const __global uint2 * source, __global uint2 * destination, const __global int * sourceIndexes, __global int * destinationIndexes)
 {
@@ -522,5 +521,152 @@ __kernel   void FluffyRecovery(const u64 v0i, const u64 v1i, const u64 v2i, cons
 	{
 		if (nonces[lid] > 0)
 			indexes[lid] = nonces[lid];
+	}
+}
+
+
+
+// ---------------
+#define BKT_OFFSET 255
+#define BKT_STEP 32
+__attribute__((reqd_work_group_size(1024, 1, 1)))
+__kernel   void FluffyRoundNO1(const __global uint2 * source, __global uint2 * destination, const __global int * sourceIndexes, __global int * destinationIndexes)
+{
+	const int lid = get_local_id(0);
+	const int group = get_group_id(0);
+
+	const int bktInSize = DUCK_B_EDGES;
+	const int bktOutSize = DUCK_B_EDGES;
+
+	__local u32 ecounters[8192];
+
+	const int edgesInBucket = min(sourceIndexes[group], bktInSize);
+	const int loops = (edgesInBucket + CTHREADS) / CTHREADS;
+
+	for (int i = 0; i < 8; i++)
+		ecounters[lid + (1024 * i)] = 0;
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	for (int i = 0; i < loops; i++)
+	{
+		const int lindex = (i * CTHREADS) + lid;
+
+		if (lindex < edgesInBucket)
+		{
+
+			const int index =(bktInSize * group) + lindex;
+
+			uint2 edge = source[index];
+
+			if (edge.x == 0 && edge.y == 0) continue;
+
+			Increase2bCounter(ecounters, (edge.x & EDGEMASK) >> 12);
+		}
+	}
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	for (int i = 0; i < loops; i++)
+	{
+		const int lindex = (i * CTHREADS) + lid;
+
+		if (lindex < edgesInBucket)
+		{
+			const int index = (bktInSize * group) + lindex;
+
+			uint2 edge = source[index];
+
+			if (edge.x == 0 && edge.y == 0) continue;
+
+			if (Read2bCounter(ecounters, (edge.x & EDGEMASK) >> 12))
+			{
+				const int bucket = edge.y & BKTMASK4K;
+				const int bktIdx = min(atomic_add(destinationIndexes + bucket, 1), bktOutSize - 1 - ((bucket & BKT_OFFSET) * BKT_STEP));
+				destination[((bucket & BKT_OFFSET) * BKT_STEP) + (bucket * bktOutSize) + bktIdx] = (uint2)(edge.y, edge.x);
+			}
+		}
+	}
+
+}
+
+__attribute__((reqd_work_group_size(1024, 1, 1)))
+__kernel   void FluffyRoundNON(const __global uint2 * source, __global uint2 * destination, const __global int * sourceIndexes, __global int * destinationIndexes)
+{
+	const int lid = get_local_id(0);
+	const int group = get_group_id(0);
+
+	const int bktInSize = DUCK_B_EDGES;
+	const int bktOutSize = DUCK_B_EDGES;
+
+	__local u32 ecounters[8192];
+
+	const int edgesInBucket = min(sourceIndexes[group], bktInSize);
+	const int loops = (edgesInBucket + CTHREADS) / CTHREADS;
+
+	for (int i = 0; i < 8; i++)
+		ecounters[lid + (1024 * i)] = 0;
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	for (int i = 0; i < loops; i++)
+	{
+		const int lindex = (i * CTHREADS) + lid;
+
+		if (lindex < edgesInBucket)
+		{
+
+			const int index = ((group & BKT_OFFSET) * BKT_STEP) + (bktInSize * group) + lindex;
+
+			uint2 edge = source[index];
+
+			if (edge.x == 0 && edge.y == 0) continue;
+
+			Increase2bCounter(ecounters, (edge.x & EDGEMASK) >> 12);
+		}
+	}
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	for (int i = 0; i < loops; i++)
+	{
+		const int lindex = (i * CTHREADS) + lid;
+
+		if (lindex < edgesInBucket)
+		{
+			const int index = ((group & BKT_OFFSET) * BKT_STEP) + (bktInSize * group) + lindex;
+
+			uint2 edge = source[index];
+
+			if (edge.x == 0 && edge.y == 0) continue;
+
+			if (Read2bCounter(ecounters, (edge.x & EDGEMASK) >> 12))
+			{
+				const int bucket = edge.y & BKTMASK4K;
+				const int bktIdx = min(atomic_add(destinationIndexes + bucket, 1), bktOutSize - 1 - ((bucket & BKT_OFFSET) * BKT_STEP));
+				destination[((bucket & BKT_OFFSET) * BKT_STEP) + (bucket * bktOutSize) + bktIdx] = (uint2)(edge.y, edge.x);
+			}
+		}
+	}
+
+}
+
+__attribute__((reqd_work_group_size(1024, 1, 1)))
+__kernel void FluffyTailO(const __global uint2 * source, __global uint2 * destination, const __global int * sourceIndexes, __global int * destinationIndexes)
+{
+	const int lid = get_local_id(0);
+	const int group = get_group_id(0);
+
+	int myEdges = sourceIndexes[group];
+	__local int destIdx;
+
+	if (lid == 0)
+		destIdx = atomic_add(destinationIndexes, myEdges);
+
+	barrier(CLK_LOCAL_MEM_FENCE);
+
+	if (lid < myEdges)
+	{
+		destination[destIdx + lid] = source[((group & BKT_OFFSET) * BKT_STEP) + group * DUCK_B_EDGES + lid];
 	}
 }
