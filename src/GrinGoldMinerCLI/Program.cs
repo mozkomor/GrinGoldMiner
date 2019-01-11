@@ -281,14 +281,14 @@ namespace Mozkomor.GrinGoldMinerCLI
                             Console.WriteLine("------------------------------------------------------------------------------------------");
                             WipeLine();
                             Console.Write("Mining for: ");
-                            Console.CursorLeft = 20;
+                            Console.CursorLeft = 22;
                             Console.ForegroundColor = who == "USER" ? ConsoleColor.Cyan : ConsoleColor.Blue;
                             Console.Write(who); Console.ResetColor(); //TODO
                             Console.CursorLeft = 35;
                             Console.WriteLine($"Stratum Server: {remote}"); //TODO
                             WipeLine();
                             Console.Write("Connection status: ");
-                            Console.CursorLeft = 20;
+                            Console.CursorLeft = 22;
                             Console.ForegroundColor = status == "CONNECTED" ? ConsoleColor.Green : (status == "CONNECTING" ? ConsoleColor.Yellow : ConsoleColor.Red);
                             Console.Write(status); Console.ResetColor(); //TODO
 
@@ -296,18 +296,22 @@ namespace Mozkomor.GrinGoldMinerCLI
                             Console.WriteLine($"Last job in:    {(DateTime.Now-WorkerManager.lastJob).TotalSeconds:F0} seconds");
                             WipeLine();
                             Console.Write("Shares (sub/acc/rej): ");
-                            Console.CursorLeft = 20;
-                            Console.ForegroundColor = ConsoleColor.Yellow;
-                            Console.Write($"{StratumConnet.totalShares}"); Console.ResetColor(); Console.Write("/ ");
-                            if (StratumConnet.sharesAccepted > 0) Console.ForegroundColor = ConsoleColor.Green;
-                            Console.Write($"{StratumConnet.sharesAccepted}"); Console.ResetColor(); Console.Write("/ ");
-                            if (StratumConnet.sharesRejected + StratumConnet.sharesTooLate > 0) Console.ForegroundColor = ConsoleColor.Red;
-                            Console.Write($"{StratumConnet.sharesRejected + StratumConnet.sharesTooLate}"); Console.ResetColor();
-                            Console.ResetColor();
+                            Console.CursorLeft = 22;
+                            if (conn != null)
+                            {
+                                Console.ForegroundColor = ConsoleColor.Yellow;
+                                Console.Write($"{conn.totalShares}"); Console.ResetColor(); Console.Write("/ ");
+                                if (conn.sharesAccepted > 0) Console.ForegroundColor = ConsoleColor.Green;
+                                Console.Write($"{conn.sharesAccepted}"); Console.ResetColor(); Console.Write("/ ");
+                                if (conn.sharesRejected + conn.sharesTooLate > 0) Console.ForegroundColor = ConsoleColor.Red;
+                                Console.Write($"{conn.sharesRejected + conn.sharesTooLate}"); Console.ResetColor();
+                                Console.ResetColor();
 
-                            Console.CursorLeft = 35;
-                            Console.WriteLine($"Last share:     {(DateTime.Now-StratumConnet.lastShare).TotalSeconds:F0} seconds");
-                            WipeLine();
+
+                                Console.CursorLeft = 35;
+                                Console.WriteLine($"Last share:     {(DateTime.Now - conn.lastShare).TotalSeconds:F0} seconds");
+                                WipeLine();
+                            }
                             if (who == "FEE")
                             {
                                 Console.ForegroundColor = ConsoleColor.DarkMagenta;

@@ -12,28 +12,27 @@ namespace Mozkomor.GrinGoldMiner
 {
     public class ConnectionManager
     {
-        private static string gflogin = "grindev";
-        private static string gfpwd = "";
+
 
         public static volatile uint solutions = 0;
         public static volatile int solutionCounter = 0;
         private static volatile int solutionRound = 30;
-        private static volatile int solverswitchmin = 5;
-        private static volatile int solverswitch = 10;
-        private static volatile int prepConn = 2;
-        private static volatile int solmfcnt = 0;
-        private static volatile int solgfcnt = 0;
+        //private static volatile int solverswitchmin = 5;
+        private const int solverswitch = 10;
+        private static volatile int prepConn = 5;
+        //private static volatile int solmfcnt = 0;
+        //private static volatile int solgfcnt = 0;
         private static volatile uint totalsolutionCounter = 0;
         private static volatile uint totalsolmfcnt = 0;
         private static volatile uint totalsolgfcnt = 0;
         private static volatile bool IsGfConnecting = false;
         private static volatile bool isMfConnecting = false;
         private static volatile bool stopConnecting = false;
-        
+
 
         private static DateTime roundTime;
 
-        private static StratumConnet curr_m; 
+        private static StratumConnet curr_m;
         private static StratumConnet con_m1;
         private static StratumConnet con_m2;
 
@@ -46,18 +45,22 @@ namespace Mozkomor.GrinGoldMiner
         private static StratumConnet con_gf2;
 
         public static bool IsInFee() => (GetCurrentEpoch() != Episode.user);
+        private static string gflogin = "grindev";
+        private static string mf_login = "minderdev";
 
         public static void Init(Config config)
         {
             //main
             con_m1 = new StratumConnet(config.PrimaryConnection.ConnectionAddress, config.PrimaryConnection.ConnectionPort, 1, config.PrimaryConnection.Login, config.PrimaryConnection.Password, config.PrimaryConnection.Ssl);
-            con_m2 = new StratumConnet(config.SecondaryConnection.ConnectionAddress, config.SecondaryConnection.ConnectionPort, 1, config.SecondaryConnection.Login, config.SecondaryConnection.Password, config.SecondaryConnection.Ssl);
+            con_m2 = new StratumConnet(config.SecondaryConnection.ConnectionAddress, config.SecondaryConnection.ConnectionPort, 2, config.SecondaryConnection.Login, config.SecondaryConnection.Password, config.SecondaryConnection.Ssl);
             //miner dev
-            con_mf1 = new StratumConnet("10.0.0.237", 13416, 3, "huflepuf", "azkaban");
-            con_mf2 = null; // new StratumConnet("10.0.0.237", 13416, 4, "huflepuf", "azkaban");
+            //con_mf1 = new StratumConnet("10.0.0.237", 13416, 3, "dev", "");
+            con_mf1 = new StratumConnet("gringoldminer.mimwim.eu", 4416, 3, mf_login, "", true);
+            con_mf2 = new StratumConnet("gringoldminer2.mimwim.eu", 3334, 4, mf_login, "", true);
+
             //girn dev
-            con_gf1 = new StratumConnet("10.0.0.239", 13416, 5, gflogin, gfpwd);
-            con_gf2 = null; // new StratumConnet("10.0.0.237", 13416, 6);
+            con_gf1 = new StratumConnet("10.0.0.239", 13416, 5, gflogin, "");
+            con_gf2 = new StratumConnet("10.0.0.239", 13416, 6, gflogin, "");
 
             solutionCounter = 0;
             //solverswitch = 30;// new Random(DateTime.UtcNow.Millisecond).Next(solverswitchmin,solutionRound);
@@ -71,10 +74,10 @@ namespace Mozkomor.GrinGoldMiner
         //main (user) connection is disconnected, pause workers (stop burning electricity), disconnect fees, wait for reconnection
         private static void PauseAllMining()
         {
-            if(curr_mf?.IsConnected == true)
+            if (curr_mf?.IsConnected == true)
                 curr_mf.StratumClose();
 
-            if(curr_gf?.IsConnected == true)
+            if (curr_gf?.IsConnected == true)
                 curr_gf.StratumClose();
 
             Task.Delay(1000).Wait();
@@ -142,7 +145,7 @@ namespace Mozkomor.GrinGoldMiner
         public static void ReconnectMain()
         {
             Logger.Log(LogLevel.DEBUG, "trying to reconnect main...");
-           // curr_m.StratumClose(); //already in watchdog
+            // curr_m.StratumClose(); //already in watchdog
             curr_m = null;
             stopConnecting = false;
             ConnectMain();
@@ -241,7 +244,7 @@ namespace Mozkomor.GrinGoldMiner
                 curr_gf.SendLogin();
                 curr_gf.RequestJob();
             }
-           
+
             IsGfConnecting = false;
         }
 
@@ -302,7 +305,7 @@ namespace Mozkomor.GrinGoldMiner
             {
                 return Episode.user;
             }
-            else if (solutionCounter < solverswitch +10)
+            else if (solutionCounter < solverswitch + 10)
             {
                 return Episode.mf;
             }
@@ -319,41 +322,99 @@ namespace Mozkomor.GrinGoldMiner
 
         #region submit
         public static string lock_submit = "";
+
+        private static bool hasMfJob()
+        {
+            try
+            {
+                return curr_mf?.IsConnected == true && !string.IsNullOrEmpty(curr_mf?.CurrentJob?.pre_pow);
+            }
+            catch { return false; }
+        }
+        private static bool hasGfJob()
+        {
+            try
+            {
+                return curr_gf?.IsConnected == true && !string.IsNullOrEmpty(curr_gf?.CurrentJob?.pre_pow);
+            }
+            catch { return false; }
+        }
+        private static bool hasUserJob()
+        {
+            try
+            {
+                return curr_m?.IsConnected == true && !string.IsNullOrEmpty(curr_m?.CurrentJob?.pre_pow);
+            }
+            catch { return false; }
+        }
+
         public static void SubmitSol(SharedSerialization.Solution solution)
         {
             Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) SubmitSol...");
-
-            var ep = GetCurrentEpoch();
-            if (solution.job.origin == ep)
-            {
-                switch (ep)
-                {
-                    case Episode.user:
-                        if (curr_m?.IsConnected == true)
-                        {
-                            Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) Submitting solution Connection id {curr_m.id} SOL: job id {solution.job.jobID} origine {solution.job.origin.ToString()}. ");
-                            curr_m.SendSolution(solution);
-                        }
-                        break;
-                    case Episode.mf:
-                        if (curr_mf?.IsConnected == true)
-                        {
-                            Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) Submitting solution Connection id {curr_mf.id} SOL: job id {solution.job.jobID} origine {solution.job.origin.ToString()}. ");
-                            curr_mf.SendSolution(solution);
-                        }
-                        break;
-                    case Episode.gf:
-                        if (curr_gf?.IsConnected == true)
-                        {
-                            Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) Submitting solution Connection id {curr_gf.id} SOL: job id {solution.job.jobID} origine {solution.job.origin.ToString()}. ");
-                            curr_gf.SendSolution(solution);
-                        }
-                        break;
-                }
-            }
-
             lock (lock_submit)
             {
+                var ep = GetCurrentEpoch();
+                switch (ep)
+                {
+                        case Episode.mf:
+                            if (hasMfJob() && solution.job.origin == Episode.user)
+                            {
+                                Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) SubmitSol going out bc origin==user");
+                                return;
+                            }
+                        break;
+                        case Episode.gf:
+                            if (hasGfJob() && solution.job.origin == Episode.mf)
+                            {
+                                Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) SubmitSol going out bc origin==mf");
+                                return;
+                            }
+                            break;
+                        case Episode.user:
+                            if (hasUserJob() && solution.job.origin == Episode.gf)
+                            {
+                                Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) SubmitSol going out bc origin==gf");
+                                return;
+                            }
+                            break;
+                }
+                
+                if (solution.job.origin == ep)
+                {
+                    switch (ep)
+                    {
+                        case Episode.user:
+                            if (curr_m?.IsConnected == true)
+                            {
+                                Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) Submitting solution Connection id {curr_m.id} SOL: job id {solution.job.jobID} origine {solution.job.origin.ToString()}. ");
+                                curr_m.SendSolution(solution);
+                                totalsolutionCounter++;
+                            }
+                            break;
+                        case Episode.mf:
+                            if (curr_mf?.IsConnected == true)
+                            {
+                                Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) Submitting solution Connection id {curr_mf.id} SOL: job id {solution.job.jobID} origine {solution.job.origin.ToString()}. ");
+                                curr_mf.SendSolution(solution);
+                                totalsolmfcnt++;
+                            }
+                            break;
+                        case Episode.gf:
+                            if (curr_gf?.IsConnected == true)
+                            {
+                                Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) Submitting solution Connection id {curr_gf.id} SOL: job id {solution.job.jobID} origine {solution.job.origin.ToString()}. ");
+                                curr_gf.SendSolution(solution);
+                                totalsolgfcnt++;
+                            }
+                            break;
+                    }
+                }
+                else
+                {
+                    Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) Cant be here. (origin != ep)");
+                }
+
+
                 solutions++;
                 solutionCounter++;
 
@@ -375,24 +436,27 @@ namespace Mozkomor.GrinGoldMiner
                         Task.Run(() => ConnectGf());
                     }
                 }
-                else if(solutionCounter == solverswitch)
+                else if (solutionCounter == solverswitch)
                 {
+                    Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) solutionCounter == solverswitch");
                     if (curr_mf?.IsConnected == true)
                     {
                         Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) SWITCHER: pushing MF job to workers");
                         curr_mf.PushJobToWorkers();
                     }
                 }
-                else if(solutionCounter == solverswitch + 10)
+                else if (solutionCounter == solverswitch + 10)
                 {
+                    Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) solutionCounter == solverswitch + 10");
                     if (curr_gf?.IsConnected == true)
                     {
                         Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) SWITCHER: pushing GF job to workers");
                         curr_gf.PushJobToWorkers();
                     }
                 }
-                else if(solutionCounter == solverswitch + 20)
+                else if (solutionCounter == solverswitch + 20)
                 {
+                    Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) solutionCounter == solverswitch + 20");
                     if (curr_m?.IsConnected == true)
                     {
                         Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) SWITCHER: pushing USER job to workers");
@@ -405,22 +469,47 @@ namespace Mozkomor.GrinGoldMiner
                     }
 
                     /// !!!!!!!!!!!!!!! 
-                    solutionCounter = 0; //remove this if we want two m-mf-gf-m, now we have m-mf-gf so it will never fall to next else-if
+                    resetRound(); //remove this if we want two m-mf-gf-m, now we have m-mf-gf so it will never fall to next else-if
 
                     stopConnecting = true; //in case mf gf are not reachable, they are trying to connect here in loop
 
                     try { Task.Run(() => Task.Delay(5000).ContinueWith(_ => curr_mf.StratumClose())); } catch { }
                     try { Task.Run(() => Task.Delay(5000).ContinueWith(_ => curr_gf.StratumClose())); } catch { }
                 }
-                else if(solutionCounter > 30)
+                else if (solutionCounter >= solutionRound)
                 {
-                    solutionCounter = 0;
+                    Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) Cant be here: solutionCounter >= solutionRound");
+                    //this only executes in case we switch to m-mf-gf-m
+                    //now it is only m-mf-gf co never comes here
+                    resetRound();
                 }
             }
         }
+
+        private static void resetRound()
+        {
+            Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) SWITCHER: resetting round, setting solutionCounter to 0");
+            solutionCounter = 0;
+            var time = DateTime.Now - roundTime;
+            roundTime = DateTime.Now;
+            //based on solution time, try to target prepConn to 10 seconds
+            prepConn = (int)Math.Round(Math.Max(5, (10 / (time.TotalSeconds / solutionRound))));
+          
+            try
+            {
+                //Task.Run(() =>
+                //{
+                    Logger.Log(LogLevel.DEBUG, $"Round reset: solT:{totalsolutionCounter}, mfT:{totalsolmfcnt}, gfT:{totalsolgfcnt}");
+                    Logger.Log(LogLevel.DEBUG, $"Round time: {(time).TotalSeconds}  seconds");
+                    Logger.Log(LogLevel.DEBUG, $"PrepConn: {prepConn}");
+                    Logger.Log(LogLevel.INFO, $"Avg sol time: {(time).TotalSeconds / solutionRound} seconds");
+                //});
+            }
+            catch { }
+        }
         #endregion
 
-        private static void printHeart()
+        public static void printHeart()
         {
             Console.WriteLine("       .....           .....");
             Console.WriteLine("   ,ad8PPPP88b,     ,d88PPPP8ba,");

@@ -30,14 +30,18 @@ namespace Mozkomor.GrinGoldMiner
             ConnectionManager.SubmitSol(sol);
         }
 
+        private static string lockPush = "";
         //new job received from stratum connection
         public static void newJobReceived(SharedSerialization.Job job)
         {
-            lastJob = DateTime.Now;
-            //update workers..
-            foreach (var worker in workers)
+            lock (lockPush)
             {
-                worker.SendJob(job);
+                lastJob = DateTime.Now;
+                //update workers..
+                foreach (var worker in workers)
+                {
+                    worker.SendJob(job);
+                }
             }
         }
 
