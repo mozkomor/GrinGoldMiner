@@ -22,8 +22,8 @@ VIDEO GUIDE:
 
 ------------------------------------
 
-![Screen](/img/GGM_Windows.png)
-![Screen](/img/GGM_Linux.png)
+![Screen](/img/GGM_Windows_B3.png)
+![Screen](/img/GGM_Linux_B3.png)
 
 Cuda and OpenCL solveres are released under FAIR MINING license https://github.com/tromp/cuckoo/blob/master/LICENSE.txt
 
