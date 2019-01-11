@@ -223,6 +223,9 @@ namespace Mozkomor.GrinGoldMinerCLI
                         case ConsoleKey.Q:
                             checkKey = false;
                             break;
+                        case ConsoleKey.Enter:
+                            Logger.criticalErrors.TryDequeue(out string msg);
+                            break;
                         default:
                             break;
                     }
@@ -277,7 +280,7 @@ namespace Mozkomor.GrinGoldMinerCLI
                             }
                             who = ConnectionManager.IsInFee() ? "FEE" : "USER";
 
-                            Console.WriteLine("Grin Gold Miner 2.1");
+                            Console.WriteLine("Grin Gold Miner 2.2 - BETA 3");
                             Console.WriteLine("------------------------------------------------------------------------------------------");
                             WipeLine();
                             Console.Write("Mining for: ");
@@ -312,6 +315,8 @@ namespace Mozkomor.GrinGoldMinerCLI
                                 Console.WriteLine($"Last share:     {(DateTime.Now - conn.lastShare).TotalSeconds:F0} seconds");
                                 WipeLine();
                             }
+                            else
+                                Console.WriteLine();
                             if (who == "FEE")
                             {
                                 Console.ForegroundColor = ConsoleColor.DarkMagenta;
@@ -328,6 +333,19 @@ namespace Mozkomor.GrinGoldMinerCLI
                                 w.PrintStatusLinesToConsole();
                             }
                             Console.WriteLine("------------------------------------------------------------------------------------------");
+                            WipeLines(9);
+                            if (Logger.criticalErrors.TryPeek(out string msg))
+                            {
+                                if (msg.Contains("GPU") || (msg.ToLower().Contains("login") && !msg.ToLower().Contains("mimwim.eu")))
+                                {
+                                    Console.ForegroundColor = ConsoleColor.Red;
+                                    Console.WriteLine($"ERROR [hit Enter to hide]: {msg}");
+                                    Console.ResetColor();
+                                    Console.WriteLine("------------------------------------------------------------------------------------------");
+                                }
+                                else
+                                    Logger.criticalErrors.TryDequeue(out string msgout);
+                            }
                             //Console.ForegroundColor = ConsoleColor.Yellow;
                             //Console.WriteLine("Last log messages:"); Console.ResetColor();
                             WipeLines(5);
@@ -343,14 +361,14 @@ namespace Mozkomor.GrinGoldMinerCLI
 
         private static void WipeLine()
         {
-            Console.Write("                                                                                                              ");
+            Console.Write("                                                                                                     ");
             Console.CursorLeft = 0;
         }
         private static void WipeLines(int cnt)
         {
             for (int i = 0; i < cnt; i++)
             {
-                Console.WriteLine("                                                                                                              ");
+                Console.WriteLine("                                                                                                         ");
                 Console.CursorLeft = 0;
             }
             Console.CursorTop -= cnt;

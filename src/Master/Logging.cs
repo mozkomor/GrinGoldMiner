@@ -141,6 +141,7 @@ namespace Mozkomor.GrinGoldMiner
             Log(LogLevel.ERROR, msg);
         }
         private static object lock1 = "";
+        public static ConcurrentQueue<string> criticalErrors = new ConcurrentQueue<string>();
         public static void Log(LogLevel level, string msg)
         {
             try
@@ -153,6 +154,9 @@ namespace Mozkomor.GrinGoldMiner
                 logOptions = new LogOptions() {FileMinimumLogLevel = LogLevel.ERROR, ConsoleMinimumLogLevel = LogLevel.INFO,  KeepDays = 1,  DisableLogging = false };
 #endif
                 }
+
+                if (level == LogLevel.ERROR && criticalErrors.Count < 1000)
+                    criticalErrors.Enqueue(msg);
 
                 if (logOptions.DisableLogging == true)
                     return;

@@ -192,7 +192,7 @@ namespace SharedSerialization
     }
 
     [SerializableAttribute]
-    public enum LogLevel:int
+    public enum LogLevel :int
     {
         Debug,
         Info,
@@ -220,6 +220,7 @@ namespace SharedSerialization
     public class GpuSettings
     {
         public int targetGraphTimeOverride;
+        public int numberOfGPUs;
     }
 
     //public class GPUOptions
