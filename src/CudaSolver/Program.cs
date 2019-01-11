@@ -172,7 +172,7 @@ namespace CudaSolver
                 var assembly = Assembly.GetEntryAssembly();
                 var resourceStream = assembly.GetManifestResourceStream("CudaSolver.kernel_x64.ptx");
 
-                ctx = new CudaContext(deviceID, gpuCount != 1 ? (CUCtxFlags.BlockingSync | CUCtxFlags.MapHost) : CUCtxFlags.MapHost );
+                ctx = new CudaContext(deviceID, !fastCuda ? (CUCtxFlags.BlockingSync | CUCtxFlags.MapHost) : CUCtxFlags.MapHost );
                 meanSeedA = ctx.LoadKernelPTX(resourceStream, "FluffySeed2A");
                 meanSeedA.BlockDimensions = 128;
                 meanSeedA.GridDimensions = 2048;
