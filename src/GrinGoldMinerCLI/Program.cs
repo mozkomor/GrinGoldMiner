@@ -109,7 +109,7 @@ namespace Mozkomor.GrinGoldMinerCLI
                 if (key == "1")
                 {
                     generated_config.PrimaryConnection.ConnectionAddress = "us-east.stratum.grinmint.com";
-                    generated_config.PrimaryConnection.ConnectionPort = 23416;
+                    generated_config.PrimaryConnection.ConnectionPort = 4416;
                     generated_config.PrimaryConnection.Ssl = true;
                     Console.WriteLine($"Enter your email (pool login):");
                     var email = Console.ReadLine();

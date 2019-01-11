@@ -59,7 +59,7 @@ namespace OclSolver
         private volatile static int findersInFlight = 0;
         static volatile int trims = 0;
         static volatile int solutions = 0;
-
+        private static volatile int trimRounds = 80;
         const string TestPrePow = "0001000000000000202e000000005c2e43ce014ca55dc4e0dffe987ee3eef9ca78e517f5ae7383c40797a4e8a9dd75ddf57eafac5471135202aa6054a2cc66aa5510ebdd58edcda0662a9e02d8232a4c90e90b7bddec1f32031d2894d76e3c390fc12b2dcc7a6f12b52be1d7aea70eac7b8ae0dc3f0ffb267e39b95a77e44e66d523399312a812d538afd00c7fd87275f4be7ef2f447ca918435d537c3db3c1d3e5d4f3b830432e5a283fab48917a5695324a319860a329cb1f6d1520ad0078c0f1dd9147f347f4c34e26d3063f117858d75000000000000babd0000000000007f23000000001ac67b3b00000155";
 
         static void Main(string[] args)
@@ -67,7 +67,7 @@ namespace OclSolver
             try
             {
                 if (args.Length > 0)
-                    deviceID = int.Parse(args[0]);
+                    deviceID = int.Parse(args[0]); 
                 if (args.Length > 2)
                     platformID = int.Parse(args[2]);
             }
@@ -147,12 +147,14 @@ namespace OclSolver
                 {
                     try
                     {
+                        
                         //Environment.SetEnvironmentVariable("GPU_FORCE_64BIT_PTR", "1", EnvironmentVariableTarget.Machine);
                         Environment.SetEnvironmentVariable("GPU_MAX_HEAP_SIZE", "100", EnvironmentVariableTarget.User);
                         Environment.SetEnvironmentVariable("GPU_USE_SYNC_OBJECTS", "1", EnvironmentVariableTarget.User);
                         Environment.SetEnvironmentVariable("GPU_MAX_ALLOC_PERCENT", "100", EnvironmentVariableTarget.User);
                         Environment.SetEnvironmentVariable("GPU_SINGLE_ALLOC_PERCENT", "100", EnvironmentVariableTarget.User);
                         Environment.SetEnvironmentVariable("GPU_64BIT_ATOMICS", "1", EnvironmentVariableTarget.User);
+                        Environment.SetEnvironmentVariable("GPU_MAX_WORKGROUP_SIZE", "1024", EnvironmentVariableTarget.User);
                         //Environment.SetEnvironmentVariable("AMD_OCL_BUILD_OPTIONS_APPEND", "-cl-std=CL2.0", EnvironmentVariableTarget.Machine);
 
                         GpuDevicesMessage gpum = new GpuDevicesMessage() { devices = new List<GpuDevice>() };
@@ -370,7 +372,7 @@ namespace OclSolver
                                                 commandQueue.EnqueueClearBuffer(bufferI1, 64 * 64 * 4, clearPattern);
                                                 commandQueue.EnqueueNDRangeKernel(kernelRound1, 1, 4096 * 1024, 1024, 0);
 
-                                                for (int r = 0; r < 80; r++)
+                                                for (int r = 0; r < trimRounds; r++)
                                                 {
                                                     commandQueue.EnqueueClearBuffer(bufferI2, 64 * 64 * 4, clearPattern);
                                                     commandQueue.EnqueueNDRangeKernel(kernelRoundNA, 1, 4096 * 1024, 1024, 0);
@@ -407,7 +409,11 @@ namespace OclSolver
                                                         {
                                                             if (findersInFlight++ < 3)
                                                             {
+                                                                Stopwatch cycleTime = new Stopwatch();
+                                                                cycleTime.Start();
                                                                 cg.FindSolutions(graphSolutions);
+                                                                cycleTime.Stop();
+                                                                AdjustTrims(cycleTime.ElapsedMilliseconds);
                                                                 if (graphSolutions.Count > 0)
                                                                 {
                                                                     solutions++;
@@ -483,6 +489,18 @@ namespace OclSolver
             }
 
             //Console.ReadKey();
+        }
+
+        private static void AdjustTrims(long elapsedMilliseconds)
+        {
+            int target = 40 * Environment.ProcessorCount;
+            if (elapsedMilliseconds > target)
+                trimRounds += 10;
+            else
+                trimRounds -= 10;
+
+            trimRounds = Math.Max(80, trimRounds);
+            trimRounds = Math.Min(256, trimRounds);
         }
     }
 }
