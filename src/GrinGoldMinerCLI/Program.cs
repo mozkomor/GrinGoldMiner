@@ -336,7 +336,7 @@ namespace Mozkomor.GrinGoldMinerCLI
                             WipeLines(9);
                             if (Logger.criticalErrors.TryPeek(out string msg))
                             {
-                                if (msg.Contains("GPU") || (msg.ToLower().Contains("login") && !msg.ToLower().Contains("mimwim.eu")))
+                                if (msg.Contains("GPU") || msg.ToLower().Contains("login"))
                                 {
                                     Console.ForegroundColor = ConsoleColor.Red;
                                     Console.WriteLine($"ERROR [hit Enter to hide]: {msg}");
