@@ -123,7 +123,9 @@ namespace Mozkomor.GrinGoldMiner
                         streamTLS = new SslStream(client.GetStream(), false, new RemoteCertificateValidationCallback(ValidateServerCertificate), null);
                         streamTLS.AuthenticateAsClient(ip);
                         reader = new StreamReader(streamTLS);
-                    }                    
+                    }
+
+                    lastComm = DateTime.Now;
 
                     if (watchdog == null || watchdog.Status == TaskStatus.RanToCompletion || watchdog.Status == TaskStatus.Faulted || watchdog.Status == TaskStatus.Canceled)
                         watchdog = Task.Factory.StartNew(() => { DisconnectMonitor(); }, TaskCreationOptions.LongRunning);
@@ -131,7 +133,6 @@ namespace Mozkomor.GrinGoldMiner
                     if (listener == null || listener.Status == TaskStatus.RanToCompletion || listener.Status == TaskStatus.Faulted || listener.Status == TaskStatus.Canceled)
                         listener = Task.Factory.StartNew(() => { Listen(); }, TaskCreationOptions.LongRunning);
                     
-
                     if (sender == null || sender.Status == TaskStatus.RanToCompletion || sender.Status == TaskStatus.Faulted || sender.Status == TaskStatus.Canceled)
                         sender = Task.Factory.StartNew(() => { Sender(); }, TaskCreationOptions.LongRunning);
                 }

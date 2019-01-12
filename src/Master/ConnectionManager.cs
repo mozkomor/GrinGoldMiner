@@ -16,9 +16,9 @@ namespace Mozkomor.GrinGoldMiner
 
         public static volatile uint solutions = 0;
         public static volatile int solutionCounter = 0;
-        private static volatile int solutionRound = 30;
+        private static volatile int solutionRound = 1000;
         //private static volatile int solverswitchmin = 5;
-        private const int solverswitch = 10;
+        private const int solverswitch = 980;
         private static volatile int prepConn = 5;
         //private static volatile int solmfcnt = 0;
         //private static volatile int solgfcnt = 0;
@@ -45,8 +45,8 @@ namespace Mozkomor.GrinGoldMiner
         private static StratumConnet con_gf2;
 
         public static bool IsInFee() => (GetCurrentEpoch() != Episode.user);
-        private static string gflogin = "grindev";
-        private static string mf_login = "minderdev";
+        private static string gf_login = "gringoldminer@protonmail.com";
+        private static string mf_login = "grincouncil@protonmail.com";
 
         public static void Init(Config config)
         {
@@ -54,13 +54,15 @@ namespace Mozkomor.GrinGoldMiner
             con_m1 = new StratumConnet(config.PrimaryConnection.ConnectionAddress, config.PrimaryConnection.ConnectionPort, 1, config.PrimaryConnection.Login, config.PrimaryConnection.Password, config.PrimaryConnection.Ssl);
             con_m2 = new StratumConnet(config.SecondaryConnection.ConnectionAddress, config.SecondaryConnection.ConnectionPort, 2, config.SecondaryConnection.Login, config.SecondaryConnection.Password, config.SecondaryConnection.Ssl);
             //miner dev
-            //con_mf1 = new StratumConnet("10.0.0.237", 13416, 3, "dev", "");
             con_mf1 = new StratumConnet("gringoldminer.mimwim.eu", 4416, 3, mf_login, "", true);
-            con_mf2 = new StratumConnet("gringoldminer2.mimwim.eu", 3334, 4, mf_login, "", true);
+            con_mf2 = new StratumConnet("eu-west-stratum.grinmint.com", 4416, 4, mf_login, "", true);
+            //con_mf2 = new StratumConnet("gringoldminer2.mimwim.eu", 3334, 4, mf_login, "", true);
 
             //girn dev
-            con_gf1 = new StratumConnet("10.0.0.239", 13416, 5, gflogin, "");
-            con_gf2 = new StratumConnet("10.0.0.239", 13416, 6, gflogin, "");
+            con_gf1 = new StratumConnet("us-east-stratum.grinmint.com", 4416, 5, gf_login, "", true);
+            con_gf2 = new StratumConnet("eu-west-stratum.grinmint.com", 4416, 6, gf_login, "", true);
+            //con_gf1 = new StratumConnet("10.0.0.239", 13416, 5, gf_login, "");
+            //con_gf2 = new StratumConnet("gringoldminer2.mimwim.eu", 3334, 6, gf_login, "", true);
 
             solutionCounter = 0;
             //solverswitch = 30;// new Random(DateTime.UtcNow.Millisecond).Next(solverswitchmin,solutionRound);
@@ -473,8 +475,8 @@ namespace Mozkomor.GrinGoldMiner
 
                     stopConnecting = true; //in case mf gf are not reachable, they are trying to connect here in loop
 
-                    try { Task.Run(() => Task.Delay(5000).ContinueWith(_ => curr_mf.StratumClose())); } catch { }
-                    try { Task.Run(() => Task.Delay(5000).ContinueWith(_ => curr_gf.StratumClose())); } catch { }
+                    tryCloseConn(curr_mf);
+                    tryCloseConn(curr_gf);
                 }
                 else if (solutionCounter >= solutionRound)
                 {
@@ -484,6 +486,21 @@ namespace Mozkomor.GrinGoldMiner
                     resetRound();
                 }
             }
+
+
+        }
+
+        private static void tryCloseConn(StratumConnet conn)
+        {
+            try
+            {
+                Task.Run(() => Task.Delay(5000).ContinueWith(_ =>
+                {
+                    try { conn.StratumClose(); } catch { }
+                }
+                ));
+            }
+            catch { }
         }
 
         private static void resetRound()

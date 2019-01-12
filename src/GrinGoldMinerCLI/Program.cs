@@ -270,22 +270,23 @@ namespace Mozkomor.GrinGoldMinerCLI
                             var conn = ConnectionManager.GetCurrConn();
 
                             string remote = "---";
-                            string who = "USER";
                             string status = "CONNECTING";
 
                             if (conn != null)
                             {
                                 remote = $"{conn.ip}:{conn.port}";
                                 status = conn.IsConnected ? "CONNECTED" : "DISCONNECTED";
+                                
                             }
-                            who = ConnectionManager.IsInFee() ? "FEE" : "USER";
+                            string who = ConnectionManager.IsInFee() ? "FEE" : (conn?.login ?? "USER");
+                            who = who.Length > 10 ? who.Substring(0, 10)+".." : who;
 
                             Console.WriteLine("Grin Gold Miner 2.2 - BETA 3");
                             Console.WriteLine("------------------------------------------------------------------------------------------");
                             WipeLine();
                             Console.Write("Mining for: ");
                             Console.CursorLeft = 22;
-                            Console.ForegroundColor = who == "USER" ? ConsoleColor.Cyan : ConsoleColor.Blue;
+                            Console.ForegroundColor = who == "FEE" ? ConsoleColor.Blue : ConsoleColor.Cyan;
                             Console.Write(who); Console.ResetColor(); //TODO
                             Console.CursorLeft = 35;
                             Console.WriteLine($"Stratum Server: {remote}"); //TODO
