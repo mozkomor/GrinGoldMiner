@@ -312,7 +312,7 @@ namespace Mozkomor.GrinGoldMiner
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(LogLevel.ERROR, "Listen error" + ex.Message);
+                    Logger.Log(LogLevel.DEBUG, "Listen error" + ex.Message);
 
                     if (errors++ > 6)
                         IsTerminated = true;

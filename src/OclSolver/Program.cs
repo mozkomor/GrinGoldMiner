@@ -92,7 +92,7 @@ namespace OclSolver
             }
             catch (Exception ex)
             {
-                Logger.Log(LogLevel.Error, "Master connection error", ex);
+                Logger.Log(LogLevel.Error, "Master connection error");
             }
 
             
@@ -105,7 +105,7 @@ namespace OclSolver
             }
             catch (Exception ex)
             {
-                Logger.Log(LogLevel.Error, "Failed to get OpenCL platform list", ex);
+                Logger.Log(LogLevel.Error, "Failed to get OpenCL platform list");
                 return;
             }
 
@@ -185,8 +185,9 @@ namespace OclSolver
                     }
                     catch (Exception ex)
                     {
-                        Logger.Log(LogLevel.Error, "Unable to enumerate OpenCL devices", ex);
+                        Logger.Log(LogLevel.Error, "Unable to enumerate OpenCL devices");
                         Task.Delay(500).Wait();
+                        Comms.Close();
                         return;
                     }
                 }
@@ -203,8 +204,9 @@ namespace OclSolver
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(LogLevel.Error, $"Unable to select OpenCL device {deviceID} on platform {platformID} ", ex);
+                    Logger.Log(LogLevel.Error, $"Unable to select OpenCL device {deviceID} on platform {platformID} ");
                     Task.Delay(500).Wait();
+                    Comms.Close();
                     return;
                 }
 
@@ -244,8 +246,10 @@ namespace OclSolver
                                     }
                                     catch (Exception ex)
                                     {
-                                        Logger.Log(LogLevel.Error, "Unable to allocate buffers, out of memory?", ex);
                                         Task.Delay(500).Wait();
+                                        Logger.Log(LogLevel.Error, "Unable to allocate buffers, out of memory?");
+                                        Task.Delay(500).Wait();
+                                        Comms.Close();
                                         return;
                                     }
 
@@ -469,7 +473,7 @@ namespace OclSolver
                                             }
                                             catch (Exception ex)
                                             {
-                                                Logger.Log(LogLevel.Error, "Critical error in main ocl loop", ex);
+                                                Logger.Log(LogLevel.Error, "Critical error in main ocl loop "+  ex.Message);
                                                 Task.Delay(5000).Wait();
                                             }
                                         }
@@ -495,7 +499,7 @@ namespace OclSolver
             }
             catch (Exception ex)
             {
-                Logger.Log(LogLevel.Error, "Critical error in OCL Init", ex);
+                Logger.Log(LogLevel.Error, "Critical error in OCL Init " + ex.Message);
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine(ex.Message);
                 Console.ResetColor();

@@ -135,6 +135,9 @@ namespace CudaSolver
         {
             try
             {
+                if (stream != null)
+                    stream.Flush();
+                Task.Delay(500).Wait();
                 IsTerminated = true;
                 if (stream != null)
                     stream.Close();
