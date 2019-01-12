@@ -12,8 +12,6 @@ namespace Mozkomor.GrinGoldMiner
 {
     public class ConnectionManager
     {
-
-
         public static volatile uint solutions = 0;
         public static volatile int solutionCounter = 0;
         private static volatile int solutionRound = 1000;
@@ -44,6 +42,10 @@ namespace Mozkomor.GrinGoldMiner
         private static StratumConnet con_gf1;
         private static StratumConnet con_gf2;
 
+        /// 
+        /// GGM collects 1% as fee for the Grin Development Fund and 1% for further miner development.
+        /// GGM is open source and solvers are released under fair mining licence,
+        /// thanks for plyaing fair and keeping the fees here. It allows continuing developmlent of Grin and GGM.
         public static bool IsInFee() => (GetCurrentEpoch() != Episode.user);
         private static string gf_login = "gringoldminer@protonmail.com";
         private static string mf_login = "grincouncil@protonmail.com";
