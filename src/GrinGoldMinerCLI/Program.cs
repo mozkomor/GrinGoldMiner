@@ -4,6 +4,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Mozkomor.GrinGoldMiner;
 
+//Win 7? https://support.microsoft.com/en-us/help/2533623/microsoft-security-advisory-insecure-library-loading-could-allow-remot
 namespace Mozkomor.GrinGoldMinerCLI
 {
     class Program
@@ -20,13 +21,13 @@ namespace Mozkomor.GrinGoldMinerCLI
                 Close();
             };
 
-            if (DateTime.Today >= new DateTime(2019, 1, 14))
-            {
-                Console.WriteLine("!!! This version of GrinGoldMiner is outdated. Please go to https://github.com/mozkomor/GrinGoldMiner/releases and downlaod the latest release.");
-                Logger.Log(LogLevel.ERROR, "!!! This version of GrinGoldMiner is outdated. Please go to https://github.com/mozkomor/GrinGoldMiner/releases and downlaod the latest release.");
-                Console.ReadLine();
-                Close();
-            }
+            //if (DateTime.Today >= new DateTime(2019, 1, 14))
+            //{
+            //    Console.WriteLine("!!! This version of GrinGoldMiner is outdated. Please go to https://github.com/mozkomor/GrinGoldMiner/releases and downlaod the latest release.");
+            //    Logger.Log(LogLevel.ERROR, "!!! This version of GrinGoldMiner is outdated. Please go to https://github.com/mozkomor/GrinGoldMiner/releases and downlaod the latest release.");
+            //    Console.ReadLine();
+            //    Close();
+            //}
 
             var dir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
             var configPath = Path.Combine(dir, "config.xml");
@@ -105,6 +106,7 @@ namespace Mozkomor.GrinGoldMinerCLI
                 Console.WriteLine($"[2] US-east grinmint.com");
                 Console.WriteLine($"[3] EU-west grinmint.com");
                 Console.WriteLine($"[4] mwgrinpool.com");
+                Console.WriteLine("Or try some other pools (use option 1): cuckoomine.org grin-pool.org grinpool.co sparkpool.com ");
                 var key = Console.ReadLine();
 
                 if (key == "2" || key == "3")

@@ -495,7 +495,7 @@ namespace CudaSolver
 
         private static void AdjustTrims(long elapsedMilliseconds)
         {
-            int target = Comms.cycleFinderTargetOverride > 0 ? Comms.cycleFinderTargetOverride :  15 * Environment.ProcessorCount;
+            int target = Comms.cycleFinderTargetOverride > 0 ? Comms.cycleFinderTargetOverride :  20 * Environment.ProcessorCount;
             if (elapsedMilliseconds > target)
                 trimRounds += 10;
             else
