@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Mozkomor.GrinGoldMiner
 {
@@ -19,6 +20,7 @@ namespace Mozkomor.GrinGoldMiner
                 Worker w = new Worker(gpu, i++);
                 workers.Add(w);
                 w.Start(config);
+                Task.Delay(2000).Wait();
             }
         }
 
