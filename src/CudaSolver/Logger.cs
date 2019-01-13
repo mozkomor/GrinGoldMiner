@@ -19,7 +19,7 @@ namespace CudaSolver
                 }
                 lock (Comms.logsOut)
                 {
-                    Comms.logsOut.Enqueue(new LogMessage() { level = level, ex = e, message = message, time = DateTime.Now });
+                    Comms.logsOut.Enqueue(new LogMessage() { level = level, ex = e,  message = message, time = DateTime.Now });
                 }
                 Comms.SetEvent();
             }

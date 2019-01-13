@@ -281,7 +281,7 @@ namespace Mozkomor.GrinGoldMinerCLI
                             string who = ConnectionManager.IsInFee() ? "FEE" : (conn?.login ?? "USER");
                             who = who.Length > 10 ? who.Substring(0, 10)+".." : who;
 
-                            Console.WriteLine("Grin Gold Miner 2.2 - BETA 3");
+                            Console.WriteLine("Grin Gold Miner 2.3 - RC1");
                             Console.WriteLine("------------------------------------------------------------------------------------------");
                             WipeLine();
                             Console.Write("Mining for: ");
@@ -304,9 +304,9 @@ namespace Mozkomor.GrinGoldMinerCLI
                             if (conn != null)
                             {
                                 Console.ForegroundColor = ConsoleColor.Yellow;
-                                Console.Write($"{conn.totalShares}"); Console.ResetColor(); Console.Write("/ ");
+                                Console.Write($"{conn.totalShares}"); Console.ResetColor(); Console.Write("/");
                                 if (conn.sharesAccepted > 0) Console.ForegroundColor = ConsoleColor.Green;
-                                Console.Write($"{conn.sharesAccepted}"); Console.ResetColor(); Console.Write("/ ");
+                                Console.Write($"{conn.sharesAccepted}"); Console.ResetColor(); Console.Write("/");
                                 if (conn.sharesRejected + conn.sharesTooLate > 0) Console.ForegroundColor = ConsoleColor.Red;
                                 Console.Write($"{conn.sharesRejected + conn.sharesTooLate}"); Console.ResetColor();
                                 Console.ResetColor();
@@ -369,7 +369,7 @@ namespace Mozkomor.GrinGoldMinerCLI
         {
             for (int i = 0; i < cnt; i++)
             {
-                Console.WriteLine("                                                                                                         ");
+                Console.WriteLine("                                                                                                       ");
                 Console.CursorLeft = 0;
             }
             Console.CursorTop -= cnt;

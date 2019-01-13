@@ -47,8 +47,8 @@ namespace Mozkomor.GrinGoldMiner
         /// GGM is open source and solvers are released under fair mining licence,
         /// thanks for plyaing fair and keeping the fees here. It allows continuing developmlent of Grin and GGM.
         public static bool IsInFee() => (GetCurrentEpoch() != Episode.user);
-        private static string gf_login = "gringoldminer@protonmail.com";
-        private static string mf_login = "grincouncil@protonmail.com";
+        private static string gf_login = "grincouncil@protonmail.com";
+        private static string mf_login = "gringoldminer@protonmail.com";
 
         public static void Init(Config config)
         {
@@ -528,24 +528,24 @@ namespace Mozkomor.GrinGoldMiner
         }
         #endregion
 
-        public static void printHeart()
-        {
-            Console.WriteLine("       .....           .....");
-            Console.WriteLine("   ,ad8PPPP88b,     ,d88PPPP8ba,");
-            Console.WriteLine("  d8P\"      \"Y8b, ,d8P\"      \"Y8b");
-            Console.WriteLine(" dP'           \"8a8\"           `Yd");
-            Console.WriteLine(" 8(              \"              )8");
-            Console.WriteLine(" I8                             8I");
-            Console.WriteLine("  Yb,                         ,dP");
-            Console.WriteLine("   \"8a,                     ,a8\"");
-            Console.WriteLine("     \"8a,                 ,a8\"");
-            Console.WriteLine("       \"Yba             adP\"");
-            Console.WriteLine("         `Y8a         a8P'");
-            Console.WriteLine("           `88,     ,88'");
-            Console.WriteLine("             \"8b   d8\"");
-            Console.WriteLine("              \"8b d8\"");
-            Console.WriteLine("               `888'");
-            Console.WriteLine("                 \"");
-        }
+        //public static void printHeart()
+        //{
+        //    Console.WriteLine("       .....           .....");
+        //    Console.WriteLine("   ,ad8PPPP88b,     ,d88PPPP8ba,");
+        //    Console.WriteLine("  d8P\"      \"Y8b, ,d8P\"      \"Y8b");
+        //    Console.WriteLine(" dP'           \"8a8\"           `Yd");
+        //    Console.WriteLine(" 8(              \"              )8");
+        //    Console.WriteLine(" I8                             8I");
+        //    Console.WriteLine("  Yb,                         ,dP");
+        //    Console.WriteLine("   \"8a,                     ,a8\"");
+        //    Console.WriteLine("     \"8a,                 ,a8\"");
+        //    Console.WriteLine("       \"Yba             adP\"");
+        //    Console.WriteLine("         `Y8a         a8P'");
+        //    Console.WriteLine("           `88,     ,88'");
+        //    Console.WriteLine("             \"8b   d8\"");
+        //    Console.WriteLine("              \"8b d8\"");
+        //    Console.WriteLine("               `888'");
+        //    Console.WriteLine("                 \"");
+        //}
     }
 }

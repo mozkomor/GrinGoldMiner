@@ -132,6 +132,24 @@ namespace Mozkomor.GrinGoldMiner
             }
         }
 
+        public void PrintStatusLinesToLog()
+        {
+            try
+            {
+                if (GetStatus() == GPUStatus.ONLINE)
+                {
+                    Logger.Log(LogLevel.INFO, $"Statistics: GPU {ID}: mining at {GetGPS():F2} gps, solutions: {totalSols}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine($"ERROR GPU {ID}, MSG: {ex.Message}");
+                Console.ResetColor();
+                WipeLine();
+            }
+        }
+
         private static void WipeLine()
         {
             Console.Write("                                                                                                    ");
@@ -171,7 +189,7 @@ namespace Mozkomor.GrinGoldMiner
                 {
                     FileName = (IsLinux ?
                           ((type == WorkerType.NVIDIA) ? "CudaSolver" : "OclSolver")
-                        :  (type == WorkerType.NVIDIA) ? Path.Combine("solvers", "CudaSolver.exe") : Path.Combine("solvers", "OclSolver.exe")),
+                        : (type == WorkerType.NVIDIA) ? Path.Combine("solvers", "CudaSolver.exe") : Path.Combine("solvers", "OclSolver.exe")),
                     Arguments = string.Format("-1 13500"),
                     CreateNoWindow = true,
                     UseShellExecute = false
@@ -267,7 +285,7 @@ namespace Mozkomor.GrinGoldMiner
                 {
                     SendSettings(new GpuSettings() { targetGraphTimeOverride = config.CPUOffloadValue, numberOfGPUs = config.GPUOptions.Count });
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     Logger.Log(LogLevel.ERROR, "Unable to push settings to worker: " + ex.Message);
                 }
@@ -312,7 +330,7 @@ namespace Mozkomor.GrinGoldMiner
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(LogLevel.DEBUG, "Listen error" + ex.Message);
+                    Logger.Log(LogLevel.ERROR, "Listen error" + ex.Message);
 
                     if (errors++ > 6)
                         IsTerminated = true;

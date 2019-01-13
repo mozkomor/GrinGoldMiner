@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 
 namespace SharedSerialization
 {
@@ -9,6 +11,7 @@ namespace SharedSerialization
     {
         public Job()
         {
+
         }
 
         public Job(JobTemplate _job)
@@ -18,13 +21,14 @@ namespace SharedSerialization
             pre_pow = _job.pre_pow;
             height = _job.height;
             timestamp = DateTime.Now;
+            scale = _job.GetScale();
         }
 
         private static Random rnd = new Random((int)DateTime.Now.Ticks);
 
         public DateTime timestamp;
         public DateTime solvedAt;
-        public UInt64 nonce, height, difficulty, jobID;
+        public UInt64 nonce, height, difficulty, jobID, scale;
         public UInt64 hnonce;
         public UInt64 k0;
         public UInt64 k1;
@@ -66,7 +70,7 @@ namespace SharedSerialization
 
         public Job Next()
         {
-            Job next = new Job() { origin = this.origin, difficulty = this.difficulty, height = this.height, jobID = this.jobID, pre_pow = this.pre_pow, timestamp = this.timestamp, graphAttempts = this.graphAttempts };
+            Job next = new Job() { scale = this.scale, origin = this.origin, difficulty = this.difficulty, height = this.height, jobID = this.jobID, pre_pow = this.pre_pow, timestamp = this.timestamp, graphAttempts = this.graphAttempts };
             next.MutateJob();
             return next;
         }
@@ -89,6 +93,7 @@ namespace SharedSerialization
         public Job job;
         public List<Edge> edges;
         public UInt32[] nonces;
+        public UInt64 share_difficulty;
 
         public ulong[] GetUlongEdges()
         {
@@ -99,22 +104,35 @@ namespace SharedSerialization
             return edges.Select(e => (long)e.Item1 | (((long)e.Item2) << 32)).ToArray();
         }
 
-        /*
-         * 	/// Difficulty achieved by this proof with given scaling factor
-	        fn scaled_difficulty(&self, scale: u64) -> u64 {
-		        let diff = ((scale as u128) << 64) / (self.hash().to_u64() as u128);
-		        min(diff, <u64>::max_value() as u128) as u64
-	        }
-         * */
-        public bool CheckDifficulty(ulong target, out ulong diff)
+
+        public bool CheckDifficulty()
         {
-            // not working !!!
-            var solB = nonces.Select(x => BitConverter.GetBytes(x).Reverse().ToArray()).SelectMany(x => x).ToArray<Byte>();
-            var hash = new Crypto.Blake2B(256);
-            UInt64 blaked = BitConverter.ToUInt64(hash.ComputeHash(solB).Reverse().ToArray(), 24);
-            UInt64 div = (UInt64.MaxValue / blaked);
-            diff = (ulong)div;
-            return div >= target;
+            try
+            {
+                BitArray packed = new BitArray(42 * 29);
+                byte[] packedSolution = new byte[153]; // 42*proof_size/8 padded
+                int position = 0;
+                foreach (var n in nonces)
+                {
+                    for (int i = 0; i < 29; i++)
+                        packed.Set(position++, (n & (1UL << i)) != 0);
+                }
+                packed.CopyTo(packedSolution, 0);
+
+                var hash = new Crypto.Blake2B(256);
+                UInt64 blaked = BitConverter.ToUInt64(hash.ComputeHash(packedSolution).Reverse().ToArray(), 24);
+
+                BigInteger shift = (new BigInteger(job.scale)) << 64;
+                BigInteger diff = shift / new BigInteger(blaked);
+
+                ulong share_difficulty = Math.Min((UInt64)diff, UInt64.MaxValue);
+
+                return share_difficulty >= job.difficulty;
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 
@@ -143,6 +161,23 @@ namespace SharedSerialization
         public UInt64 job_id;
         public UInt64 difficulty;
         public string pre_pow;
+
+        public ulong GetScale()
+        {
+            if (!string.IsNullOrEmpty(pre_pow))
+            {
+                byte[] header = GetHeader().Reverse().ToArray();
+
+                if (header.Length > 20)
+                {
+                    return BitConverter.ToUInt32(header, 0);
+                }
+                else
+                    return 1;
+            }
+            else
+                return 1;
+        }
 
         public byte[] GetHeader()
         {

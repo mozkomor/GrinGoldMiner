@@ -502,21 +502,28 @@ namespace Mozkomor.GrinGoldMiner
         {
             try
             {
-                SubmitParams pow = new SubmitParams() { height = activeSolution.job.height, nonce = activeSolution.job.nonce, pow = activeSolution.nonces.ToList(), job_id = activeSolution.job.jobID };
-                StratumRpcRequest request = new StratumRpcRequest(StratumCommand.Solution);
-                request.SetParams(pow);
-
-                //if (GrinSend<StratumRpcRequest>(request))
-                lock(solutionQueue)
+                // difficulty check here
+                if (activeSolution.CheckDifficulty())
                 {
-                    ///use concurent queue
-                    solutionQueue.Enqueue(request);
-                    flushToStratum.Set();
-                    Logger.Log(LogLevel.DEBUG, $"SOL-{activeSolution.job.hnonce} OUT {DateTime.Now.ToString("mm:ss.FFF")}");
-                }
-                totalShares++;
-                lastShare = DateTime.Now;
+                    SubmitParams pow = new SubmitParams() { height = activeSolution.job.height, nonce = activeSolution.job.nonce, pow = activeSolution.nonces.ToList(), job_id = activeSolution.job.jobID };
+                    StratumRpcRequest request = new StratumRpcRequest(StratumCommand.Solution);
+                    request.SetParams(pow);
 
+                    //if (GrinSend<StratumRpcRequest>(request))
+                    lock (solutionQueue)
+                    {
+                        ///use concurent queue
+                        solutionQueue.Enqueue(request);
+                        flushToStratum.Set();
+                        Logger.Log(LogLevel.DEBUG, $"SOL-{activeSolution.job.hnonce} OUT {DateTime.Now.ToString("mm:ss.FFF")}");
+                    }
+                    totalShares++;
+                    lastShare = DateTime.Now;
+                }
+                else
+                {
+                    // low difficulty share
+                }
             }
             catch(Exception ex) { Logger.Log(ex); }
         }
