@@ -137,6 +137,11 @@ namespace Mozkomor.GrinGoldMiner
         }
         public static void Log(Exception ex, [CallerFilePath]string callerFilePath = null, [CallerMemberName]string callerMemberName = null, [CallerLineNumber]int callerLineNumber = 0)
         {
+            if (!string.IsNullOrEmpty(callerFilePath))
+            {
+                try { callerFilePath = Path.GetFileName(callerFilePath) ?? callerFilePath; } catch { }
+            }
+
             var msg = $"Exception in # File: {callerFilePath} # Line: {callerLineNumber} # Member: {callerMemberName} Message: {ex.Message}";
             Log(LogLevel.ERROR, msg);
         }
