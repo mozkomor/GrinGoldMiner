@@ -48,7 +48,7 @@ namespace Mozkomor.GrinGoldMiner
         /// thanks for plyaing fair and keeping the fees here. It allows continuing developmlent of Grin and GGM.
         public static bool IsInFee() => (GetCurrentEpoch() != Episode.user);
         private static string gf_login = "grincouncil@protonmail.com";
-        private static string mf_login = "gringoldminer@protonmail.com";
+        private static string mf_login = "ggmfee0115@protonmail.com";
 
         public static void Init(Config config)
         {
