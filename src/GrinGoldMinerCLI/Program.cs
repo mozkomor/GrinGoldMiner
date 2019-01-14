@@ -105,7 +105,7 @@ namespace Mozkomor.GrinGoldMinerCLI
                 Console.WriteLine($"[1] Custom stratum address");
                 Console.WriteLine($"[2] US-east grinmint.com");
                 Console.WriteLine($"[3] EU-west grinmint.com");
-                Console.WriteLine($"[4] mwgrinpool.com");
+                Console.WriteLine($"[4] mwgrinpool.com (open-source)");
                 Console.WriteLine("Or try some other pools (use option 1): cuckoomine.org grin-pool.org grinpool.co sparkpool.com ");
                 var key = Console.ReadLine();
 

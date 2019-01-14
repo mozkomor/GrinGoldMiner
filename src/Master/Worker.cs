@@ -40,7 +40,8 @@ namespace Mozkomor.GrinGoldMiner
         private SharedSerialization.LogMessage lastErrLog = null;
         private Solution lastSolution = null;
         private volatile uint totalSols = 0;
-
+        public volatile float currentGPS = 0;
+        private DateTime lastSolTime = DateTime.Now;
         private int errors = 0;
 
         public int ID { get; }
@@ -115,7 +116,7 @@ namespace Mozkomor.GrinGoldMiner
                 }
                 Console.ResetColor();
                 Console.CursorLeft = 45;
-                Console.Write($"Mining at {GetGPS():F2} gps");
+                Console.Write($"Mining at {currentGPS:F2} gps");
                 Console.CursorLeft = 75;
                 Console.WriteLine($"Solutions: {totalSols}");
                 WipeLine();
@@ -138,7 +139,7 @@ namespace Mozkomor.GrinGoldMiner
             {
                 if (GetStatus() == GPUStatus.ONLINE)
                 {
-                    Logger.Log(LogLevel.DEBUG, $"Statistics: GPU {ID}: mining at {GetGPS():F2} gps, solutions: {totalSols}");
+                    Logger.Log(LogLevel.DEBUG, $"Statistics: GPU {ID}: mining at {currentGPS:F2} gps, solutions: {totalSols}");
                 }
                 if (GetStatus() == GPUStatus.ERROR && lastErrLog != null && lastErrLog.message != null)
                 {
@@ -163,13 +164,13 @@ namespace Mozkomor.GrinGoldMiner
             {
                 if (!gpu.Enabled)
                     return GPUStatus.DISABLED;
-                else if (lastErrLog != null && lastErrLog.message.Contains("out of memory"))
+                else if (lastErrLog != null && lastErrLog.message.Contains("memory"))
                     return GPUStatus.OOM;
                 else if (lastErrLog != null)
                     return GPUStatus.ERROR;
                 else if (lastLog.time == DateTime.MinValue || lastSolution == null)
                     return GPUStatus.STARTING;
-                else if (lastSolution.job.timestamp.AddMinutes(15) < DateTime.Now)
+                else if (lastSolTime.AddMinutes(15) < DateTime.Now)
                     return GPUStatus.OFFLINE;
                 else
                     return GPUStatus.ONLINE;
@@ -316,6 +317,8 @@ namespace Mozkomor.GrinGoldMiner
                         case SharedSerialization.Solution sol:
                             totalSols++;
                             lastSolution = sol;
+                            lastSolTime = DateTime.Now;
+                            currentGPS = GetGPS();
                             WorkerManager.SubmitSolution(sol);
                             break;
                         case SharedSerialization.LogMessage log:
