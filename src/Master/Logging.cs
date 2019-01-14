@@ -141,8 +141,8 @@ namespace Mozkomor.GrinGoldMiner
             {
                 try { callerFilePath = Path.GetFileName(callerFilePath) ?? callerFilePath; } catch { }
             }
-
-            var msg = $"Exception in # File: {callerFilePath} # Line: {callerLineNumber} # Member: {callerMemberName} Message: {ex.Message}";
+            
+            var msg = $"Exception in: {callerFilePath} # {callerLineNumber} # {callerMemberName} Message: {ex.Message}";
             Log(LogLevel.ERROR, msg);
         }
         private static object lock1 = "";
