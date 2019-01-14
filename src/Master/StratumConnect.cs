@@ -234,9 +234,14 @@ namespace Mozkomor.GrinGoldMiner
                                 CurrentJob.origin = GetJobOrigine();
                                 if (CurrentJob != null && CurrentJob.pre_pow != null && CurrentJob.pre_pow != "")
                                 {
-                                    lastComm = DateTime.Now;
-                                    if (ConnectionManager.IsConnectionCurrent(id))
-                                        PushJobToWorkers();
+                                    if (CurrentJob.scale != 1)
+                                    {
+                                        lastComm = DateTime.Now;
+                                        if (ConnectionManager.IsConnectionCurrent(id))
+                                            PushJobToWorkers();
+                                    }
+                                    else
+                                        Logger.Log(LogLevel.WARNING, $"Incorrect pre_pow: {CurrentJob.pre_pow}");
                                 }
                                 break;
                             case "submit":

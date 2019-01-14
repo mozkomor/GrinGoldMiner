@@ -164,19 +164,23 @@ namespace SharedSerialization
 
         public ulong GetScale()
         {
-            if (!string.IsNullOrEmpty(pre_pow))
+            try
             {
-                byte[] header = GetHeader().Reverse().ToArray();
-
-                if (header.Length > 20)
+                if (!string.IsNullOrEmpty(pre_pow))
                 {
-                    return BitConverter.ToUInt32(header, 0);
+                    byte[] header = GetHeader().Reverse().ToArray();
+
+                    if (header.Length > 20)
+                    {
+                        return BitConverter.ToUInt32(header, 0);
+                    }
+                    else
+                        return 1;
                 }
                 else
                     return 1;
             }
-            else
-                return 1;
+            catch { return 1; }
         }
 
         public byte[] GetHeader()
