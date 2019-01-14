@@ -20,7 +20,7 @@ namespace Mozkomor.GrinGoldMiner
                 Worker w = new Worker(gpu, i++);
                 workers.Add(w);
                 w.Start(config);
-                Task.Delay(2000).Wait();
+                Task.Delay(4000).Wait();
             }
         }
 
