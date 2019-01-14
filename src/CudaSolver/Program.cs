@@ -259,7 +259,13 @@ namespace CudaSolver
                         continue;
                     }
 
-                    if (!TEST && (currentJob.timestamp.AddMinutes(30) < DateTime.Now ))
+                    if (!TEST && (currentJob.pre_pow != Comms.nextJob.pre_pow))
+                    {
+                        currentJob = Comms.nextJob;
+                        currentJob.timestamp = DateTime.Now;
+                    }
+
+                    if (!TEST && (currentJob.timestamp.AddMinutes(30) < DateTime.Now ) && Comms.lastIncoming.AddMinutes(30) < DateTime.Now)
                     {
                         Logger.Log(LogLevel.Info, string.Format("Job too old..."));
                         Task.Delay(1000).Wait();
@@ -287,11 +293,6 @@ namespace CudaSolver
                         Comms.SetEvent();
                     }
 
-                    if (!TEST && (currentJob.pre_pow != Comms.nextJob.pre_pow))
-                    {
-                        currentJob = Comms.nextJob;
-                        currentJob.timestamp = DateTime.Now;
-                    }
                     currentJob = currentJob.Next();
 
                     Logger.Log(LogLevel.Debug, string.Format("GPU NV{4}:Trimming #{4}: {0} {1} {2} {3}", currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, currentJob.jobID, deviceID));

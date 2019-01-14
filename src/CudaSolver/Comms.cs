@@ -26,6 +26,7 @@ namespace CudaSolver
         private static int _port;
         public static Job nextJob = new Job();
         public static volatile bool IsTerminated = false;
+        public static DateTime lastIncoming = DateTime.Now;
 
         public static volatile int cycleFinderTargetOverride = 0;
         public static volatile int numberOfGPUs = 0;
@@ -94,6 +95,7 @@ namespace CudaSolver
                     {
                         case Job job:
                             nextJob = job;
+                            lastIncoming = DateTime.Now;
                             Logger.Log(LogLevel.Debug, $"New job received: {job.pre_pow}");
                             break;
                         case GpuSettings settings:

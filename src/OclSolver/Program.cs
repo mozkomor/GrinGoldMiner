@@ -335,7 +335,13 @@ namespace OclSolver
                                                     continue;
                                                 }
 
-                                                if (!TEST && (currentJob.timestamp.AddMinutes(30) < DateTime.Now))
+                                                if (!TEST && (currentJob.pre_pow != Comms.nextJob.pre_pow))
+                                                {
+                                                    currentJob = Comms.nextJob;
+                                                    currentJob.timestamp = DateTime.Now;
+                                                }
+
+                                                if (!TEST && (currentJob.timestamp.AddMinutes(30) < DateTime.Now) && Comms.lastIncoming.AddMinutes(30) < DateTime.Now)
                                                 {
                                                     Logger.Log(LogLevel.Info, string.Format("Job too old..."));
                                                     Task.Delay(1000).Wait();
@@ -371,11 +377,6 @@ namespace OclSolver
                                                 //srw.Stop();
                                                 //Console.WriteLine("RECOVERY " + srw.ElapsedMilliseconds);
 
-                                                if (!TEST && (currentJob.pre_pow != Comms.nextJob.pre_pow))
-                                                {
-                                                    currentJob = Comms.nextJob;
-                                                    currentJob.timestamp = DateTime.Now;
-                                                }
                                                 currentJob = currentJob.Next();
 
                                                 kernelSeedA.SetKernelArgumentGeneric(0, currentJob.k0);
