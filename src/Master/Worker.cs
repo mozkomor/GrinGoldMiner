@@ -224,11 +224,15 @@ namespace Mozkomor.GrinGoldMiner
         {
             try
             {
-                if (!gpu.Enabled)
+                if (!gpu.Enabled || IsTerminated)
                     return true;
-                lock (stream)
+
+                if (stream != null)
                 {
-                    (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, job);
+                    lock (stream)
+                    {
+                        (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, job);
+                    }
                 }
                 return true;
             }
@@ -244,7 +248,7 @@ namespace Mozkomor.GrinGoldMiner
         {
             try
             {
-                if (!gpu.Enabled)
+                if (!gpu.Enabled || IsTerminated)
                     return true;
 
                 (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, settings);
