@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Mozkomor.GrinGoldMiner;
@@ -11,6 +13,7 @@ namespace Mozkomor.GrinGoldMinerCLI
     {
         private static volatile bool IsTerminated;
         public static Config config;
+        static Dictionary<string, string> cmdParams = new Dictionary<string, string>();
         public static readonly bool IsLinux = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
         static void Main(string[] args)
@@ -21,6 +24,27 @@ namespace Mozkomor.GrinGoldMinerCLI
                 Close();
             };
 
+            try
+            {
+                //https://stackoverflow.com/questions/16540640/how-to-pass-key-value-pairs-from-console-app-to-a-dictionary
+                cmdParams = args.Select(a => a.Split(new[] { '=' }, 2))
+                         .GroupBy(a => a[0], a => a.Length == 2 ? a[1] : null)
+                         .ToDictionary(g => g.Key, g => g.FirstOrDefault());
+            }
+            catch
+            {
+                if (IsLinux)
+                {
+                    Console.WriteLine(@"ERROR PARSING ARGUMENTS. WILL CLOSE. Use args like this: ./GrinGoldMinerCLI configpath=/absolute/path/to/directory");
+                }
+                else
+                {
+                    Console.WriteLine(@"ERROR PARSING ARGUMENTS. WILL CLOSE. Use args like this: GrinGoldMinerCLI.exe configpath=C:\absolute\path\to\directory");
+                }
+                Console.ReadLine();
+                Close();
+            }
+
             //if (DateTime.Today >= new DateTime(2019, 1, 14))
             //{
             //    Console.WriteLine("!!! This version of GrinGoldMiner is outdated. Please go to https://github.com/mozkomor/GrinGoldMiner/releases and downlaod the latest release.");
@@ -29,7 +53,10 @@ namespace Mozkomor.GrinGoldMinerCLI
             //    Close();
             //}
 
+
             var dir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
+            if (cmdParams.ContainsKey("configpath"))
+                dir = cmdParams["configpath"];
             var configPath = Path.Combine(dir, "config.xml");
             config = new Config();
             if (File.Exists(configPath))
