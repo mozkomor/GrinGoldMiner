@@ -480,13 +480,19 @@ namespace Mozkomor.GrinGoldMiner
 
                 if (streamTLS != null)
                 {
-                    streamTLS.Write(bmsg, 0, bmsg.Length);
-                    streamTLS.FlushAsync();
+                    lock (streamTLS)
+                    {
+                        streamTLS.Write(bmsg, 0, bmsg.Length);
+                        streamTLS.FlushAsync();
+                    }
                 }
                 else
                 {
-                    stream.Write(bmsg, 0, bmsg.Length);
-                    stream.FlushAsync();
+                    lock (stream)
+                    {
+                        stream.Write(bmsg, 0, bmsg.Length);
+                        stream.FlushAsync();
+                    }
                 }
 
                 return true;

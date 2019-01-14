@@ -138,15 +138,16 @@ namespace Mozkomor.GrinGoldMiner
             {
                 if (GetStatus() == GPUStatus.ONLINE)
                 {
-                    Logger.Log(LogLevel.INFO, $"Statistics: GPU {ID}: mining at {GetGPS():F2} gps, solutions: {totalSols}");
+                    Logger.Log(LogLevel.DEBUG, $"Statistics: GPU {ID}: mining at {GetGPS():F2} gps, solutions: {totalSols}");
+                }
+                if (GetStatus() == GPUStatus.ERROR && lastErrLog != null && lastErrLog.message != null)
+                {
+                    Logger.Log(LogLevel.DEBUG, $"Error: GPU {ID}: message: {lastErrLog.message}");
                 }
             }
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine($"ERROR GPU {ID}, MSG: {ex.Message}");
-                Console.ResetColor();
-                WipeLine();
+
             }
         }
 
@@ -224,8 +225,10 @@ namespace Mozkomor.GrinGoldMiner
             {
                 if (!gpu.Enabled)
                     return true;
-
-                (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, job);
+                lock (stream)
+                {
+                    (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, job);
+                }
                 return true;
             }
             catch (Exception ex)

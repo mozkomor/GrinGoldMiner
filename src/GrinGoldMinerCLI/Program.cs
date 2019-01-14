@@ -255,11 +255,14 @@ namespace Mozkomor.GrinGoldMinerCLI
             }
         }
 
+        private static long refreshes = 0;
         private static void WriteGUI()
         {
             Console.Clear();
             while (!IsTerminated)
             {
+                refreshes++;
+
                 switch (Logger.consoleMode)
                 {
                     case ConsoleOutputMode.STATIC_TUI:
@@ -359,6 +362,23 @@ namespace Mozkomor.GrinGoldMinerCLI
                 }
 
                 Task.Delay(500).Wait();
+
+                if (refreshes % 16 == 0)
+                {
+                    try
+                    {
+                        // debug dump
+                        var conn = ConnectionManager.GetCurrConn();
+                        if (conn != null)
+                            Logger.Log(LogLevel.DEBUG, $"Statistics for {conn.id}: shares sub: {conn.totalShares} ac: {conn.sharesAccepted} rj: {conn.sharesRejected + conn.sharesTooLate}");
+
+                        foreach (var w in WorkerManager.workers)
+                        {
+                            w.PrintStatusLinesToLog();
+                        }
+                    }
+                    catch { }
+                }
             }
         }
 
