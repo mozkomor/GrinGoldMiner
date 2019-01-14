@@ -259,7 +259,7 @@ namespace CudaSolver
                         continue;
                     }
 
-                    if (!TEST && (currentJob.pre_pow != Comms.nextJob.pre_pow))
+                    if (!TEST && ((currentJob.pre_pow != Comms.nextJob.pre_pow) || (currentJob.origin != Comms.nextJob.origin)))
                     {
                         currentJob = Comms.nextJob;
                         currentJob.timestamp = DateTime.Now;

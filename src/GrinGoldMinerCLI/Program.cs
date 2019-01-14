@@ -26,6 +26,20 @@ namespace Mozkomor.GrinGoldMinerCLI
 
             try
             {
+                var cudas = System.Diagnostics.Process.GetProcessesByName("CudaSolver");
+                var ocls = System.Diagnostics.Process.GetProcessesByName("OclSolver");
+
+                if (cudas.Count() > 0 ||ocls.Count() > 0)
+                {
+                    Console.WriteLine("Existing CudaSolver or OclSolver processes running, please terminate them first.");
+                    Console.ReadKey();
+                }
+            }
+            catch { }
+
+
+            try
+            {
                 //https://stackoverflow.com/questions/16540640/how-to-pass-key-value-pairs-from-console-app-to-a-dictionary
                 cmdParams = args.Select(a => a.Split(new[] { '=' }, 2))
                          .GroupBy(a => a[0], a => a.Length == 2 ? a[1] : null)
