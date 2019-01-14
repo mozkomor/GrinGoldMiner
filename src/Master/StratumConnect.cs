@@ -234,9 +234,14 @@ namespace Mozkomor.GrinGoldMiner
                                 CurrentJob.origin = GetJobOrigine();
                                 if (CurrentJob != null && CurrentJob.pre_pow != null && CurrentJob.pre_pow != "")
                                 {
-                                    lastComm = DateTime.Now;
-                                    if (ConnectionManager.IsConnectionCurrent(id))
-                                        PushJobToWorkers();
+                                    if (CurrentJob.scale != 1)
+                                    {
+                                        lastComm = DateTime.Now;
+                                        if (ConnectionManager.IsConnectionCurrent(id))
+                                            PushJobToWorkers();
+                                    }
+                                    else
+                                        Logger.Log(LogLevel.WARNING, $"Incorrect pre_pow: {CurrentJob.pre_pow}");
                                 }
                                 break;
                             case "submit":
@@ -480,13 +485,19 @@ namespace Mozkomor.GrinGoldMiner
 
                 if (streamTLS != null)
                 {
-                    streamTLS.Write(bmsg, 0, bmsg.Length);
-                    streamTLS.FlushAsync();
+                    lock (streamTLS)
+                    {
+                        streamTLS.Write(bmsg, 0, bmsg.Length);
+                        streamTLS.FlushAsync();
+                    }
                 }
                 else
                 {
-                    stream.Write(bmsg, 0, bmsg.Length);
-                    stream.FlushAsync();
+                    lock (stream)
+                    {
+                        stream.Write(bmsg, 0, bmsg.Length);
+                        stream.FlushAsync();
+                    }
                 }
 
                 return true;

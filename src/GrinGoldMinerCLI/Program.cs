@@ -132,7 +132,7 @@ namespace Mozkomor.GrinGoldMinerCLI
                 Console.WriteLine($"[1] Custom stratum address");
                 Console.WriteLine($"[2] US-east grinmint.com");
                 Console.WriteLine($"[3] EU-west grinmint.com");
-                Console.WriteLine($"[4] mwgrinpool.com");
+                Console.WriteLine($"[4] mwgrinpool.com (open-source)");
                 Console.WriteLine("Or try some other pools (use option 1): cuckoomine.org grin-pool.org grinpool.co sparkpool.com ");
                 var key = Console.ReadLine();
 
@@ -282,11 +282,14 @@ namespace Mozkomor.GrinGoldMinerCLI
             }
         }
 
+        private static long refreshes = 0;
         private static void WriteGUI()
         {
             Console.Clear();
             while (!IsTerminated)
             {
+                refreshes++;
+
                 switch (Logger.consoleMode)
                 {
                     case ConsoleOutputMode.STATIC_TUI:
@@ -386,6 +389,23 @@ namespace Mozkomor.GrinGoldMinerCLI
                 }
 
                 Task.Delay(500).Wait();
+
+                if (refreshes % 16 == 0)
+                {
+                    try
+                    {
+                        // debug dump
+                        var conn = ConnectionManager.GetCurrConn();
+                        if (conn != null)
+                            Logger.Log(LogLevel.DEBUG, $"Statistics for {conn.id}: shares sub: {conn.totalShares} ac: {conn.sharesAccepted} rj: {conn.sharesRejected + conn.sharesTooLate}");
+
+                        foreach (var w in WorkerManager.workers)
+                        {
+                            w.PrintStatusLinesToLog();
+                        }
+                    }
+                    catch { }
+                }
             }
         }
 
