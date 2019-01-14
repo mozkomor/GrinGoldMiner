@@ -106,7 +106,7 @@ namespace Mozkomor.GrinGoldMinerCLI
 
                     foreach (var dev in devices)
                     {
-                        if ((dev.memory > (long)1024 * 1024 * 1024 * 3) && dev.platformName.ToLower().Contains("amd"))
+                        if ((dev.memory > (long)1024 * 1024 * 1024 * 3) && (dev.platformName.ToLower().Contains("amd") || dev.platformName.ToLower().Contains("advanced")))
                         {
                             generated_config.GPUOptions.Add(new SharedSerialization.GPUOption()
                             {
@@ -125,6 +125,9 @@ namespace Mozkomor.GrinGoldMinerCLI
                 {
                     ;
                 }
+
+                if (generated_config.GPUOptions.Count == 0)
+                    Console.WriteLine("No devices auto-detected, please use manual config (see readme)");
 
                 string pool = "";
                 string port = "13416";
