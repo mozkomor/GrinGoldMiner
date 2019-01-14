@@ -151,7 +151,7 @@ namespace SharedSerialization
     {
         public string login;
         public string pass;
-        public string agent = "mozkomor";
+        public string agent = "GrinGoldMiner";
     }
 
     //stratum

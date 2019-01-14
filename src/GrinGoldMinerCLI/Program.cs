@@ -135,7 +135,7 @@ namespace Mozkomor.GrinGoldMinerCLI
                 Console.WriteLine($"[1] Custom stratum address");
                 Console.WriteLine($"[2] US-east grinmint.com");
                 Console.WriteLine($"[3] EU-west grinmint.com");
-                Console.WriteLine($"[4] mwgrinpool.com (open-source)");
+                Console.WriteLine($"[4] mwgrinpool.com (open-source, currently invite only)");
                 Console.WriteLine("Or try some other pools (use option 1): cuckoomine.org grin-pool.org grinpool.co sparkpool.com ");
                 var key = Console.ReadLine();
 
@@ -316,7 +316,7 @@ namespace Mozkomor.GrinGoldMinerCLI
                             string who = ConnectionManager.IsInFee() ? "FEE" : (conn?.login ?? "USER");
                             who = who.Length > 10 ? who.Substring(0, 10)+".." : who;
 
-                            Console.WriteLine("Grin Gold Miner 2.4 - RC2");
+                            Console.WriteLine("Grin Gold Miner 2.5 - RC3");
                             Console.WriteLine("------------------------------------------------------------------------------------------");
                             WipeLine();
                             Console.Write("Mining for: ");

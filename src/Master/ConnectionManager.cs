@@ -17,7 +17,7 @@ namespace Mozkomor.GrinGoldMiner
         private static volatile int solutionRound = 1000;
         //private static volatile int solverswitchmin = 5;
         private const int solverswitch = 980;
-        private static volatile int prepConn = 5;
+        private static volatile int prepConn = 10;
         //private static volatile int solmfcnt = 0;
         //private static volatile int solgfcnt = 0;
         private static volatile uint totalsolutionCounter = 0;
@@ -511,8 +511,8 @@ namespace Mozkomor.GrinGoldMiner
             solutionCounter = 0;
             var time = DateTime.Now - roundTime;
             roundTime = DateTime.Now;
-            //based on solution time, try to target prepConn to 10 seconds
-            prepConn = (int)Math.Round(Math.Max(5, (10 / (time.TotalSeconds / solutionRound))));
+            //based on solution time, try to target prepConn to 10 seconds but minimum 10 sols
+            prepConn = (int)Math.Round(Math.Max(10, (10 / (time.TotalSeconds / solutionRound))));
           
             try
             {
