@@ -1,6 +1,6 @@
 # GGM - Grin GPU Miner
 
-Miner supports all AMD and NVIDIA 8GB cards. RTX 8GB cards need Linux or Windows7 at the moment because Windows reserves too much memory on those cards (should be resolved soon)
+Miner supports all AMD and NVIDIA 8GB cards. RTX 8GB cards need Linux or Windows7 at the moment because Windows reserves too much memory on those cards (should be resolved soon). Only GPU PoW Cuckaroo29 is supported at this time. 
 
 RTX 2080 and RTX 2080Ti are fastest, OpenCL code for AMD cards is being optimized. Cheap Celeron CPU is not recommended for many cards on the system.
 
