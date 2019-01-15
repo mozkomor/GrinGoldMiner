@@ -125,8 +125,8 @@ namespace SharedSerialization
                 var hashedBytes = hash.ComputeHash(packedSolution).Reverse().ToArray();
                 BigInteger hash256 = new BigInteger(hashedBytes.Concat(new byte[] { 0 }).ToArray() );
                 BigInteger difficulty = umax  / hash256;
-                bool A = difficulty >= 4;
-                bool B = hashedBytes[0] < 32;
+                //bool A = difficulty >= 4;
+                //bool B = hashedBytes[0] < 32;
                 return difficulty >= job.difficulty;
                 //return difficulty >= Math.Max(8, job.difficulty);
                 //return difficulty >= Math.Max(4,  job.difficulty);
