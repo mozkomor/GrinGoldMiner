@@ -104,7 +104,8 @@ namespace SharedSerialization
             return edges.Select(e => (long)e.Item1 | (((long)e.Item2) << 32)).ToArray();
         }
 
-
+        
+        static BigInteger umax = (BigInteger.One << 256) - 1;
         public bool CheckDifficulty()
         {
             try
@@ -120,20 +121,52 @@ namespace SharedSerialization
                 packed.CopyTo(packedSolution, 0);
 
                 var hash = new Crypto.Blake2B(256);
-                UInt64 blaked = BitConverter.ToUInt64(hash.ComputeHash(packedSolution).Reverse().ToArray(), 24);
 
-                BigInteger shift = (new BigInteger(job.scale)) << 64;
-                BigInteger diff = shift / new BigInteger(blaked);
-
-                ulong share_difficulty = Math.Min((UInt64)diff, UInt64.MaxValue);
-
-                return share_difficulty >= job.difficulty;
+                var hashedBytes = hash.ComputeHash(packedSolution).Reverse().ToArray();
+                BigInteger hash256 = new BigInteger(hashedBytes.Concat(new byte[] { 0 }).ToArray() );
+                BigInteger difficulty = umax  / hash256;
+                bool A = difficulty >= 4;
+                bool B = hashedBytes[0] < 32;
+                return difficulty >= job.difficulty;
+                //return difficulty >= Math.Max(8, job.difficulty);
+                //return difficulty >= Math.Max(4,  job.difficulty);
             }
             catch
             {
                 return false;
             }
         }
+         
+
+        //public bool CheckDifficulty()
+        //{
+        //    try
+        //    {
+        //        BitArray packed = new BitArray(42 * 29);
+        //        byte[] packedSolution = new byte[153]; // 42*proof_size/8 padded
+        //        int position = 0;
+        //        foreach (var n in nonces)
+        //        {
+        //            for (int i = 0; i < 29; i++)
+        //                packed.Set(position++, (n & (1UL << i)) != 0);
+        //        }
+        //        packed.CopyTo(packedSolution, 0);
+
+        //        var hash = new Crypto.Blake2B(256);
+        //        UInt64 blaked = BitConverter.ToUInt64(hash.ComputeHash(packedSolution).Reverse().ToArray(), 24);
+
+        //        BigInteger shift = (new BigInteger(job.scale)) << 64;
+        //        BigInteger diff = shift / new BigInteger(blaked);
+
+        //        ulong share_difficulty = Math.Min((UInt64)diff, UInt64.MaxValue);
+
+        //        return share_difficulty >= job.difficulty;
+        //    }
+        //    catch
+        //    {
+        //        return false;
+        //    }
+        //}
     }
 
     //stratum
