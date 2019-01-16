@@ -55,8 +55,8 @@ namespace Mozkomor.GrinGoldMiner
 
         public static T DeSerialize<T>(string inputFile)
         {
-            try
-            {
+            //try
+            //{
                 // Deserialization
                 XmlSerializer s = new XmlSerializer(typeof(T));
                 T newClass;
@@ -66,18 +66,18 @@ namespace Mozkomor.GrinGoldMiner
                 }
 
                 return newClass;
-            }
-            catch (Exception Ex)
-            {
-                Logger.Log(Ex);
-                return default(T);
-            }
+            //}
+            //catch (Exception Ex)
+            //{
+            //    Logger.Log(Ex);
+            //    return default(T);
+            //}
         }
 
         public static T DeSerializeString<T>(string inputContent)
         {
-            try
-            {
+            //try
+            //{
                 // Deserialization
                 XmlSerializer s = new XmlSerializer(typeof(T));
                 T newClass;
@@ -87,12 +87,12 @@ namespace Mozkomor.GrinGoldMiner
                 }
 
                 return newClass;
-            }
-            catch (Exception Ex)
-            {
-                Logger.Log(Ex);
-                return default(T);
-            }
+            //}
+            //catch (Exception Ex)
+            //{
+            //    Logger.Log(Ex);
+            //    return default(T);
+            //}
         }
     }
 }
