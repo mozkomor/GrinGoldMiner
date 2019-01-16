@@ -256,6 +256,7 @@ namespace Mozkomor.GrinGoldMinerCLI
 
             if (cmdParams.ContainsKey(ARG_MODE) && cmdParams[ARG_MODE] == "rolling")
                 Logger.consoleMode = ConsoleOutputMode.ROLLING_LOG;
+
             Logger.SetLogOptions(config.LogOptions);
 
             Task.Factory.StartNew(() => { WriteGUI(); }, TaskCreationOptions.LongRunning);
@@ -266,37 +267,44 @@ namespace Mozkomor.GrinGoldMinerCLI
             // this blocks on no connection ?
             ConnectionManager.Init(config);
 
-            bool checkKey = true;
-            while (checkKey)
+            if (cmdParams.ContainsKey(ARG_MODE) && cmdParams[ARG_MODE] == "rolling")
             {
-                if (Console.KeyAvailable)
+                while (!IsTerminated) Task.Delay(500).Wait();
+            }
+            else
+            {
+                bool checkKey = true;
+                while (checkKey)
                 {
-                    ConsoleKeyInfo key = Console.ReadKey(true);
-                    Console.Clear();
-                    switch (key.Key)
+                    if (Console.KeyAvailable)
                     {
-                        case ConsoleKey.L:
-                            // show full log flow
-                            if (Logger.consoleMode == ConsoleOutputMode.STATIC_TUI)
-                            {
-                                Logger.consoleMode = ConsoleOutputMode.ROLLING_LOG;
-                                Console.WriteLine("Rolling log mode: enabled");
-                            }
-                            else
-                                Logger.consoleMode = ConsoleOutputMode.STATIC_TUI;
-                            break;
-                        case ConsoleKey.Q:
-                            checkKey = false;
-                            break;
-                        case ConsoleKey.Enter:
-                            Logger.criticalErrors.TryDequeue(out string msg);
-                            break;
-                        default:
-                            break;
+                        ConsoleKeyInfo key = Console.ReadKey(true);
+                        Console.Clear();
+                        switch (key.Key)
+                        {
+                            case ConsoleKey.L:
+                                // show full log flow
+                                if (Logger.consoleMode == ConsoleOutputMode.STATIC_TUI)
+                                {
+                                    Logger.consoleMode = ConsoleOutputMode.ROLLING_LOG;
+                                    Console.WriteLine("Rolling log mode: enabled");
+                                }
+                                else
+                                    Logger.consoleMode = ConsoleOutputMode.STATIC_TUI;
+                                break;
+                            case ConsoleKey.Q:
+                                checkKey = false;
+                                break;
+                            case ConsoleKey.Enter:
+                                Logger.criticalErrors.TryDequeue(out string msg);
+                                break;
+                            default:
+                                break;
+                        }
                     }
+                    else
+                        Task.Delay(100).Wait();
                 }
-                else
-                    Task.Delay(100).Wait();
             }
             Close();
 
