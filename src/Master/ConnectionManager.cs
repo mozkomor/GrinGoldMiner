@@ -93,6 +93,7 @@ namespace Mozkomor.GrinGoldMiner
 
         private static void ConnectMain()
         {
+            
             bool connected = false;
 
             DateTime started = DateTime.Now;
@@ -148,6 +149,7 @@ namespace Mozkomor.GrinGoldMiner
 
         public static void ReconnectMain()
         {
+            Task.Delay(2500).Wait();
             Logger.Log(LogLevel.DEBUG, "trying to reconnect main...");
             // curr_m.StratumClose(); //already in watchdog
             curr_m = null;

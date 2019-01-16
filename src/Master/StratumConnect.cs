@@ -445,7 +445,7 @@ namespace Mozkomor.GrinGoldMiner
                     else
                     {
                         //we are connected, but current job is too old, try to reconnect(so both primary and secondary connections get tried)
-                        if (((DateTime.Now - CurrentJob.timestamp) > TimeSpan.FromMinutes(10)))
+                        if (CurrentJob != null && ((DateTime.Now - CurrentJob.timestamp) > TimeSpan.FromMinutes(10)))
                         {
                             Logger.Log(LogLevel.DEBUG, $", SC ID {id} last job is too old ({CurrentJob.timestamp}), Reconnecting from DisconnectMonitor.");
                             StratumClose();
@@ -487,16 +487,32 @@ namespace Mozkomor.GrinGoldMiner
                 {
                     lock (streamTLS)
                     {
-                        streamTLS.Write(bmsg, 0, bmsg.Length);
-                        streamTLS.FlushAsync();
+                        if (streamTLS.CanWrite)
+                        {
+                            streamTLS.Write(bmsg, 0, bmsg.Length);
+                            streamTLS.FlushAsync();
+                        }
+                        else
+                        {
+                            IsConnected = false;
+                            Logger.Log(LogLevel.DEBUG,$" !! streamTLS.CanWrite == false, disconnecting");
+                        }
                     }
                 }
                 else
                 {
                     lock (stream)
                     {
-                        stream.Write(bmsg, 0, bmsg.Length);
-                        stream.FlushAsync();
+                        if (stream.CanWrite)
+                        {
+                            stream.Write(bmsg, 0, bmsg.Length);
+                            stream.FlushAsync();
+                        }
+                        else
+                        {
+                            IsConnected = false;
+                            Logger.Log(LogLevel.DEBUG, $" !! stream.CanWrite == false, disconnecting");
+                        }
                     }
                 }
 

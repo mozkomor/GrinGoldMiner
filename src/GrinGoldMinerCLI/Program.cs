@@ -16,6 +16,9 @@ namespace Mozkomor.GrinGoldMinerCLI
         static Dictionary<string, string> cmdParams = new Dictionary<string, string>();
         public static readonly bool IsLinux = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
 
+        public const string ARG_CONFIGPATH = "configpath";
+        public const string ARG_MODE = "mode"; //"rolling" for starting with rolling console mode
+
         static void Main(string[] args)
         {
             Console.CancelKeyPress += delegate
@@ -69,8 +72,8 @@ namespace Mozkomor.GrinGoldMinerCLI
 
 
             var dir = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location);
-            if (cmdParams.ContainsKey("configpath"))
-                dir = cmdParams["configpath"];
+            if (cmdParams.ContainsKey(ARG_CONFIGPATH))
+                dir = cmdParams[ARG_CONFIGPATH];
             var configPath = Path.Combine(dir, "config.xml");
             config = new Config();
             if (File.Exists(configPath))
@@ -150,7 +153,8 @@ namespace Mozkomor.GrinGoldMinerCLI
                 Console.WriteLine($"[2] US-east grinmint.com");
                 Console.WriteLine($"[3] EU-west grinmint.com");
                 Console.WriteLine($"[4] mwgrinpool.com (open-source, currently invite only)");
-                Console.WriteLine("Or try some other pools (use option 1): cuckoomine.org grin-pool.org grinpool.co sparkpool.com ");
+                Console.WriteLine($"[5] EU grin-pool.org");
+                Console.WriteLine("Or try some other pools (use option 1): cuckoomine.org grinpool.co sparkpool.com ");
                 var key = Console.ReadLine();
 
                 if (key == "2" || key == "3")
@@ -185,6 +189,18 @@ namespace Mozkomor.GrinGoldMinerCLI
                     var email = Console.ReadLine();
                     generated_config.PrimaryConnection.Login = $"{email}";
                     Console.WriteLine($"Enter your pool password:");
+                    generated_config.PrimaryConnection.Password = Console.ReadLine();
+                }
+                else if (key == "5")
+                {
+                    Console.WriteLine("You need to create account on grin-pool.org website first and then enter you login here.");
+                    generated_config.PrimaryConnection.ConnectionAddress = "eu.stratum.grin-pool.org";
+                    generated_config.PrimaryConnection.ConnectionPort = 3416;
+                    generated_config.PrimaryConnection.Ssl = false;
+                    Console.WriteLine($"Enter your login:");
+                    var email = Console.ReadLine();
+                    generated_config.PrimaryConnection.Login = $"{email}";
+                    Console.WriteLine($"Enter your rig name (or leave empty):");
                     generated_config.PrimaryConnection.Password = Console.ReadLine();
                 }
                 else
@@ -238,46 +254,57 @@ namespace Mozkomor.GrinGoldMinerCLI
                 return;
             }
 
-            Task.Factory.StartNew(() => { WriteGUI(); }, TaskCreationOptions.LongRunning);
+            if (cmdParams.ContainsKey(ARG_MODE) && cmdParams[ARG_MODE] == "rolling")
+                Logger.consoleMode = ConsoleOutputMode.ROLLING_LOG;
 
             Logger.SetLogOptions(config.LogOptions);
+
+            Task.Factory.StartNew(() => { WriteGUI(); }, TaskCreationOptions.LongRunning);
+            
             WorkerManager.Init(config);
 
 
             // this blocks on no connection ?
             ConnectionManager.Init(config);
 
-            bool checkKey = true;
-            while (checkKey)
+            if (cmdParams.ContainsKey(ARG_MODE) && cmdParams[ARG_MODE] == "rolling")
             {
-                if (Console.KeyAvailable)
+                while (!IsTerminated) Task.Delay(500).Wait();
+            }
+            else
+            {
+                bool checkKey = true;
+                while (checkKey)
                 {
-                    ConsoleKeyInfo key = Console.ReadKey(true);
-                    Console.Clear();
-                    switch (key.Key)
+                    if (Console.KeyAvailable)
                     {
-                        case ConsoleKey.L:
-                            // show full log flow
-                            if (Logger.consoleMode == ConsoleOutputMode.STATIC_TUI)
-                            {
-                                Logger.consoleMode = ConsoleOutputMode.ROLLING_LOG;
-                                Console.WriteLine("Rolling log mode: enabled");
-                            }
-                            else
-                                Logger.consoleMode = ConsoleOutputMode.STATIC_TUI;
-                            break;
-                        case ConsoleKey.Q:
-                            checkKey = false;
-                            break;
-                        case ConsoleKey.Enter:
-                            Logger.criticalErrors.TryDequeue(out string msg);
-                            break;
-                        default:
-                            break;
+                        ConsoleKeyInfo key = Console.ReadKey(true);
+                        Console.Clear();
+                        switch (key.Key)
+                        {
+                            case ConsoleKey.L:
+                                // show full log flow
+                                if (Logger.consoleMode == ConsoleOutputMode.STATIC_TUI)
+                                {
+                                    Logger.consoleMode = ConsoleOutputMode.ROLLING_LOG;
+                                    Console.WriteLine("Rolling log mode: enabled");
+                                }
+                                else
+                                    Logger.consoleMode = ConsoleOutputMode.STATIC_TUI;
+                                break;
+                            case ConsoleKey.Q:
+                                checkKey = false;
+                                break;
+                            case ConsoleKey.Enter:
+                                Logger.criticalErrors.TryDequeue(out string msg);
+                                break;
+                            default:
+                                break;
+                        }
                     }
+                    else
+                        Task.Delay(100).Wait();
                 }
-                else
-                    Task.Delay(100).Wait();
             }
             Close();
 
@@ -330,7 +357,7 @@ namespace Mozkomor.GrinGoldMinerCLI
                             string who = ConnectionManager.IsInFee() ? "FEE" : (conn?.login ?? "USER");
                             who = who.Length > 10 ? who.Substring(0, 10)+".." : who;
 
-                            Console.WriteLine("Grin Gold Miner 2.6 - RC4");
+                            Console.WriteLine("Grin Gold Miner 2.7 - RC5");
                             Console.WriteLine("------------------------------------------------------------------------------------------");
                             WipeLine();
                             Console.Write("Mining for: ");
