@@ -15,6 +15,11 @@ Try pressing enter in the console window, on Windows the console can be sometime
     Windows: GrinGoldMinerCLI.exe configpath=C:\absolute\path\to\directory
 path must be absolute and must exists, config will be created or loaded in this location
 
+ ### Start withou TUI (rolling console only)
+
+    Linux: ./GrinGoldMinerCLI mode=rolling
+    Windows: GrinGoldMinerCLI.exe mode=rolling
+    
 
 ### Define backup pool in case the primary pool is down:
 In your config.xml fill the SecondaryConnection details to another pool with your real account, for example:
