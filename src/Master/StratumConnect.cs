@@ -264,6 +264,7 @@ namespace Mozkomor.GrinGoldMiner
                                 }
                                 if(msg.ContainsKey("error"))
                                 {
+                                    //phooton -32501, "Share rejected due to low difficulty" and -32504 "Shares rejected: duplicates" would that be okay for you
                                     try
                                     {
                                         var code = (int)msg["error"]["code"];
@@ -445,7 +446,7 @@ namespace Mozkomor.GrinGoldMiner
                     else
                     {
                         //we are connected, but current job is too old, try to reconnect(so both primary and secondary connections get tried)
-                        if (CurrentJob != null && ((DateTime.Now - CurrentJob.timestamp) > TimeSpan.FromMinutes(10)))
+                        if ((DateTime.Now - lastComm) > TimeSpan.FromMinutes(10))
                         {
                             Logger.Log(LogLevel.DEBUG, $", SC ID {id} last job is too old ({CurrentJob.timestamp}), Reconnecting from DisconnectMonitor.");
                             StratumClose();

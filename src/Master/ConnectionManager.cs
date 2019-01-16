@@ -98,6 +98,9 @@ namespace Mozkomor.GrinGoldMiner
 
             DateTime started = DateTime.Now;
 
+            int i = 1;
+            
+
             while (!connected && !stopConnecting)
             {
                 if (DateTime.Now - started > TimeSpan.FromSeconds(60))
@@ -105,6 +108,10 @@ namespace Mozkomor.GrinGoldMiner
                     //main connection not available for more than 60s
                     PauseAllMining();
                 }
+
+                i = Math.Min(60, i);
+                i++;
+                Task.Delay(i * 1000).Wait();
 
                 if (con_m1 == null)
                 {
@@ -162,9 +169,13 @@ namespace Mozkomor.GrinGoldMiner
             Logger.Log(LogLevel.DEBUG, "conecting to mf");
             bool connected = false;
             isMfConnecting = true;
-
+            int i = 1;
             while (!connected && !stopConnecting)
             {
+                i = Math.Min(60, i);
+                i++;
+                Task.Delay(i * 1000).Wait();
+
                 con_mf1.Connect();
                 if (con_mf1.IsConnected)
                 {
@@ -214,9 +225,14 @@ namespace Mozkomor.GrinGoldMiner
         {
             bool connected = false;
             IsGfConnecting = true;
+            int i = 0;
 
             while (!connected && !stopConnecting)
             {
+                i = Math.Min(60, i);
+                i++;
+                Task.Delay(i * 1000).Wait();
+
                 con_gf1.Connect();
                 if (con_gf1.IsConnected)
                 {
