@@ -13,6 +13,8 @@ Contact us at mozkomorkaban@gmail.com; professional farm-friendly version of the
 
 GGM releases will collect 1% fee for the Grin Development Fund and 1% fee for further miner development
 
+[FAQ and Help here](help.md)  - how to configure your backup pool connection, how to load config from different location, how to switch to rolling console mode and more...
+
 VIDEO GUIDE:
 <p>
 <a href="https://www.youtube.com/watch?v=e3mm60R5-ZE">
