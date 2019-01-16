@@ -78,8 +78,14 @@ namespace Mozkomor.GrinGoldMinerCLI
             config = new Config();
             if (File.Exists(configPath))
             {
-                // try catch this !!
-                config = Serialization.DeSerialize<Config>(configPath);
+                try
+                {
+                    config = Serialization.DeSerialize<Config>(configPath);
+                }
+                catch(Exception ex)
+                {
+                    Console.WriteLine($"Problem parsing config.xml, chcek that syntax and content is correct. (Ex: {ex.Message})");
+                }
             }
             else
             {
