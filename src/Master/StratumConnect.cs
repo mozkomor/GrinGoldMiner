@@ -448,7 +448,7 @@ namespace Mozkomor.GrinGoldMiner
                         //we are connected, but current job is too old, try to reconnect(so both primary and secondary connections get tried)
                         if ((DateTime.Now - lastComm) > TimeSpan.FromMinutes(10))
                         {
-                            Logger.Log(LogLevel.DEBUG, $", SC ID {id} last job is too old ({CurrentJob.timestamp}), Reconnecting from DisconnectMonitor.");
+                            Logger.Log(LogLevel.DEBUG, $", SC ID {id} last comm is too old ({lastComm.ToString()}), Reconnecting from DisconnectMonitor.");
                             StratumClose();
                             ReconnectAction(); //call parent => try both connections
                         }
