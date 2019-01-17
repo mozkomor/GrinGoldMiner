@@ -91,15 +91,15 @@ namespace Mozkomor.GrinGoldMiner
             solutionCounter = 0;
         }
 
-        private static void ConnectMain()
+        private static void ConnectMain(bool chooseRandom = false)
         {
-            
+
             bool connected = false;
 
             DateTime started = DateTime.Now;
 
             int i = 1;
-            
+            var rnd = new Random(DateTime.Now.Millisecond);
 
             while (!connected && !stopConnecting)
             {
@@ -113,22 +113,23 @@ namespace Mozkomor.GrinGoldMiner
                 i++;
                 Task.Delay(i * 1000).Wait();
 
-                if (con_m1 == null)
-                {
-                    Logger.Log(LogLevel.DEBUG, "Conection 1 is null");
-                    //Console.ReadLine();
-                }
+                var flip = rnd.NextDouble();
+                Logger.Log(LogLevel.DEBUG, $"reconnecting rnd {flip}");
+                //
 
-                con_m1.Connect();
-                if (con_m1.IsConnected)
+                if (chooseRandom)
                 {
-                    curr_m = con_m1;
-                    connected = true;
-                    Logger.Log(LogLevel.DEBUG, "conection1 succ");
-                }
-                else
-                {
-                    if (con_m2 != null)
+                    if (flip < 0.5)
+                    {
+                        con_m1.Connect();
+                        if (con_m1.IsConnected)
+                        {
+                            curr_m = con_m1;
+                            connected = true;
+                            Logger.Log(LogLevel.DEBUG, "conection1 succ");
+                        }
+                    }
+                    else
                     {
                         con_m2.Connect();
                         if (con_m2.IsConnected)
@@ -137,10 +138,33 @@ namespace Mozkomor.GrinGoldMiner
                             connected = true;
                             Logger.Log(LogLevel.DEBUG, "conection2 succ");
                         }
-                        else
+                    }
+                }
+                else
+                {
+                    con_m1.Connect();
+                    if (con_m1.IsConnected)
+                    {
+                        curr_m = con_m1;
+                        connected = true;
+                        Logger.Log(LogLevel.DEBUG, "conection1 succ");
+                    }
+                    else
+                    {
+                        if (con_m2 != null)
                         {
-                            Logger.Log(LogLevel.DEBUG, "both con1 & con2 failed, trying again");
-                            Task.Delay(1000).Wait();
+                            con_m2.Connect();
+                            if (con_m2.IsConnected)
+                            {
+                                curr_m = con_m2;
+                                connected = true;
+                                Logger.Log(LogLevel.DEBUG, "conection2 succ");
+                            }
+                            else
+                            {
+                                Logger.Log(LogLevel.DEBUG, "both con1 & con2 failed, trying again");
+                                //Task.Delay(1000).Wait();
+                            }
                         }
                     }
                 }
@@ -161,7 +185,7 @@ namespace Mozkomor.GrinGoldMiner
             // curr_m.StratumClose(); //already in watchdog
             curr_m = null;
             stopConnecting = false;
-            ConnectMain();
+            ConnectMain(chooseRandom:true);
         }
 
         private static void ConnectMf()
@@ -378,29 +402,29 @@ namespace Mozkomor.GrinGoldMiner
                 var ep = GetCurrentEpoch();
                 switch (ep)
                 {
-                        case Episode.mf:
-                            if (hasMfJob() && solution.job.origin == Episode.user)
-                            {
-                                Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) SubmitSol going out bc origin==user");
-                                return;
-                            }
+                    case Episode.mf:
+                        if (hasMfJob() && solution.job.origin == Episode.user)
+                        {
+                            Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) SubmitSol going out bc origin==user");
+                            return;
+                        }
                         break;
-                        case Episode.gf:
-                            if (hasGfJob() && solution.job.origin == Episode.mf)
-                            {
-                                Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) SubmitSol going out bc origin==mf");
-                                return;
-                            }
-                            break;
-                        case Episode.user:
-                            if (hasUserJob() && solution.job.origin == Episode.gf)
-                            {
-                                Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) SubmitSol going out bc origin==gf");
-                                return;
-                            }
-                            break;
+                    case Episode.gf:
+                        if (hasGfJob() && solution.job.origin == Episode.mf)
+                        {
+                            Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) SubmitSol going out bc origin==mf");
+                            return;
+                        }
+                        break;
+                    case Episode.user:
+                        if (hasUserJob() && solution.job.origin == Episode.gf)
+                        {
+                            Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) SubmitSol going out bc origin==gf");
+                            return;
+                        }
+                        break;
                 }
-                
+
                 if (solution.job.origin == ep)
                 {
                     switch (ep)
@@ -531,15 +555,15 @@ namespace Mozkomor.GrinGoldMiner
             roundTime = DateTime.Now;
             //based on solution time, try to target prepConn to 10 seconds but minimum 10 sols
             prepConn = (int)Math.Round(Math.Max(10, (10 / (time.TotalSeconds / solutionRound))));
-          
+
             try
             {
                 //Task.Run(() =>
                 //{
-                    Logger.Log(LogLevel.DEBUG, $"Round reset: solT:{totalsolutionCounter}, mfT:{totalsolmfcnt}, gfT:{totalsolgfcnt}");
-                    Logger.Log(LogLevel.DEBUG, $"Round time: {(time).TotalSeconds}  seconds");
-                    Logger.Log(LogLevel.DEBUG, $"PrepConn: {prepConn}");
-                    Logger.Log(LogLevel.INFO, $"Avg sol time: {(time).TotalSeconds / solutionRound} seconds");
+                Logger.Log(LogLevel.DEBUG, $"Round reset: solT:{totalsolutionCounter}, mfT:{totalsolmfcnt}, gfT:{totalsolgfcnt}");
+                Logger.Log(LogLevel.DEBUG, $"Round time: {(time).TotalSeconds}  seconds");
+                Logger.Log(LogLevel.DEBUG, $"PrepConn: {prepConn}");
+                Logger.Log(LogLevel.INFO, $"Avg sol time: {(time).TotalSeconds / solutionRound} seconds");
                 //});
             }
             catch { }
