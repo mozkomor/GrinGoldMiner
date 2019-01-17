@@ -462,7 +462,7 @@ namespace OclSolver
                                                         }
                                                         catch (Exception ex)
                                                         {
-                                                            Logger.Log(LogLevel.Error, "Cycle finder crashed", ex);
+                                                            Logger.Log(LogLevel.Error, "Cycle finder crashed " + ex.Message);
                                                         }
                                                         finally
                                                         {
@@ -474,7 +474,7 @@ namespace OclSolver
                                             }
                                             catch (Exception ex)
                                             {
-                                                Logger.Log(LogLevel.Error, "Critical error in main ocl loop "+  ex.Message);
+                                                Logger.Log(LogLevel.Error, "Critical error in main ocl loop " + ex.Message);
                                                 Task.Delay(5000).Wait();
                                             }
                                         }

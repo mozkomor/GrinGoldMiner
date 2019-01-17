@@ -337,10 +337,20 @@ namespace Mozkomor.GrinGoldMiner
                                 lastLog = log;
                             break;
                     }
+
+                    errors = 0;
                 }
                 catch (Exception ex)
                 {
                     Logger.Log(LogLevel.ERROR, "Listen error" + ex.Message);
+
+                    Task.Delay(5);
+                    try
+                    {
+                        while (stream.DataAvailable)
+                            stream.ReadByte();
+                    }
+                    catch{}
 
                     if (errors++ > 6)
                         IsTerminated = true;

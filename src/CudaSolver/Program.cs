@@ -386,7 +386,7 @@ namespace CudaSolver
                                    }
                                    catch (Exception ex)
                                    {
-                                       Logger.Log(LogLevel.Error, "Cycle finder error", ex);
+                                       Logger.Log(LogLevel.Error, "Cycle finder error" + ex.Message);
                                    }
                                    finally
                                    {
@@ -444,7 +444,7 @@ namespace CudaSolver
                                 }
                                 catch (Exception ex)
                                 {
-                                    Logger.Log(LogLevel.Error, "Cycle finder crashed", ex);
+                                    Logger.Log(LogLevel.Error, "Cycle finder crashed: " + ex.Message);
                                 }
                                 finally
                                 {
@@ -456,7 +456,7 @@ namespace CudaSolver
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(LogLevel.Error, "Critical error in main cuda loop", ex);
+                    Logger.Log(LogLevel.Error, "Critical error in main cuda loop " + ex.Message);
                     Task.Delay(5000).Wait();
                 }
             }

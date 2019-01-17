@@ -103,18 +103,23 @@ namespace CudaSolver
                             numberOfGPUs = settings.numberOfGPUs;
                             break;
                     }
-                }
-                catch (IOException eio)
-                {
-                    if (errorCounter++ > 3)
-                    {
-                        Close();
-                    }
+
+                    errorCounter = 0;
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(LogLevel.Warning, "Listen error! ", ex);
-                    if (errorCounter++ > 3)
+                    //Logger.Log(LogLevel.Warning, "Listen error! ", ex);
+                    Console.WriteLine("Connection lost...");
+
+                    Task.Delay(5);
+                    try
+                    {
+                        while (stream.DataAvailable)
+                            stream.ReadByte();
+                    }
+                    catch { }
+
+                    if (errorCounter++ > 5)
                     {
                         Close();
                     }
