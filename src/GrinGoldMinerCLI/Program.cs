@@ -253,6 +253,11 @@ namespace Mozkomor.GrinGoldMinerCLI
                 
 
                 Serialization.Serialize<Config>(generated_config, configPath);
+                if (generated_config.GPUOptions.Count > 2 && !IsLinux)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine($"You have {generated_config.GPUOptions.Count} GPUs, you MUST have at least { generated_config.GPUOptions.Count*8}GBs of Virtual Memory configured!");
+                }
                 Console.WriteLine();
                 Console.WriteLine($"Created new config.xml in executable directory ({configPath}), edit this file to change miner settings.");
                 Console.ReadLine();
