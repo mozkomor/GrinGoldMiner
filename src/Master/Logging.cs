@@ -60,13 +60,12 @@ namespace Mozkomor.GrinGoldMiner
     {
         public LogLevel FileMinimumLogLevel { get; set; }
         public LogLevel ConsoleMinimumLogLevel { get; set; }
+        
         /// <summary>
         /// How many days old logs to keep. Will delete older logs when "Logger.SetLogPath()" (once a day or on app first log write) is called.
         /// </summary>
-        [DefaultValueAttribute(1)] 
         public int KeepDays { get; set; }
 
-        [DefaultValueAttribute(false)]
         public bool DisableLogging { get; set; }
     }
     public class Logger
