@@ -102,7 +102,7 @@ namespace Mozkomor.GrinGoldMinerCLI
 
                     foreach (var dev in devices)
                     {
-                        if (dev.memory > (long)1024 * 1024 * 1024 * 6)
+                        if (dev.memory > (long)1024 * 1024 * 1024 * 4)
                         {
                             generated_config.GPUOptions.Add(new SharedSerialization.GPUOption()
                             {
