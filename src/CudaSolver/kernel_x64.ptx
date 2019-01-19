@@ -17,8 +17,9 @@
 // FluffySeed2B$__cuda_local_var_207170_30_non_const_tmp has been demoted
 // FluffySeed2B$__cuda_local_var_207171_30_non_const_counters has been demoted
 // FluffyRound$__cuda_local_var_207247_30_non_const_ecounters has been demoted
-// FluffyTail$__cuda_local_var_207303_30_non_const_destIdx has been demoted
-// FluffyRecovery$__cuda_local_var_207320_30_non_const_nonces has been demoted
+// FluffyRound_J$__cuda_local_var_207302_30_non_const_ecounters has been demoted
+// FluffyTail$__cuda_local_var_207397_30_non_const_destIdx has been demoted
+// FluffyRecovery$__cuda_local_var_207414_30_non_const_nonces has been demoted
 
 .visible .entry FluffySeed2A(
 	.param .u64 FluffySeed2A_param_0,
@@ -1138,609 +1139,1707 @@ BB1_14:
 	.param .u32 FluffyRound_param_5
 )
 {
-	.reg .pred 	%p<59>;
-	.reg .b32 	%r<392>;
-	.reg .b64 	%rd<76>;
+	.reg .pred 	%p<58>;
+	.reg .b32 	%r<382>;
+	.reg .b64 	%rd<78>;
 	// demoted variable
 	.shared .align 4 .b8 FluffyRound$__cuda_local_var_207247_30_non_const_ecounters[32768];
 
-	ld.param.u64 	%rd2, [FluffyRound_param_0];
-	ld.param.u64 	%rd3, [FluffyRound_param_1];
-	ld.param.u64 	%rd5, [FluffyRound_param_2];
-	ld.param.u64 	%rd4, [FluffyRound_param_3];
-	ld.param.u32 	%r67, [FluffyRound_param_4];
-	ld.param.u32 	%r68, [FluffyRound_param_5];
-	cvta.to.global.u64 	%rd6, %rd5;
-	mov.u32 	%r69, %ctaid.x;
-	mul.wide.s32 	%rd7, %r69, 4;
-	add.s64 	%rd8, %rd6, %rd7;
-	ld.global.u32 	%r70, [%rd8];
-	min.s32 	%r1, %r70, %r67;
-	add.s32 	%r2, %r1, 512;
-	mov.u32 	%r3, %tid.x;
-	shl.b32 	%r71, %r3, 2;
-	mov.u32 	%r72, FluffyRound$__cuda_local_var_207247_30_non_const_ecounters;
-	add.s32 	%r73, %r72, %r71;
-	mov.u32 	%r388, 0;
-	st.shared.u32 	[%r73], %r388;
-	st.shared.u32 	[%r73+2048], %r388;
-	st.shared.u32 	[%r73+4096], %r388;
-	st.shared.u32 	[%r73+6144], %r388;
-	st.shared.u32 	[%r73+8192], %r388;
-	st.shared.u32 	[%r73+10240], %r388;
-	st.shared.u32 	[%r73+12288], %r388;
-	st.shared.u32 	[%r73+14336], %r388;
-	st.shared.u32 	[%r73+16384], %r388;
-	st.shared.u32 	[%r73+18432], %r388;
-	st.shared.u32 	[%r73+20480], %r388;
-	st.shared.u32 	[%r73+22528], %r388;
-	st.shared.u32 	[%r73+24576], %r388;
-	st.shared.u32 	[%r73+26624], %r388;
-	st.shared.u32 	[%r73+28672], %r388;
-	st.shared.u32 	[%r73+30720], %r388;
-	shr.s32 	%r75, %r2, 31;
-	shr.u32 	%r76, %r75, 23;
-	add.s32 	%r77, %r2, %r76;
-	shr.s32 	%r4, %r77, 9;
+	ld.param.u64 	%rd1, [FluffyRound_param_0];
+	ld.param.u64 	%rd2, [FluffyRound_param_1];
+	ld.param.u64 	%rd4, [FluffyRound_param_2];
+	ld.param.u64 	%rd3, [FluffyRound_param_3];
+	ld.param.u32 	%r70, [FluffyRound_param_4];
+	ld.param.u32 	%r71, [FluffyRound_param_5];
+	cvta.to.global.u64 	%rd5, %rd4;
+	mov.u32 	%r1, %ctaid.x;
+	mul.wide.s32 	%rd6, %r1, 4;
+	add.s64 	%rd7, %rd5, %rd6;
+	ld.global.u32 	%r72, [%rd7];
+	min.s32 	%r2, %r72, %r70;
+	add.s32 	%r3, %r2, 512;
+	mov.u32 	%r4, %tid.x;
+	shl.b32 	%r73, %r4, 2;
+	mov.u32 	%r74, FluffyRound$__cuda_local_var_207247_30_non_const_ecounters;
+	add.s32 	%r75, %r74, %r73;
+	mov.u32 	%r378, 0;
+	st.shared.u32 	[%r75], %r378;
+	st.shared.u32 	[%r75+2048], %r378;
+	st.shared.u32 	[%r75+4096], %r378;
+	st.shared.u32 	[%r75+6144], %r378;
+	st.shared.u32 	[%r75+8192], %r378;
+	st.shared.u32 	[%r75+10240], %r378;
+	st.shared.u32 	[%r75+12288], %r378;
+	st.shared.u32 	[%r75+14336], %r378;
+	st.shared.u32 	[%r75+16384], %r378;
+	st.shared.u32 	[%r75+18432], %r378;
+	st.shared.u32 	[%r75+20480], %r378;
+	st.shared.u32 	[%r75+22528], %r378;
+	st.shared.u32 	[%r75+24576], %r378;
+	st.shared.u32 	[%r75+26624], %r378;
+	st.shared.u32 	[%r75+28672], %r378;
+	st.shared.u32 	[%r75+30720], %r378;
+	shr.s32 	%r77, %r3, 31;
+	shr.u32 	%r78, %r77, 23;
+	add.s32 	%r79, %r3, %r78;
+	shr.s32 	%r5, %r79, 9;
 	bar.sync 	0;
-	mov.pred 	%p58, 0;
-	setp.lt.s32	%p5, %r2, 512;
-	@%p5 bra 	BB2_37;
+	mov.pred 	%p57, 0;
+	setp.lt.s32	%p4, %r3, 512;
+	@%p4 bra 	BB2_37;
 
-	mov.u32 	%r82, 1;
-	max.s32 	%r5, %r4, %r82;
-	and.b32  	%r81, %r5, 3;
-	mov.u32 	%r384, 0;
-	setp.eq.s32	%p6, %r81, 0;
-	@%p6 bra 	BB2_19;
+	mov.u32 	%r84, 1;
+	max.s32 	%r6, %r5, %r84;
+	and.b32  	%r83, %r6, 3;
+	mov.u32 	%r374, 0;
+	setp.eq.s32	%p5, %r83, 0;
+	@%p5 bra 	BB2_19;
 
-	setp.eq.s32	%p7, %r81, 1;
-	@%p7 bra 	BB2_14;
+	setp.eq.s32	%p6, %r83, 1;
+	@%p6 bra 	BB2_14;
 
-	setp.eq.s32	%p8, %r81, 2;
-	@%p8 bra 	BB2_9;
+	setp.eq.s32	%p7, %r83, 2;
+	@%p7 bra 	BB2_9;
 
-	setp.ge.s32	%p9, %r3, %r1;
-	@%p9 bra 	BB2_5;
+	setp.ge.s32	%p8, %r4, %r2;
+	@%p8 bra 	BB2_5;
 
-	mad.lo.s32 	%r86, %r69, %r67, %r3;
-	cvta.to.global.u64 	%rd9, %rd2;
-	mul.wide.s32 	%rd10, %r86, 8;
-	add.s64 	%rd11, %rd9, %rd10;
-	ld.global.v2.u32 	{%r87, %r88}, [%rd11];
-	or.b32  	%r90, %r87, %r88;
-	setp.eq.s32	%p10, %r90, 0;
-	mov.u32 	%r384, %r82;
+	mad.lo.s32 	%r89, %r1, %r70, %r4;
+	mul.wide.s32 	%rd9, %r89, 8;
+	add.s64 	%rd8, %rd1, %rd9;
+	// inline asm
+	ld.global.nc.v2.u32 {%r86,%r87}, [%rd8];
+	// inline asm
+	or.b32  	%r90, %r86, %r87;
+	setp.eq.s32	%p9, %r90, 0;
+	mov.u32 	%r374, %r84;
+	@%p9 bra 	BB2_9;
+
+	and.b32  	%r92, %r86, 536866816;
+	bfe.u32 	%r8, %r86, 17, 12;
+	bfe.u32 	%r93, %r92, 12, 5;
+	mov.u32 	%r374, 1;
+	shl.b32 	%r9, %r374, %r93;
+	shl.b32 	%r94, %r8, 2;
+	add.s32 	%r96, %r74, %r94;
+	atom.shared.or.b32 	%r97, [%r96], %r9;
+	and.b32  	%r98, %r97, %r9;
+	setp.eq.s32	%p10, %r98, 0;
 	@%p10 bra 	BB2_9;
 
-	and.b32  	%r92, %r87, 536866816;
-	bfe.u32 	%r7, %r87, 17, 12;
-	bfe.u32 	%r93, %r92, 12, 5;
-	mov.u32 	%r384, 1;
-	shl.b32 	%r8, %r384, %r93;
-	shl.b32 	%r94, %r7, 2;
-	add.s32 	%r96, %r72, %r94;
-	atom.shared.or.b32 	%r97, [%r96], %r8;
-	and.b32  	%r98, %r97, %r8;
-	setp.eq.s32	%p11, %r98, 0;
-	@%p11 bra 	BB2_9;
-
-	add.s32 	%r102, %r94, %r72;
+	add.s32 	%r102, %r94, %r74;
 	add.s32 	%r103, %r102, 16384;
-	atom.shared.or.b32 	%r104, [%r103], %r8;
+	atom.shared.or.b32 	%r104, [%r103], %r9;
 	bra.uni 	BB2_9;
 
 BB2_5:
-	mov.u32 	%r384, %r82;
+	mov.u32 	%r374, %r84;
 
 BB2_9:
-	shl.b32 	%r105, %r384, 9;
-	add.s32 	%r10, %r105, %r3;
-	setp.ge.s32	%p12, %r10, %r1;
+	shl.b32 	%r105, %r374, 9;
+	add.s32 	%r11, %r105, %r4;
+	setp.ge.s32	%p11, %r11, %r2;
+	@%p11 bra 	BB2_13;
+
+	mad.lo.s32 	%r109, %r1, %r70, %r11;
+	mul.wide.s32 	%rd11, %r109, 8;
+	add.s64 	%rd10, %rd1, %rd11;
+	// inline asm
+	ld.global.nc.v2.u32 {%r106,%r107}, [%rd10];
+	// inline asm
+	or.b32  	%r110, %r106, %r107;
+	setp.eq.s32	%p12, %r110, 0;
 	@%p12 bra 	BB2_13;
 
-	mad.lo.s32 	%r107, %r69, %r67, %r10;
-	cvta.to.global.u64 	%rd12, %rd2;
-	mul.wide.s32 	%rd13, %r107, 8;
-	add.s64 	%rd14, %rd12, %rd13;
-	ld.global.v2.u32 	{%r108, %r109}, [%rd14];
-	or.b32  	%r111, %r108, %r109;
-	setp.eq.s32	%p13, %r111, 0;
+	and.b32  	%r111, %r106, 536866816;
+	bfe.u32 	%r13, %r106, 17, 12;
+	bfe.u32 	%r112, %r111, 12, 5;
+	mov.u32 	%r113, 1;
+	shl.b32 	%r14, %r113, %r112;
+	shl.b32 	%r114, %r13, 2;
+	add.s32 	%r116, %r74, %r114;
+	atom.shared.or.b32 	%r117, [%r116], %r14;
+	and.b32  	%r118, %r117, %r14;
+	setp.eq.s32	%p13, %r118, 0;
 	@%p13 bra 	BB2_13;
 
-	and.b32  	%r112, %r108, 536866816;
-	bfe.u32 	%r12, %r108, 17, 12;
-	bfe.u32 	%r113, %r112, 12, 5;
-	mov.u32 	%r114, 1;
-	shl.b32 	%r13, %r114, %r113;
-	shl.b32 	%r115, %r12, 2;
-	add.s32 	%r117, %r72, %r115;
-	atom.shared.or.b32 	%r118, [%r117], %r13;
-	and.b32  	%r119, %r118, %r13;
-	setp.eq.s32	%p14, %r119, 0;
-	@%p14 bra 	BB2_13;
-
-	add.s32 	%r122, %r115, %r72;
-	add.s32 	%r123, %r122, 16384;
-	atom.shared.or.b32 	%r124, [%r123], %r13;
+	add.s32 	%r121, %r114, %r74;
+	add.s32 	%r122, %r121, 16384;
+	atom.shared.or.b32 	%r123, [%r122], %r14;
 
 BB2_13:
-	add.s32 	%r384, %r384, 1;
+	add.s32 	%r374, %r374, 1;
 
 BB2_14:
-	shl.b32 	%r126, %r384, 9;
-	add.s32 	%r16, %r126, %r3;
-	setp.ge.s32	%p15, %r16, %r1;
+	shl.b32 	%r124, %r374, 9;
+	add.s32 	%r17, %r124, %r4;
+	setp.ge.s32	%p14, %r17, %r2;
+	@%p14 bra 	BB2_18;
+
+	mad.lo.s32 	%r128, %r1, %r70, %r17;
+	mul.wide.s32 	%rd13, %r128, 8;
+	add.s64 	%rd12, %rd1, %rd13;
+	// inline asm
+	ld.global.nc.v2.u32 {%r125,%r126}, [%rd12];
+	// inline asm
+	or.b32  	%r129, %r125, %r126;
+	setp.eq.s32	%p15, %r129, 0;
 	@%p15 bra 	BB2_18;
 
-	mad.lo.s32 	%r128, %r69, %r67, %r16;
-	cvta.to.global.u64 	%rd15, %rd2;
-	mul.wide.s32 	%rd16, %r128, 8;
-	add.s64 	%rd17, %rd15, %rd16;
-	ld.global.v2.u32 	{%r129, %r130}, [%rd17];
-	or.b32  	%r132, %r129, %r130;
-	setp.eq.s32	%p16, %r132, 0;
+	and.b32  	%r130, %r125, 536866816;
+	bfe.u32 	%r19, %r125, 17, 12;
+	bfe.u32 	%r131, %r130, 12, 5;
+	mov.u32 	%r132, 1;
+	shl.b32 	%r20, %r132, %r131;
+	shl.b32 	%r133, %r19, 2;
+	add.s32 	%r135, %r74, %r133;
+	atom.shared.or.b32 	%r136, [%r135], %r20;
+	and.b32  	%r137, %r136, %r20;
+	setp.eq.s32	%p16, %r137, 0;
 	@%p16 bra 	BB2_18;
 
-	and.b32  	%r133, %r129, 536866816;
-	bfe.u32 	%r18, %r129, 17, 12;
-	bfe.u32 	%r134, %r133, 12, 5;
-	mov.u32 	%r135, 1;
-	shl.b32 	%r19, %r135, %r134;
-	shl.b32 	%r136, %r18, 2;
-	add.s32 	%r138, %r72, %r136;
-	atom.shared.or.b32 	%r139, [%r138], %r19;
-	and.b32  	%r140, %r139, %r19;
-	setp.eq.s32	%p17, %r140, 0;
-	@%p17 bra 	BB2_18;
-
-	add.s32 	%r143, %r136, %r72;
-	add.s32 	%r144, %r143, 16384;
-	atom.shared.or.b32 	%r145, [%r144], %r19;
+	add.s32 	%r140, %r133, %r74;
+	add.s32 	%r141, %r140, 16384;
+	atom.shared.or.b32 	%r142, [%r141], %r20;
 
 BB2_18:
-	add.s32 	%r384, %r384, 1;
+	add.s32 	%r374, %r374, 1;
 
 BB2_19:
-	setp.gt.s32	%p58, %r2, 511;
-	setp.lt.u32	%p18, %r5, 4;
-	@%p18 bra 	BB2_37;
+	setp.gt.s32	%p57, %r3, 511;
+	setp.lt.u32	%p17, %r6, 4;
+	@%p17 bra 	BB2_37;
 
 BB2_20:
-	shl.b32 	%r147, %r384, 9;
-	add.s32 	%r148, %r147, %r3;
-	mad.lo.s32 	%r150, %r69, %r67, %r148;
-	cvta.to.global.u64 	%rd18, %rd2;
-	mul.wide.s32 	%rd19, %r150, 8;
-	add.s64 	%rd1, %rd18, %rd19;
-	setp.ge.s32	%p19, %r148, %r1;
+	shl.b32 	%r144, %r374, 9;
+	add.s32 	%r24, %r144, %r4;
+	setp.ge.s32	%p18, %r24, %r2;
+	@%p18 bra 	BB2_24;
+
+	mad.lo.s32 	%r148, %r1, %r70, %r24;
+	mul.wide.s32 	%rd15, %r148, 8;
+	add.s64 	%rd14, %rd1, %rd15;
+	// inline asm
+	ld.global.nc.v2.u32 {%r145,%r146}, [%rd14];
+	// inline asm
+	or.b32  	%r149, %r145, %r146;
+	setp.eq.s32	%p19, %r149, 0;
 	@%p19 bra 	BB2_24;
 
-	ld.global.v2.u32 	{%r151, %r152}, [%rd1];
-	or.b32  	%r154, %r151, %r152;
-	setp.eq.s32	%p20, %r154, 0;
+	and.b32  	%r150, %r145, 536866816;
+	bfe.u32 	%r26, %r145, 17, 12;
+	bfe.u32 	%r151, %r150, 12, 5;
+	mov.u32 	%r152, 1;
+	shl.b32 	%r27, %r152, %r151;
+	shl.b32 	%r153, %r26, 2;
+	add.s32 	%r155, %r74, %r153;
+	atom.shared.or.b32 	%r156, [%r155], %r27;
+	and.b32  	%r157, %r156, %r27;
+	setp.eq.s32	%p20, %r157, 0;
 	@%p20 bra 	BB2_24;
 
-	and.b32  	%r155, %r151, 536866816;
-	bfe.u32 	%r25, %r151, 17, 12;
-	bfe.u32 	%r156, %r155, 12, 5;
-	mov.u32 	%r157, 1;
-	shl.b32 	%r26, %r157, %r156;
-	shl.b32 	%r158, %r25, 2;
-	add.s32 	%r160, %r72, %r158;
-	atom.shared.or.b32 	%r161, [%r160], %r26;
-	and.b32  	%r162, %r161, %r26;
-	setp.eq.s32	%p21, %r162, 0;
-	@%p21 bra 	BB2_24;
-
-	add.s32 	%r165, %r158, %r72;
-	add.s32 	%r166, %r165, 16384;
-	atom.shared.or.b32 	%r167, [%r166], %r26;
+	add.s32 	%r160, %r153, %r74;
+	add.s32 	%r161, %r160, 16384;
+	atom.shared.or.b32 	%r162, [%r161], %r27;
 
 BB2_24:
-	add.s32 	%r170, %r148, 512;
-	setp.ge.s32	%p22, %r170, %r1;
+	add.s32 	%r28, %r24, 512;
+	setp.ge.s32	%p21, %r28, %r2;
+	@%p21 bra 	BB2_28;
+
+	mad.lo.s32 	%r168, %r1, %r70, %r28;
+	mul.wide.s32 	%rd17, %r168, 8;
+	add.s64 	%rd16, %rd1, %rd17;
+	// inline asm
+	ld.global.nc.v2.u32 {%r165,%r166}, [%rd16];
+	// inline asm
+	or.b32  	%r169, %r165, %r166;
+	setp.eq.s32	%p22, %r169, 0;
 	@%p22 bra 	BB2_28;
 
-	ld.global.v2.u32 	{%r171, %r172}, [%rd1+4096];
-	or.b32  	%r174, %r171, %r172;
-	setp.eq.s32	%p23, %r174, 0;
+	and.b32  	%r170, %r165, 536866816;
+	bfe.u32 	%r30, %r165, 17, 12;
+	bfe.u32 	%r171, %r170, 12, 5;
+	mov.u32 	%r172, 1;
+	shl.b32 	%r31, %r172, %r171;
+	shl.b32 	%r173, %r30, 2;
+	add.s32 	%r175, %r74, %r173;
+	atom.shared.or.b32 	%r176, [%r175], %r31;
+	and.b32  	%r177, %r176, %r31;
+	setp.eq.s32	%p23, %r177, 0;
 	@%p23 bra 	BB2_28;
 
-	and.b32  	%r175, %r171, 536866816;
-	bfe.u32 	%r28, %r171, 17, 12;
-	bfe.u32 	%r176, %r175, 12, 5;
-	mov.u32 	%r177, 1;
-	shl.b32 	%r29, %r177, %r176;
-	shl.b32 	%r178, %r28, 2;
-	add.s32 	%r180, %r72, %r178;
-	atom.shared.or.b32 	%r181, [%r180], %r29;
-	and.b32  	%r182, %r181, %r29;
-	setp.eq.s32	%p24, %r182, 0;
-	@%p24 bra 	BB2_28;
-
-	add.s32 	%r185, %r178, %r72;
-	add.s32 	%r186, %r185, 16384;
-	atom.shared.or.b32 	%r187, [%r186], %r29;
+	add.s32 	%r180, %r173, %r74;
+	add.s32 	%r181, %r180, 16384;
+	atom.shared.or.b32 	%r182, [%r181], %r31;
 
 BB2_28:
-	add.s32 	%r190, %r148, 1024;
-	setp.ge.s32	%p25, %r190, %r1;
+	add.s32 	%r32, %r24, 1024;
+	setp.ge.s32	%p24, %r32, %r2;
+	@%p24 bra 	BB2_32;
+
+	mad.lo.s32 	%r188, %r1, %r70, %r32;
+	mul.wide.s32 	%rd19, %r188, 8;
+	add.s64 	%rd18, %rd1, %rd19;
+	// inline asm
+	ld.global.nc.v2.u32 {%r185,%r186}, [%rd18];
+	// inline asm
+	or.b32  	%r189, %r185, %r186;
+	setp.eq.s32	%p25, %r189, 0;
 	@%p25 bra 	BB2_32;
 
-	ld.global.v2.u32 	{%r191, %r192}, [%rd1+8192];
-	or.b32  	%r194, %r191, %r192;
-	setp.eq.s32	%p26, %r194, 0;
+	and.b32  	%r190, %r185, 536866816;
+	bfe.u32 	%r34, %r185, 17, 12;
+	bfe.u32 	%r191, %r190, 12, 5;
+	mov.u32 	%r192, 1;
+	shl.b32 	%r35, %r192, %r191;
+	shl.b32 	%r193, %r34, 2;
+	add.s32 	%r195, %r74, %r193;
+	atom.shared.or.b32 	%r196, [%r195], %r35;
+	and.b32  	%r197, %r196, %r35;
+	setp.eq.s32	%p26, %r197, 0;
 	@%p26 bra 	BB2_32;
 
-	and.b32  	%r195, %r191, 536866816;
-	bfe.u32 	%r31, %r191, 17, 12;
-	bfe.u32 	%r196, %r195, 12, 5;
-	mov.u32 	%r197, 1;
-	shl.b32 	%r32, %r197, %r196;
-	shl.b32 	%r198, %r31, 2;
-	add.s32 	%r200, %r72, %r198;
-	atom.shared.or.b32 	%r201, [%r200], %r32;
-	and.b32  	%r202, %r201, %r32;
-	setp.eq.s32	%p27, %r202, 0;
-	@%p27 bra 	BB2_32;
-
-	add.s32 	%r205, %r198, %r72;
-	add.s32 	%r206, %r205, 16384;
-	atom.shared.or.b32 	%r207, [%r206], %r32;
+	add.s32 	%r200, %r193, %r74;
+	add.s32 	%r201, %r200, 16384;
+	atom.shared.or.b32 	%r202, [%r201], %r35;
 
 BB2_32:
-	add.s32 	%r210, %r148, 1536;
-	setp.ge.s32	%p28, %r210, %r1;
+	add.s32 	%r36, %r24, 1536;
+	setp.ge.s32	%p27, %r36, %r2;
+	@%p27 bra 	BB2_36;
+
+	mad.lo.s32 	%r208, %r1, %r70, %r36;
+	mul.wide.s32 	%rd21, %r208, 8;
+	add.s64 	%rd20, %rd1, %rd21;
+	// inline asm
+	ld.global.nc.v2.u32 {%r205,%r206}, [%rd20];
+	// inline asm
+	or.b32  	%r209, %r205, %r206;
+	setp.eq.s32	%p28, %r209, 0;
 	@%p28 bra 	BB2_36;
 
-	ld.global.v2.u32 	{%r211, %r212}, [%rd1+12288];
-	or.b32  	%r214, %r211, %r212;
-	setp.eq.s32	%p29, %r214, 0;
+	and.b32  	%r210, %r205, 536866816;
+	bfe.u32 	%r38, %r205, 17, 12;
+	bfe.u32 	%r211, %r210, 12, 5;
+	mov.u32 	%r212, 1;
+	shl.b32 	%r39, %r212, %r211;
+	shl.b32 	%r213, %r38, 2;
+	add.s32 	%r215, %r74, %r213;
+	atom.shared.or.b32 	%r216, [%r215], %r39;
+	and.b32  	%r217, %r216, %r39;
+	setp.eq.s32	%p29, %r217, 0;
 	@%p29 bra 	BB2_36;
 
-	and.b32  	%r215, %r211, 536866816;
-	bfe.u32 	%r34, %r211, 17, 12;
-	bfe.u32 	%r216, %r215, 12, 5;
-	mov.u32 	%r217, 1;
-	shl.b32 	%r35, %r217, %r216;
-	shl.b32 	%r218, %r34, 2;
-	add.s32 	%r220, %r72, %r218;
-	atom.shared.or.b32 	%r221, [%r220], %r35;
-	and.b32  	%r222, %r221, %r35;
-	setp.eq.s32	%p30, %r222, 0;
-	@%p30 bra 	BB2_36;
-
-	add.s32 	%r225, %r218, %r72;
-	add.s32 	%r226, %r225, 16384;
-	atom.shared.or.b32 	%r227, [%r226], %r35;
+	add.s32 	%r220, %r213, %r74;
+	add.s32 	%r221, %r220, 16384;
+	atom.shared.or.b32 	%r222, [%r221], %r39;
 
 BB2_36:
-	add.s32 	%r384, %r384, 4;
-	setp.lt.s32	%p31, %r384, %r4;
-	@%p31 bra 	BB2_20;
+	add.s32 	%r374, %r374, 4;
+	setp.lt.s32	%p30, %r374, %r5;
+	@%p30 bra 	BB2_20;
 
 BB2_37:
 	bar.sync 	0;
-	@!%p58 bra 	BB2_74;
+	@!%p57 bra 	BB2_74;
 	bra.uni 	BB2_38;
 
 BB2_38:
-	mul.lo.s32 	%r37, %r69, %r67;
-	mov.u32 	%r234, 1;
-	max.s32 	%r38, %r4, %r234;
-	and.b32  	%r232, %r38, 3;
-	setp.eq.s32	%p32, %r232, 0;
-	@%p32 bra 	BB2_56;
+	mul.lo.s32 	%r41, %r1, %r70;
+	mov.u32 	%r228, 1;
+	max.s32 	%r42, %r5, %r228;
+	and.b32  	%r226, %r42, 3;
+	setp.eq.s32	%p31, %r226, 0;
+	@%p31 bra 	BB2_56;
 
-	setp.eq.s32	%p33, %r232, 1;
-	@%p33 bra 	BB2_51;
+	setp.eq.s32	%p32, %r226, 1;
+	@%p32 bra 	BB2_51;
 
-	setp.eq.s32	%p34, %r232, 2;
-	@%p34 bra 	BB2_46;
+	setp.eq.s32	%p33, %r226, 2;
+	@%p33 bra 	BB2_46;
 
-	setp.ge.s32	%p35, %r3, %r1;
-	@%p35 bra 	BB2_42;
+	setp.ge.s32	%p34, %r4, %r2;
+	@%p34 bra 	BB2_42;
 
-	add.s32 	%r241, %r3, %r37;
-	mul.wide.s32 	%rd21, %r241, 8;
-	add.s64 	%rd20, %rd2, %rd21;
+	add.s32 	%r233, %r4, %r41;
+	mul.wide.s32 	%rd23, %r233, 8;
+	add.s64 	%rd22, %rd1, %rd23;
 	// inline asm
-	ld.global.nc.v2.u32 {%r237,%r238}, [%rd20];
+	ld.global.nc.v2.u32 {%r230,%r231}, [%rd22];
 	// inline asm
-	or.b32  	%r242, %r237, %r238;
-	setp.eq.s32	%p36, %r242, 0;
-	mov.u32 	%r388, %r234;
+	or.b32  	%r234, %r230, %r231;
+	setp.eq.s32	%p35, %r234, 0;
+	mov.u32 	%r378, %r228;
+	@%p35 bra 	BB2_46;
+
+	and.b32  	%r236, %r230, 536866816;
+	bfe.u32 	%r237, %r236, 12, 5;
+	mov.u32 	%r378, 1;
+	shl.b32 	%r238, %r378, %r237;
+	bfe.u32 	%r239, %r230, 15, 14;
+	and.b32  	%r240, %r239, 16380;
+	add.s32 	%r242, %r240, %r74;
+	ld.shared.u32 	%r243, [%r242+16384];
+	and.b32  	%r244, %r243, %r238;
+	setp.eq.s32	%p36, %r244, 0;
 	@%p36 bra 	BB2_46;
 
-	and.b32  	%r244, %r237, 536866816;
-	bfe.u32 	%r245, %r244, 12, 5;
-	mov.u32 	%r388, 1;
-	shl.b32 	%r246, %r388, %r245;
-	bfe.u32 	%r247, %r237, 15, 14;
-	and.b32  	%r248, %r247, 16380;
-	add.s32 	%r250, %r248, %r72;
-	ld.shared.u32 	%r251, [%r250+16384];
-	and.b32  	%r252, %r251, %r246;
-	setp.eq.s32	%p37, %r252, 0;
-	@%p37 bra 	BB2_46;
-
-	and.b32  	%r254, %r238, 4095;
-	cvta.to.global.u64 	%rd22, %rd4;
-	mul.wide.u32 	%rd23, %r254, 4;
-	add.s64 	%rd24, %rd22, %rd23;
-	atom.global.add.u32 	%r255, [%rd24], 1;
-	add.s32 	%r256, %r68, -1;
-	min.s32 	%r257, %r255, %r256;
-	mad.lo.s32 	%r258, %r254, %r68, %r257;
-	cvta.to.global.u64 	%rd25, %rd3;
-	mul.wide.s32 	%rd26, %r258, 8;
-	add.s64 	%rd27, %rd25, %rd26;
-	st.global.v2.u32 	[%rd27], {%r238, %r237};
+	and.b32  	%r246, %r231, 4095;
+	cvta.to.global.u64 	%rd24, %rd3;
+	mul.wide.u32 	%rd25, %r246, 4;
+	add.s64 	%rd26, %rd24, %rd25;
+	atom.global.add.u32 	%r247, [%rd26], 1;
+	add.s32 	%r248, %r71, -1;
+	min.s32 	%r249, %r247, %r248;
+	mad.lo.s32 	%r250, %r246, %r71, %r249;
+	cvta.to.global.u64 	%rd27, %rd2;
+	mul.wide.s32 	%rd28, %r250, 8;
+	add.s64 	%rd29, %rd27, %rd28;
+	st.global.v2.u32 	[%rd29], {%r231, %r230};
 	bra.uni 	BB2_46;
 
 BB2_42:
-	mov.u32 	%r388, %r234;
+	mov.u32 	%r378, %r228;
 
 BB2_46:
-	shl.b32 	%r260, %r388, 9;
-	add.s32 	%r42, %r260, %r3;
-	setp.ge.s32	%p38, %r42, %r1;
+	shl.b32 	%r251, %r378, 9;
+	add.s32 	%r46, %r251, %r4;
+	setp.ge.s32	%p37, %r46, %r2;
+	@%p37 bra 	BB2_50;
+
+	add.s32 	%r254, %r46, %r41;
+	mul.wide.s32 	%rd31, %r254, 8;
+	add.s64 	%rd30, %rd1, %rd31;
+	// inline asm
+	ld.global.nc.v2.u32 {%r252,%r253}, [%rd30];
+	// inline asm
+	or.b32  	%r255, %r252, %r253;
+	setp.eq.s32	%p38, %r255, 0;
 	@%p38 bra 	BB2_50;
 
-	add.s32 	%r263, %r42, %r37;
-	mul.wide.s32 	%rd29, %r263, 8;
-	add.s64 	%rd28, %rd2, %rd29;
-	// inline asm
-	ld.global.nc.v2.u32 {%r261,%r262}, [%rd28];
-	// inline asm
-	or.b32  	%r264, %r261, %r262;
-	setp.eq.s32	%p39, %r264, 0;
+	and.b32  	%r256, %r252, 536866816;
+	bfe.u32 	%r257, %r256, 12, 5;
+	mov.u32 	%r258, 1;
+	shl.b32 	%r259, %r258, %r257;
+	bfe.u32 	%r260, %r252, 15, 14;
+	and.b32  	%r261, %r260, 16380;
+	add.s32 	%r263, %r261, %r74;
+	ld.shared.u32 	%r264, [%r263+16384];
+	and.b32  	%r265, %r264, %r259;
+	setp.eq.s32	%p39, %r265, 0;
 	@%p39 bra 	BB2_50;
 
-	and.b32  	%r265, %r261, 536866816;
-	bfe.u32 	%r266, %r265, 12, 5;
-	mov.u32 	%r267, 1;
-	shl.b32 	%r268, %r267, %r266;
-	bfe.u32 	%r269, %r261, 15, 14;
-	and.b32  	%r270, %r269, 16380;
-	add.s32 	%r272, %r270, %r72;
-	ld.shared.u32 	%r273, [%r272+16384];
-	and.b32  	%r274, %r273, %r268;
-	setp.eq.s32	%p40, %r274, 0;
-	@%p40 bra 	BB2_50;
-
-	and.b32  	%r275, %r262, 4095;
-	cvta.to.global.u64 	%rd30, %rd4;
-	mul.wide.u32 	%rd31, %r275, 4;
-	add.s64 	%rd32, %rd30, %rd31;
-	atom.global.add.u32 	%r276, [%rd32], 1;
-	add.s32 	%r277, %r68, -1;
-	min.s32 	%r278, %r276, %r277;
-	mad.lo.s32 	%r279, %r275, %r68, %r278;
-	cvta.to.global.u64 	%rd33, %rd3;
-	mul.wide.s32 	%rd34, %r279, 8;
-	add.s64 	%rd35, %rd33, %rd34;
-	st.global.v2.u32 	[%rd35], {%r262, %r261};
+	and.b32  	%r266, %r253, 4095;
+	cvta.to.global.u64 	%rd32, %rd3;
+	mul.wide.u32 	%rd33, %r266, 4;
+	add.s64 	%rd34, %rd32, %rd33;
+	atom.global.add.u32 	%r267, [%rd34], 1;
+	add.s32 	%r268, %r71, -1;
+	min.s32 	%r269, %r267, %r268;
+	mad.lo.s32 	%r270, %r266, %r71, %r269;
+	cvta.to.global.u64 	%rd35, %rd2;
+	mul.wide.s32 	%rd36, %r270, 8;
+	add.s64 	%rd37, %rd35, %rd36;
+	st.global.v2.u32 	[%rd37], {%r253, %r252};
 
 BB2_50:
-	add.s32 	%r388, %r388, 1;
+	add.s32 	%r378, %r378, 1;
 
 BB2_51:
-	shl.b32 	%r281, %r388, 9;
-	add.s32 	%r47, %r281, %r3;
-	setp.ge.s32	%p41, %r47, %r1;
+	shl.b32 	%r271, %r378, 9;
+	add.s32 	%r51, %r271, %r4;
+	setp.ge.s32	%p40, %r51, %r2;
+	@%p40 bra 	BB2_55;
+
+	add.s32 	%r274, %r51, %r41;
+	mul.wide.s32 	%rd39, %r274, 8;
+	add.s64 	%rd38, %rd1, %rd39;
+	// inline asm
+	ld.global.nc.v2.u32 {%r272,%r273}, [%rd38];
+	// inline asm
+	or.b32  	%r275, %r272, %r273;
+	setp.eq.s32	%p41, %r275, 0;
 	@%p41 bra 	BB2_55;
 
-	add.s32 	%r284, %r47, %r37;
-	mul.wide.s32 	%rd37, %r284, 8;
-	add.s64 	%rd36, %rd2, %rd37;
-	// inline asm
-	ld.global.nc.v2.u32 {%r282,%r283}, [%rd36];
-	// inline asm
-	or.b32  	%r285, %r282, %r283;
+	and.b32  	%r276, %r272, 536866816;
+	bfe.u32 	%r277, %r276, 12, 5;
+	mov.u32 	%r278, 1;
+	shl.b32 	%r279, %r278, %r277;
+	bfe.u32 	%r280, %r272, 15, 14;
+	and.b32  	%r281, %r280, 16380;
+	add.s32 	%r283, %r281, %r74;
+	ld.shared.u32 	%r284, [%r283+16384];
+	and.b32  	%r285, %r284, %r279;
 	setp.eq.s32	%p42, %r285, 0;
 	@%p42 bra 	BB2_55;
 
-	and.b32  	%r286, %r282, 536866816;
-	bfe.u32 	%r287, %r286, 12, 5;
-	mov.u32 	%r288, 1;
-	shl.b32 	%r289, %r288, %r287;
-	bfe.u32 	%r290, %r282, 15, 14;
-	and.b32  	%r291, %r290, 16380;
-	add.s32 	%r293, %r291, %r72;
-	ld.shared.u32 	%r294, [%r293+16384];
-	and.b32  	%r295, %r294, %r289;
-	setp.eq.s32	%p43, %r295, 0;
-	@%p43 bra 	BB2_55;
-
-	and.b32  	%r296, %r283, 4095;
-	cvta.to.global.u64 	%rd38, %rd4;
-	mul.wide.u32 	%rd39, %r296, 4;
-	add.s64 	%rd40, %rd38, %rd39;
-	atom.global.add.u32 	%r297, [%rd40], 1;
-	add.s32 	%r298, %r68, -1;
-	min.s32 	%r299, %r297, %r298;
-	mad.lo.s32 	%r300, %r296, %r68, %r299;
-	cvta.to.global.u64 	%rd41, %rd3;
-	mul.wide.s32 	%rd42, %r300, 8;
-	add.s64 	%rd43, %rd41, %rd42;
-	st.global.v2.u32 	[%rd43], {%r283, %r282};
+	and.b32  	%r286, %r273, 4095;
+	cvta.to.global.u64 	%rd40, %rd3;
+	mul.wide.u32 	%rd41, %r286, 4;
+	add.s64 	%rd42, %rd40, %rd41;
+	atom.global.add.u32 	%r287, [%rd42], 1;
+	add.s32 	%r288, %r71, -1;
+	min.s32 	%r289, %r287, %r288;
+	mad.lo.s32 	%r290, %r286, %r71, %r289;
+	cvta.to.global.u64 	%rd43, %rd2;
+	mul.wide.s32 	%rd44, %r290, 8;
+	add.s64 	%rd45, %rd43, %rd44;
+	st.global.v2.u32 	[%rd45], {%r273, %r272};
 
 BB2_55:
-	add.s32 	%r388, %r388, 1;
+	add.s32 	%r378, %r378, 1;
 
 BB2_56:
-	setp.lt.u32	%p44, %r38, 4;
-	@%p44 bra 	BB2_74;
+	setp.lt.u32	%p43, %r42, 4;
+	@%p43 bra 	BB2_74;
 
 BB2_57:
-	shl.b32 	%r301, %r388, 9;
-	add.s32 	%r54, %r301, %r3;
-	setp.ge.s32	%p45, %r54, %r1;
+	shl.b32 	%r291, %r378, 9;
+	add.s32 	%r57, %r291, %r4;
+	setp.ge.s32	%p44, %r57, %r2;
+	@%p44 bra 	BB2_61;
+
+	add.s32 	%r294, %r57, %r41;
+	mul.wide.s32 	%rd47, %r294, 8;
+	add.s64 	%rd46, %rd1, %rd47;
+	// inline asm
+	ld.global.nc.v2.u32 {%r292,%r293}, [%rd46];
+	// inline asm
+	or.b32  	%r295, %r292, %r293;
+	setp.eq.s32	%p45, %r295, 0;
 	@%p45 bra 	BB2_61;
 
-	add.s32 	%r304, %r54, %r37;
-	mul.wide.s32 	%rd45, %r304, 8;
-	add.s64 	%rd44, %rd2, %rd45;
-	// inline asm
-	ld.global.nc.v2.u32 {%r302,%r303}, [%rd44];
-	// inline asm
-	or.b32  	%r305, %r302, %r303;
+	and.b32  	%r296, %r292, 536866816;
+	bfe.u32 	%r297, %r296, 12, 5;
+	mov.u32 	%r298, 1;
+	shl.b32 	%r299, %r298, %r297;
+	bfe.u32 	%r300, %r292, 15, 14;
+	and.b32  	%r301, %r300, 16380;
+	add.s32 	%r303, %r301, %r74;
+	ld.shared.u32 	%r304, [%r303+16384];
+	and.b32  	%r305, %r304, %r299;
 	setp.eq.s32	%p46, %r305, 0;
 	@%p46 bra 	BB2_61;
 
-	and.b32  	%r306, %r302, 536866816;
-	bfe.u32 	%r307, %r306, 12, 5;
-	mov.u32 	%r308, 1;
-	shl.b32 	%r309, %r308, %r307;
-	bfe.u32 	%r310, %r302, 15, 14;
-	and.b32  	%r311, %r310, 16380;
-	add.s32 	%r313, %r311, %r72;
-	ld.shared.u32 	%r314, [%r313+16384];
-	and.b32  	%r315, %r314, %r309;
-	setp.eq.s32	%p47, %r315, 0;
-	@%p47 bra 	BB2_61;
-
-	and.b32  	%r316, %r303, 4095;
-	cvta.to.global.u64 	%rd46, %rd4;
-	mul.wide.u32 	%rd47, %r316, 4;
-	add.s64 	%rd48, %rd46, %rd47;
-	atom.global.add.u32 	%r317, [%rd48], 1;
-	add.s32 	%r318, %r68, -1;
-	min.s32 	%r319, %r317, %r318;
-	mad.lo.s32 	%r320, %r316, %r68, %r319;
-	cvta.to.global.u64 	%rd49, %rd3;
-	mul.wide.s32 	%rd50, %r320, 8;
-	add.s64 	%rd51, %rd49, %rd50;
-	st.global.v2.u32 	[%rd51], {%r303, %r302};
+	and.b32  	%r306, %r293, 4095;
+	cvta.to.global.u64 	%rd48, %rd3;
+	mul.wide.u32 	%rd49, %r306, 4;
+	add.s64 	%rd50, %rd48, %rd49;
+	atom.global.add.u32 	%r307, [%rd50], 1;
+	add.s32 	%r308, %r71, -1;
+	min.s32 	%r309, %r307, %r308;
+	mad.lo.s32 	%r310, %r306, %r71, %r309;
+	cvta.to.global.u64 	%rd51, %rd2;
+	mul.wide.s32 	%rd52, %r310, 8;
+	add.s64 	%rd53, %rd51, %rd52;
+	st.global.v2.u32 	[%rd53], {%r293, %r292};
 
 BB2_61:
-	add.s32 	%r57, %r54, 512;
-	setp.ge.s32	%p48, %r57, %r1;
+	add.s32 	%r60, %r57, 512;
+	setp.ge.s32	%p47, %r60, %r2;
+	@%p47 bra 	BB2_65;
+
+	add.s32 	%r315, %r60, %r41;
+	mul.wide.s32 	%rd55, %r315, 8;
+	add.s64 	%rd54, %rd1, %rd55;
+	// inline asm
+	ld.global.nc.v2.u32 {%r313,%r314}, [%rd54];
+	// inline asm
+	or.b32  	%r316, %r313, %r314;
+	setp.eq.s32	%p48, %r316, 0;
 	@%p48 bra 	BB2_65;
 
-	add.s32 	%r325, %r57, %r37;
-	mul.wide.s32 	%rd53, %r325, 8;
-	add.s64 	%rd52, %rd2, %rd53;
-	// inline asm
-	ld.global.nc.v2.u32 {%r323,%r324}, [%rd52];
-	// inline asm
-	or.b32  	%r326, %r323, %r324;
+	and.b32  	%r317, %r313, 536866816;
+	bfe.u32 	%r318, %r317, 12, 5;
+	mov.u32 	%r319, 1;
+	shl.b32 	%r320, %r319, %r318;
+	bfe.u32 	%r321, %r313, 15, 14;
+	and.b32  	%r322, %r321, 16380;
+	add.s32 	%r324, %r322, %r74;
+	ld.shared.u32 	%r325, [%r324+16384];
+	and.b32  	%r326, %r325, %r320;
 	setp.eq.s32	%p49, %r326, 0;
 	@%p49 bra 	BB2_65;
 
-	and.b32  	%r327, %r323, 536866816;
-	bfe.u32 	%r328, %r327, 12, 5;
-	mov.u32 	%r329, 1;
-	shl.b32 	%r330, %r329, %r328;
-	bfe.u32 	%r331, %r323, 15, 14;
-	and.b32  	%r332, %r331, 16380;
-	add.s32 	%r334, %r332, %r72;
-	ld.shared.u32 	%r335, [%r334+16384];
-	and.b32  	%r336, %r335, %r330;
-	setp.eq.s32	%p50, %r336, 0;
-	@%p50 bra 	BB2_65;
-
-	and.b32  	%r337, %r324, 4095;
-	cvta.to.global.u64 	%rd54, %rd4;
-	mul.wide.u32 	%rd55, %r337, 4;
-	add.s64 	%rd56, %rd54, %rd55;
-	atom.global.add.u32 	%r338, [%rd56], 1;
-	add.s32 	%r339, %r68, -1;
-	min.s32 	%r340, %r338, %r339;
-	mad.lo.s32 	%r341, %r337, %r68, %r340;
-	cvta.to.global.u64 	%rd57, %rd3;
-	mul.wide.s32 	%rd58, %r341, 8;
-	add.s64 	%rd59, %rd57, %rd58;
-	st.global.v2.u32 	[%rd59], {%r324, %r323};
+	and.b32  	%r327, %r314, 4095;
+	cvta.to.global.u64 	%rd56, %rd3;
+	mul.wide.u32 	%rd57, %r327, 4;
+	add.s64 	%rd58, %rd56, %rd57;
+	atom.global.add.u32 	%r328, [%rd58], 1;
+	add.s32 	%r329, %r71, -1;
+	min.s32 	%r330, %r328, %r329;
+	mad.lo.s32 	%r331, %r327, %r71, %r330;
+	cvta.to.global.u64 	%rd59, %rd2;
+	mul.wide.s32 	%rd60, %r331, 8;
+	add.s64 	%rd61, %rd59, %rd60;
+	st.global.v2.u32 	[%rd61], {%r314, %r313};
 
 BB2_65:
-	add.s32 	%r60, %r54, 1024;
-	setp.ge.s32	%p51, %r60, %r1;
+	add.s32 	%r63, %r57, 1024;
+	setp.ge.s32	%p50, %r63, %r2;
+	@%p50 bra 	BB2_69;
+
+	add.s32 	%r336, %r63, %r41;
+	mul.wide.s32 	%rd63, %r336, 8;
+	add.s64 	%rd62, %rd1, %rd63;
+	// inline asm
+	ld.global.nc.v2.u32 {%r334,%r335}, [%rd62];
+	// inline asm
+	or.b32  	%r337, %r334, %r335;
+	setp.eq.s32	%p51, %r337, 0;
 	@%p51 bra 	BB2_69;
 
-	add.s32 	%r346, %r60, %r37;
-	mul.wide.s32 	%rd61, %r346, 8;
-	add.s64 	%rd60, %rd2, %rd61;
-	// inline asm
-	ld.global.nc.v2.u32 {%r344,%r345}, [%rd60];
-	// inline asm
-	or.b32  	%r347, %r344, %r345;
+	and.b32  	%r338, %r334, 536866816;
+	bfe.u32 	%r339, %r338, 12, 5;
+	mov.u32 	%r340, 1;
+	shl.b32 	%r341, %r340, %r339;
+	bfe.u32 	%r342, %r334, 15, 14;
+	and.b32  	%r343, %r342, 16380;
+	add.s32 	%r345, %r343, %r74;
+	ld.shared.u32 	%r346, [%r345+16384];
+	and.b32  	%r347, %r346, %r341;
 	setp.eq.s32	%p52, %r347, 0;
 	@%p52 bra 	BB2_69;
 
-	and.b32  	%r348, %r344, 536866816;
-	bfe.u32 	%r349, %r348, 12, 5;
-	mov.u32 	%r350, 1;
-	shl.b32 	%r351, %r350, %r349;
-	bfe.u32 	%r352, %r344, 15, 14;
-	and.b32  	%r353, %r352, 16380;
-	add.s32 	%r355, %r353, %r72;
-	ld.shared.u32 	%r356, [%r355+16384];
-	and.b32  	%r357, %r356, %r351;
-	setp.eq.s32	%p53, %r357, 0;
-	@%p53 bra 	BB2_69;
-
-	and.b32  	%r358, %r345, 4095;
-	cvta.to.global.u64 	%rd62, %rd4;
-	mul.wide.u32 	%rd63, %r358, 4;
-	add.s64 	%rd64, %rd62, %rd63;
-	atom.global.add.u32 	%r359, [%rd64], 1;
-	add.s32 	%r360, %r68, -1;
-	min.s32 	%r361, %r359, %r360;
-	mad.lo.s32 	%r362, %r358, %r68, %r361;
-	cvta.to.global.u64 	%rd65, %rd3;
-	mul.wide.s32 	%rd66, %r362, 8;
-	add.s64 	%rd67, %rd65, %rd66;
-	st.global.v2.u32 	[%rd67], {%r345, %r344};
+	and.b32  	%r348, %r335, 4095;
+	cvta.to.global.u64 	%rd64, %rd3;
+	mul.wide.u32 	%rd65, %r348, 4;
+	add.s64 	%rd66, %rd64, %rd65;
+	atom.global.add.u32 	%r349, [%rd66], 1;
+	add.s32 	%r350, %r71, -1;
+	min.s32 	%r351, %r349, %r350;
+	mad.lo.s32 	%r352, %r348, %r71, %r351;
+	cvta.to.global.u64 	%rd67, %rd2;
+	mul.wide.s32 	%rd68, %r352, 8;
+	add.s64 	%rd69, %rd67, %rd68;
+	st.global.v2.u32 	[%rd69], {%r335, %r334};
 
 BB2_69:
-	add.s32 	%r63, %r54, 1536;
-	setp.ge.s32	%p54, %r63, %r1;
+	add.s32 	%r66, %r57, 1536;
+	setp.ge.s32	%p53, %r66, %r2;
+	@%p53 bra 	BB2_73;
+
+	add.s32 	%r357, %r66, %r41;
+	mul.wide.s32 	%rd71, %r357, 8;
+	add.s64 	%rd70, %rd1, %rd71;
+	// inline asm
+	ld.global.nc.v2.u32 {%r355,%r356}, [%rd70];
+	// inline asm
+	or.b32  	%r358, %r355, %r356;
+	setp.eq.s32	%p54, %r358, 0;
 	@%p54 bra 	BB2_73;
 
-	add.s32 	%r367, %r63, %r37;
-	mul.wide.s32 	%rd69, %r367, 8;
-	add.s64 	%rd68, %rd2, %rd69;
-	// inline asm
-	ld.global.nc.v2.u32 {%r365,%r366}, [%rd68];
-	// inline asm
-	or.b32  	%r368, %r365, %r366;
+	and.b32  	%r359, %r355, 536866816;
+	bfe.u32 	%r360, %r359, 12, 5;
+	mov.u32 	%r361, 1;
+	shl.b32 	%r362, %r361, %r360;
+	bfe.u32 	%r363, %r355, 15, 14;
+	and.b32  	%r364, %r363, 16380;
+	add.s32 	%r366, %r364, %r74;
+	ld.shared.u32 	%r367, [%r366+16384];
+	and.b32  	%r368, %r367, %r362;
 	setp.eq.s32	%p55, %r368, 0;
 	@%p55 bra 	BB2_73;
 
-	and.b32  	%r369, %r365, 536866816;
-	bfe.u32 	%r370, %r369, 12, 5;
-	mov.u32 	%r371, 1;
-	shl.b32 	%r372, %r371, %r370;
-	bfe.u32 	%r373, %r365, 15, 14;
-	and.b32  	%r374, %r373, 16380;
-	add.s32 	%r376, %r374, %r72;
-	ld.shared.u32 	%r377, [%r376+16384];
-	and.b32  	%r378, %r377, %r372;
-	setp.eq.s32	%p56, %r378, 0;
-	@%p56 bra 	BB2_73;
-
-	and.b32  	%r379, %r366, 4095;
-	cvta.to.global.u64 	%rd70, %rd4;
-	mul.wide.u32 	%rd71, %r379, 4;
-	add.s64 	%rd72, %rd70, %rd71;
-	atom.global.add.u32 	%r380, [%rd72], 1;
-	add.s32 	%r381, %r68, -1;
-	min.s32 	%r382, %r380, %r381;
-	mad.lo.s32 	%r383, %r379, %r68, %r382;
-	cvta.to.global.u64 	%rd73, %rd3;
-	mul.wide.s32 	%rd74, %r383, 8;
-	add.s64 	%rd75, %rd73, %rd74;
-	st.global.v2.u32 	[%rd75], {%r366, %r365};
+	and.b32  	%r369, %r356, 4095;
+	cvta.to.global.u64 	%rd72, %rd3;
+	mul.wide.u32 	%rd73, %r369, 4;
+	add.s64 	%rd74, %rd72, %rd73;
+	atom.global.add.u32 	%r370, [%rd74], 1;
+	add.s32 	%r371, %r71, -1;
+	min.s32 	%r372, %r370, %r371;
+	mad.lo.s32 	%r373, %r369, %r71, %r372;
+	cvta.to.global.u64 	%rd75, %rd2;
+	mul.wide.s32 	%rd76, %r373, 8;
+	add.s64 	%rd77, %rd75, %rd76;
+	st.global.v2.u32 	[%rd77], {%r356, %r355};
 
 BB2_73:
-	add.s32 	%r388, %r388, 4;
-	setp.lt.s32	%p57, %r388, %r4;
-	@%p57 bra 	BB2_57;
+	add.s32 	%r378, %r378, 4;
+	setp.lt.s32	%p56, %r378, %r5;
+	@%p56 bra 	BB2_57;
 
 BB2_74:
+	ret;
+}
+
+	// .globl	FluffyRound_J
+.visible .entry FluffyRound_J(
+	.param .u64 FluffyRound_J_param_0,
+	.param .u64 FluffyRound_J_param_1,
+	.param .u64 FluffyRound_J_param_2,
+	.param .u64 FluffyRound_J_param_3,
+	.param .u64 FluffyRound_J_param_4,
+	.param .u32 FluffyRound_J_param_5,
+	.param .u32 FluffyRound_J_param_6
+)
+{
+	.reg .pred 	%p<109>;
+	.reg .b32 	%r<729>;
+	.reg .b64 	%rd<97>;
+	// demoted variable
+	.shared .align 4 .b8 FluffyRound_J$__cuda_local_var_207302_30_non_const_ecounters[32768];
+
+	ld.param.u64 	%rd11, [FluffyRound_J_param_0];
+	ld.param.u64 	%rd12, [FluffyRound_J_param_1];
+	ld.param.u64 	%rd13, [FluffyRound_J_param_2];
+	ld.param.u64 	%rd14, [FluffyRound_J_param_3];
+	ld.param.u64 	%rd15, [FluffyRound_J_param_4];
+	ld.param.u32 	%r125, [FluffyRound_J_param_5];
+	ld.param.u32 	%r126, [FluffyRound_J_param_6];
+	cvta.to.global.u64 	%rd1, %rd13;
+	cvta.to.global.u64 	%rd2, %rd12;
+	mov.u32 	%r1, %ctaid.x;
+	cvta.to.global.u64 	%rd16, %rd14;
+	mul.wide.s32 	%rd17, %r1, 4;
+	add.s64 	%rd18, %rd16, %rd17;
+	ld.global.u32 	%r127, [%rd18];
+	min.s32 	%r2, %r127, %r125;
+	ld.global.u32 	%r128, [%rd18+16384];
+	min.s32 	%r3, %r128, %r125;
+	add.s32 	%r4, %r2, 512;
+	add.s32 	%r5, %r3, 512;
+	mov.u32 	%r6, %tid.x;
+	shl.b32 	%r129, %r6, 2;
+	mov.u32 	%r130, FluffyRound_J$__cuda_local_var_207302_30_non_const_ecounters;
+	add.s32 	%r131, %r130, %r129;
+	mov.u32 	%r725, 0;
+	st.shared.u32 	[%r131], %r725;
+	st.shared.u32 	[%r131+2048], %r725;
+	st.shared.u32 	[%r131+4096], %r725;
+	st.shared.u32 	[%r131+6144], %r725;
+	st.shared.u32 	[%r131+8192], %r725;
+	st.shared.u32 	[%r131+10240], %r725;
+	st.shared.u32 	[%r131+12288], %r725;
+	st.shared.u32 	[%r131+14336], %r725;
+	st.shared.u32 	[%r131+16384], %r725;
+	st.shared.u32 	[%r131+18432], %r725;
+	st.shared.u32 	[%r131+20480], %r725;
+	st.shared.u32 	[%r131+22528], %r725;
+	st.shared.u32 	[%r131+24576], %r725;
+	st.shared.u32 	[%r131+26624], %r725;
+	st.shared.u32 	[%r131+28672], %r725;
+	st.shared.u32 	[%r131+30720], %r725;
+	cvta.to.global.u64 	%rd3, %rd15;
+	shr.s32 	%r133, %r4, 31;
+	shr.u32 	%r134, %r133, 23;
+	add.s32 	%r135, %r4, %r134;
+	shr.s32 	%r7, %r135, 9;
+	shr.s32 	%r136, %r5, 31;
+	shr.u32 	%r137, %r136, 23;
+	add.s32 	%r138, %r5, %r137;
+	shr.s32 	%r8, %r138, 9;
+	bar.sync 	0;
+	mul.lo.s32 	%r9, %r1, %r125;
+	add.s32 	%r139, %r6, %r9;
+	cvta.to.global.u64 	%rd4, %rd11;
+	mul.wide.s32 	%rd19, %r139, 8;
+	add.s64 	%rd5, %rd4, %rd19;
+	setp.lt.s32	%p2, %r4, 512;
+	@%p2 bra 	BB3_37;
+
+	mov.u32 	%r144, 1;
+	max.s32 	%r11, %r7, %r144;
+	and.b32  	%r143, %r11, 3;
+	mov.u32 	%r713, 0;
+	setp.eq.s32	%p3, %r143, 0;
+	@%p3 bra 	BB3_19;
+
+	setp.eq.s32	%p4, %r143, 1;
+	@%p4 bra 	BB3_14;
+
+	setp.eq.s32	%p5, %r143, 2;
+	@%p5 bra 	BB3_9;
+
+	setp.ge.s32	%p6, %r6, %r2;
+	@%p6 bra 	BB3_5;
+
+	ld.global.v2.u32 	{%r147, %r148}, [%rd5];
+	or.b32  	%r150, %r147, %r148;
+	setp.eq.s32	%p7, %r150, 0;
+	mov.u32 	%r713, %r144;
+	@%p7 bra 	BB3_9;
+
+	and.b32  	%r152, %r147, 536866816;
+	bfe.u32 	%r13, %r147, 17, 12;
+	bfe.u32 	%r153, %r152, 12, 5;
+	mov.u32 	%r713, 1;
+	shl.b32 	%r14, %r713, %r153;
+	shl.b32 	%r154, %r13, 2;
+	add.s32 	%r156, %r130, %r154;
+	atom.shared.or.b32 	%r157, [%r156], %r14;
+	and.b32  	%r158, %r157, %r14;
+	setp.eq.s32	%p8, %r158, 0;
+	@%p8 bra 	BB3_9;
+
+	add.s32 	%r162, %r154, %r130;
+	add.s32 	%r163, %r162, 16384;
+	atom.shared.or.b32 	%r164, [%r163], %r14;
+	bra.uni 	BB3_9;
+
+BB3_5:
+	mov.u32 	%r713, %r144;
+
+BB3_9:
+	shl.b32 	%r165, %r713, 9;
+	add.s32 	%r16, %r165, %r6;
+	setp.ge.s32	%p9, %r16, %r2;
+	@%p9 bra 	BB3_13;
+
+	add.s32 	%r166, %r16, %r9;
+	mul.wide.s32 	%rd20, %r166, 8;
+	add.s64 	%rd21, %rd4, %rd20;
+	ld.global.v2.u32 	{%r167, %r168}, [%rd21];
+	or.b32  	%r170, %r167, %r168;
+	setp.eq.s32	%p10, %r170, 0;
+	@%p10 bra 	BB3_13;
+
+	and.b32  	%r171, %r167, 536866816;
+	bfe.u32 	%r18, %r167, 17, 12;
+	bfe.u32 	%r172, %r171, 12, 5;
+	mov.u32 	%r173, 1;
+	shl.b32 	%r19, %r173, %r172;
+	shl.b32 	%r174, %r18, 2;
+	add.s32 	%r176, %r130, %r174;
+	atom.shared.or.b32 	%r177, [%r176], %r19;
+	and.b32  	%r178, %r177, %r19;
+	setp.eq.s32	%p11, %r178, 0;
+	@%p11 bra 	BB3_13;
+
+	add.s32 	%r181, %r174, %r130;
+	add.s32 	%r182, %r181, 16384;
+	atom.shared.or.b32 	%r183, [%r182], %r19;
+
+BB3_13:
+	add.s32 	%r713, %r713, 1;
+
+BB3_14:
+	shl.b32 	%r184, %r713, 9;
+	add.s32 	%r22, %r184, %r6;
+	setp.ge.s32	%p12, %r22, %r2;
+	@%p12 bra 	BB3_18;
+
+	add.s32 	%r185, %r22, %r9;
+	mul.wide.s32 	%rd22, %r185, 8;
+	add.s64 	%rd23, %rd4, %rd22;
+	ld.global.v2.u32 	{%r186, %r187}, [%rd23];
+	or.b32  	%r189, %r186, %r187;
+	setp.eq.s32	%p13, %r189, 0;
+	@%p13 bra 	BB3_18;
+
+	and.b32  	%r190, %r186, 536866816;
+	bfe.u32 	%r24, %r186, 17, 12;
+	bfe.u32 	%r191, %r190, 12, 5;
+	mov.u32 	%r192, 1;
+	shl.b32 	%r25, %r192, %r191;
+	shl.b32 	%r193, %r24, 2;
+	add.s32 	%r195, %r130, %r193;
+	atom.shared.or.b32 	%r196, [%r195], %r25;
+	and.b32  	%r197, %r196, %r25;
+	setp.eq.s32	%p14, %r197, 0;
+	@%p14 bra 	BB3_18;
+
+	add.s32 	%r200, %r193, %r130;
+	add.s32 	%r201, %r200, 16384;
+	atom.shared.or.b32 	%r202, [%r201], %r25;
+
+BB3_18:
+	add.s32 	%r713, %r713, 1;
+
+BB3_19:
+	setp.lt.u32	%p15, %r11, 4;
+	@%p15 bra 	BB3_37;
+
+BB3_20:
+	shl.b32 	%r203, %r713, 9;
+	add.s32 	%r204, %r203, %r6;
+	add.s32 	%r205, %r204, %r9;
+	mul.wide.s32 	%rd24, %r205, 8;
+	add.s64 	%rd6, %rd4, %rd24;
+	setp.ge.s32	%p16, %r204, %r2;
+	@%p16 bra 	BB3_24;
+
+	ld.global.v2.u32 	{%r206, %r207}, [%rd6];
+	or.b32  	%r209, %r206, %r207;
+	setp.eq.s32	%p17, %r209, 0;
+	@%p17 bra 	BB3_24;
+
+	and.b32  	%r210, %r206, 536866816;
+	bfe.u32 	%r30, %r206, 17, 12;
+	bfe.u32 	%r211, %r210, 12, 5;
+	mov.u32 	%r212, 1;
+	shl.b32 	%r31, %r212, %r211;
+	shl.b32 	%r213, %r30, 2;
+	add.s32 	%r215, %r130, %r213;
+	atom.shared.or.b32 	%r216, [%r215], %r31;
+	and.b32  	%r217, %r216, %r31;
+	setp.eq.s32	%p18, %r217, 0;
+	@%p18 bra 	BB3_24;
+
+	add.s32 	%r220, %r213, %r130;
+	add.s32 	%r221, %r220, 16384;
+	atom.shared.or.b32 	%r222, [%r221], %r31;
+
+BB3_24:
+	add.s32 	%r225, %r204, 512;
+	setp.ge.s32	%p19, %r225, %r2;
+	@%p19 bra 	BB3_28;
+
+	ld.global.v2.u32 	{%r226, %r227}, [%rd6+4096];
+	or.b32  	%r229, %r226, %r227;
+	setp.eq.s32	%p20, %r229, 0;
+	@%p20 bra 	BB3_28;
+
+	and.b32  	%r230, %r226, 536866816;
+	bfe.u32 	%r33, %r226, 17, 12;
+	bfe.u32 	%r231, %r230, 12, 5;
+	mov.u32 	%r232, 1;
+	shl.b32 	%r34, %r232, %r231;
+	shl.b32 	%r233, %r33, 2;
+	add.s32 	%r235, %r130, %r233;
+	atom.shared.or.b32 	%r236, [%r235], %r34;
+	and.b32  	%r237, %r236, %r34;
+	setp.eq.s32	%p21, %r237, 0;
+	@%p21 bra 	BB3_28;
+
+	add.s32 	%r240, %r233, %r130;
+	add.s32 	%r241, %r240, 16384;
+	atom.shared.or.b32 	%r242, [%r241], %r34;
+
+BB3_28:
+	add.s32 	%r245, %r204, 1024;
+	setp.ge.s32	%p22, %r245, %r2;
+	@%p22 bra 	BB3_32;
+
+	ld.global.v2.u32 	{%r246, %r247}, [%rd6+8192];
+	or.b32  	%r249, %r246, %r247;
+	setp.eq.s32	%p23, %r249, 0;
+	@%p23 bra 	BB3_32;
+
+	and.b32  	%r250, %r246, 536866816;
+	bfe.u32 	%r36, %r246, 17, 12;
+	bfe.u32 	%r251, %r250, 12, 5;
+	mov.u32 	%r252, 1;
+	shl.b32 	%r37, %r252, %r251;
+	shl.b32 	%r253, %r36, 2;
+	add.s32 	%r255, %r130, %r253;
+	atom.shared.or.b32 	%r256, [%r255], %r37;
+	and.b32  	%r257, %r256, %r37;
+	setp.eq.s32	%p24, %r257, 0;
+	@%p24 bra 	BB3_32;
+
+	add.s32 	%r260, %r253, %r130;
+	add.s32 	%r261, %r260, 16384;
+	atom.shared.or.b32 	%r262, [%r261], %r37;
+
+BB3_32:
+	add.s32 	%r265, %r204, 1536;
+	setp.ge.s32	%p25, %r265, %r2;
+	@%p25 bra 	BB3_36;
+
+	ld.global.v2.u32 	{%r266, %r267}, [%rd6+12288];
+	or.b32  	%r269, %r266, %r267;
+	setp.eq.s32	%p26, %r269, 0;
+	@%p26 bra 	BB3_36;
+
+	and.b32  	%r270, %r266, 536866816;
+	bfe.u32 	%r39, %r266, 17, 12;
+	bfe.u32 	%r271, %r270, 12, 5;
+	mov.u32 	%r272, 1;
+	shl.b32 	%r40, %r272, %r271;
+	shl.b32 	%r273, %r39, 2;
+	add.s32 	%r275, %r130, %r273;
+	atom.shared.or.b32 	%r276, [%r275], %r40;
+	and.b32  	%r277, %r276, %r40;
+	setp.eq.s32	%p27, %r277, 0;
+	@%p27 bra 	BB3_36;
+
+	add.s32 	%r280, %r273, %r130;
+	add.s32 	%r281, %r280, 16384;
+	atom.shared.or.b32 	%r282, [%r281], %r40;
+
+BB3_36:
+	add.s32 	%r713, %r713, 4;
+	setp.lt.s32	%p28, %r713, %r7;
+	@%p28 bra 	BB3_20;
+
+BB3_37:
+	add.s64 	%rd7, %rd2, %rd19;
+	setp.lt.s32	%p29, %r5, 512;
+	@%p29 bra 	BB3_74;
+
+	mov.u32 	%r288, 1;
+	max.s32 	%r44, %r8, %r288;
+	and.b32  	%r287, %r44, 3;
+	mov.u32 	%r717, 0;
+	setp.eq.s32	%p30, %r287, 0;
+	@%p30 bra 	BB3_56;
+
+	setp.eq.s32	%p31, %r287, 1;
+	@%p31 bra 	BB3_51;
+
+	setp.eq.s32	%p32, %r287, 2;
+	@%p32 bra 	BB3_46;
+
+	setp.ge.s32	%p33, %r6, %r3;
+	@%p33 bra 	BB3_42;
+
+	ld.global.v2.u32 	{%r291, %r292}, [%rd7];
+	or.b32  	%r294, %r291, %r292;
+	setp.eq.s32	%p34, %r294, 0;
+	mov.u32 	%r717, %r288;
+	@%p34 bra 	BB3_46;
+
+	and.b32  	%r296, %r291, 536866816;
+	bfe.u32 	%r46, %r291, 17, 12;
+	bfe.u32 	%r297, %r296, 12, 5;
+	mov.u32 	%r717, 1;
+	shl.b32 	%r47, %r717, %r297;
+	shl.b32 	%r298, %r46, 2;
+	add.s32 	%r300, %r130, %r298;
+	atom.shared.or.b32 	%r301, [%r300], %r47;
+	and.b32  	%r302, %r301, %r47;
+	setp.eq.s32	%p35, %r302, 0;
+	@%p35 bra 	BB3_46;
+
+	add.s32 	%r306, %r298, %r130;
+	add.s32 	%r307, %r306, 16384;
+	atom.shared.or.b32 	%r308, [%r307], %r47;
+	bra.uni 	BB3_46;
+
+BB3_42:
+	mov.u32 	%r717, %r288;
+
+BB3_46:
+	shl.b32 	%r309, %r717, 9;
+	add.s32 	%r49, %r309, %r6;
+	setp.ge.s32	%p36, %r49, %r3;
+	@%p36 bra 	BB3_50;
+
+	add.s32 	%r310, %r49, %r9;
+	mul.wide.s32 	%rd26, %r310, 8;
+	add.s64 	%rd27, %rd2, %rd26;
+	ld.global.v2.u32 	{%r311, %r312}, [%rd27];
+	or.b32  	%r314, %r311, %r312;
+	setp.eq.s32	%p37, %r314, 0;
+	@%p37 bra 	BB3_50;
+
+	and.b32  	%r315, %r311, 536866816;
+	bfe.u32 	%r51, %r311, 17, 12;
+	bfe.u32 	%r316, %r315, 12, 5;
+	mov.u32 	%r317, 1;
+	shl.b32 	%r52, %r317, %r316;
+	shl.b32 	%r318, %r51, 2;
+	add.s32 	%r320, %r130, %r318;
+	atom.shared.or.b32 	%r321, [%r320], %r52;
+	and.b32  	%r322, %r321, %r52;
+	setp.eq.s32	%p38, %r322, 0;
+	@%p38 bra 	BB3_50;
+
+	add.s32 	%r325, %r318, %r130;
+	add.s32 	%r326, %r325, 16384;
+	atom.shared.or.b32 	%r327, [%r326], %r52;
+
+BB3_50:
+	add.s32 	%r717, %r717, 1;
+
+BB3_51:
+	shl.b32 	%r328, %r717, 9;
+	add.s32 	%r55, %r328, %r6;
+	setp.ge.s32	%p39, %r55, %r3;
+	@%p39 bra 	BB3_55;
+
+	add.s32 	%r329, %r55, %r9;
+	mul.wide.s32 	%rd28, %r329, 8;
+	add.s64 	%rd29, %rd2, %rd28;
+	ld.global.v2.u32 	{%r330, %r331}, [%rd29];
+	or.b32  	%r333, %r330, %r331;
+	setp.eq.s32	%p40, %r333, 0;
+	@%p40 bra 	BB3_55;
+
+	and.b32  	%r334, %r330, 536866816;
+	bfe.u32 	%r57, %r330, 17, 12;
+	bfe.u32 	%r335, %r334, 12, 5;
+	mov.u32 	%r336, 1;
+	shl.b32 	%r58, %r336, %r335;
+	shl.b32 	%r337, %r57, 2;
+	add.s32 	%r339, %r130, %r337;
+	atom.shared.or.b32 	%r340, [%r339], %r58;
+	and.b32  	%r341, %r340, %r58;
+	setp.eq.s32	%p41, %r341, 0;
+	@%p41 bra 	BB3_55;
+
+	add.s32 	%r344, %r337, %r130;
+	add.s32 	%r345, %r344, 16384;
+	atom.shared.or.b32 	%r346, [%r345], %r58;
+
+BB3_55:
+	add.s32 	%r717, %r717, 1;
+
+BB3_56:
+	setp.lt.u32	%p42, %r44, 4;
+	@%p42 bra 	BB3_74;
+
+BB3_57:
+	shl.b32 	%r347, %r717, 9;
+	add.s32 	%r348, %r347, %r6;
+	add.s32 	%r349, %r348, %r9;
+	mul.wide.s32 	%rd30, %r349, 8;
+	add.s64 	%rd8, %rd2, %rd30;
+	setp.ge.s32	%p43, %r348, %r3;
+	@%p43 bra 	BB3_61;
+
+	ld.global.v2.u32 	{%r350, %r351}, [%rd8];
+	or.b32  	%r353, %r350, %r351;
+	setp.eq.s32	%p44, %r353, 0;
+	@%p44 bra 	BB3_61;
+
+	and.b32  	%r354, %r350, 536866816;
+	bfe.u32 	%r63, %r350, 17, 12;
+	bfe.u32 	%r355, %r354, 12, 5;
+	mov.u32 	%r356, 1;
+	shl.b32 	%r64, %r356, %r355;
+	shl.b32 	%r357, %r63, 2;
+	add.s32 	%r359, %r130, %r357;
+	atom.shared.or.b32 	%r360, [%r359], %r64;
+	and.b32  	%r361, %r360, %r64;
+	setp.eq.s32	%p45, %r361, 0;
+	@%p45 bra 	BB3_61;
+
+	add.s32 	%r364, %r357, %r130;
+	add.s32 	%r365, %r364, 16384;
+	atom.shared.or.b32 	%r366, [%r365], %r64;
+
+BB3_61:
+	add.s32 	%r369, %r348, 512;
+	setp.ge.s32	%p46, %r369, %r3;
+	@%p46 bra 	BB3_65;
+
+	ld.global.v2.u32 	{%r370, %r371}, [%rd8+4096];
+	or.b32  	%r373, %r370, %r371;
+	setp.eq.s32	%p47, %r373, 0;
+	@%p47 bra 	BB3_65;
+
+	and.b32  	%r374, %r370, 536866816;
+	bfe.u32 	%r66, %r370, 17, 12;
+	bfe.u32 	%r375, %r374, 12, 5;
+	mov.u32 	%r376, 1;
+	shl.b32 	%r67, %r376, %r375;
+	shl.b32 	%r377, %r66, 2;
+	add.s32 	%r379, %r130, %r377;
+	atom.shared.or.b32 	%r380, [%r379], %r67;
+	and.b32  	%r381, %r380, %r67;
+	setp.eq.s32	%p48, %r381, 0;
+	@%p48 bra 	BB3_65;
+
+	add.s32 	%r384, %r377, %r130;
+	add.s32 	%r385, %r384, 16384;
+	atom.shared.or.b32 	%r386, [%r385], %r67;
+
+BB3_65:
+	add.s32 	%r389, %r348, 1024;
+	setp.ge.s32	%p49, %r389, %r3;
+	@%p49 bra 	BB3_69;
+
+	ld.global.v2.u32 	{%r390, %r391}, [%rd8+8192];
+	or.b32  	%r393, %r390, %r391;
+	setp.eq.s32	%p50, %r393, 0;
+	@%p50 bra 	BB3_69;
+
+	and.b32  	%r394, %r390, 536866816;
+	bfe.u32 	%r69, %r390, 17, 12;
+	bfe.u32 	%r395, %r394, 12, 5;
+	mov.u32 	%r396, 1;
+	shl.b32 	%r70, %r396, %r395;
+	shl.b32 	%r397, %r69, 2;
+	add.s32 	%r399, %r130, %r397;
+	atom.shared.or.b32 	%r400, [%r399], %r70;
+	and.b32  	%r401, %r400, %r70;
+	setp.eq.s32	%p51, %r401, 0;
+	@%p51 bra 	BB3_69;
+
+	add.s32 	%r404, %r397, %r130;
+	add.s32 	%r405, %r404, 16384;
+	atom.shared.or.b32 	%r406, [%r405], %r70;
+
+BB3_69:
+	add.s32 	%r409, %r348, 1536;
+	setp.ge.s32	%p52, %r409, %r3;
+	@%p52 bra 	BB3_73;
+
+	ld.global.v2.u32 	{%r410, %r411}, [%rd8+12288];
+	or.b32  	%r413, %r410, %r411;
+	setp.eq.s32	%p53, %r413, 0;
+	@%p53 bra 	BB3_73;
+
+	and.b32  	%r414, %r410, 536866816;
+	bfe.u32 	%r72, %r410, 17, 12;
+	bfe.u32 	%r415, %r414, 12, 5;
+	mov.u32 	%r416, 1;
+	shl.b32 	%r73, %r416, %r415;
+	shl.b32 	%r417, %r72, 2;
+	add.s32 	%r419, %r130, %r417;
+	atom.shared.or.b32 	%r420, [%r419], %r73;
+	and.b32  	%r421, %r420, %r73;
+	setp.eq.s32	%p54, %r421, 0;
+	@%p54 bra 	BB3_73;
+
+	add.s32 	%r424, %r417, %r130;
+	add.s32 	%r425, %r424, 16384;
+	atom.shared.or.b32 	%r426, [%r425], %r73;
+
+BB3_73:
+	add.s32 	%r717, %r717, 4;
+	setp.lt.s32	%p55, %r717, %r8;
+	@%p55 bra 	BB3_57;
+
+BB3_74:
+	setp.gt.s32	%p1, %r4, 511;
+	bar.sync 	0;
+	@!%p1 bra 	BB3_111;
+	bra.uni 	BB3_75;
+
+BB3_75:
+	add.s32 	%r75, %r126, -1;
+	mov.u32 	%r431, 1;
+	max.s32 	%r76, %r7, %r431;
+	and.b32  	%r430, %r76, 3;
+	mov.u32 	%r721, 0;
+	setp.eq.s32	%p56, %r430, 0;
+	@%p56 bra 	BB3_93;
+
+	setp.eq.s32	%p57, %r430, 1;
+	@%p57 bra 	BB3_88;
+
+	setp.eq.s32	%p58, %r430, 2;
+	@%p58 bra 	BB3_83;
+
+	setp.ge.s32	%p59, %r6, %r2;
+	@%p59 bra 	BB3_79;
+
+	ld.global.v2.u32 	{%r434, %r435}, [%rd5];
+	or.b32  	%r436, %r434, %r435;
+	setp.eq.s32	%p60, %r436, 0;
+	mov.u32 	%r721, %r431;
+	@%p60 bra 	BB3_83;
+
+	and.b32  	%r438, %r434, 536866816;
+	bfe.u32 	%r439, %r438, 12, 5;
+	mov.u32 	%r721, 1;
+	shl.b32 	%r440, %r721, %r439;
+	bfe.u32 	%r441, %r434, 15, 14;
+	and.b32  	%r442, %r441, 16380;
+	add.s32 	%r444, %r442, %r130;
+	ld.shared.u32 	%r445, [%r444+16384];
+	and.b32  	%r446, %r445, %r440;
+	setp.eq.s32	%p61, %r446, 0;
+	@%p61 bra 	BB3_83;
+
+	and.b32  	%r448, %r435, 4095;
+	mul.wide.u32 	%rd31, %r448, 4;
+	add.s64 	%rd32, %rd3, %rd31;
+	atom.global.add.u32 	%r449, [%rd32], 1;
+	min.s32 	%r450, %r449, %r75;
+	mad.lo.s32 	%r451, %r448, %r126, %r450;
+	mul.wide.s32 	%rd33, %r451, 8;
+	add.s64 	%rd34, %rd1, %rd33;
+	st.global.v2.u32 	[%rd34], {%r435, %r434};
+	bra.uni 	BB3_83;
+
+BB3_79:
+	mov.u32 	%r721, %r431;
+
+BB3_83:
+	shl.b32 	%r452, %r721, 9;
+	add.s32 	%r80, %r452, %r6;
+	setp.ge.s32	%p62, %r80, %r2;
+	@%p62 bra 	BB3_87;
+
+	add.s32 	%r453, %r80, %r9;
+	mul.wide.s32 	%rd35, %r453, 8;
+	add.s64 	%rd36, %rd4, %rd35;
+	ld.global.v2.u32 	{%r454, %r455}, [%rd36];
+	or.b32  	%r456, %r454, %r455;
+	setp.eq.s32	%p63, %r456, 0;
+	@%p63 bra 	BB3_87;
+
+	and.b32  	%r457, %r454, 536866816;
+	bfe.u32 	%r458, %r457, 12, 5;
+	mov.u32 	%r459, 1;
+	shl.b32 	%r460, %r459, %r458;
+	bfe.u32 	%r461, %r454, 15, 14;
+	and.b32  	%r462, %r461, 16380;
+	add.s32 	%r464, %r462, %r130;
+	ld.shared.u32 	%r465, [%r464+16384];
+	and.b32  	%r466, %r465, %r460;
+	setp.eq.s32	%p64, %r466, 0;
+	@%p64 bra 	BB3_87;
+
+	and.b32  	%r467, %r455, 4095;
+	mul.wide.u32 	%rd37, %r467, 4;
+	add.s64 	%rd38, %rd3, %rd37;
+	atom.global.add.u32 	%r468, [%rd38], 1;
+	min.s32 	%r469, %r468, %r75;
+	mad.lo.s32 	%r470, %r467, %r126, %r469;
+	mul.wide.s32 	%rd39, %r470, 8;
+	add.s64 	%rd40, %rd1, %rd39;
+	st.global.v2.u32 	[%rd40], {%r455, %r454};
+
+BB3_87:
+	add.s32 	%r721, %r721, 1;
+
+BB3_88:
+	shl.b32 	%r471, %r721, 9;
+	add.s32 	%r85, %r471, %r6;
+	setp.ge.s32	%p65, %r85, %r2;
+	@%p65 bra 	BB3_92;
+
+	add.s32 	%r472, %r85, %r9;
+	mul.wide.s32 	%rd41, %r472, 8;
+	add.s64 	%rd42, %rd4, %rd41;
+	ld.global.v2.u32 	{%r473, %r474}, [%rd42];
+	or.b32  	%r475, %r473, %r474;
+	setp.eq.s32	%p66, %r475, 0;
+	@%p66 bra 	BB3_92;
+
+	and.b32  	%r476, %r473, 536866816;
+	bfe.u32 	%r477, %r476, 12, 5;
+	mov.u32 	%r478, 1;
+	shl.b32 	%r479, %r478, %r477;
+	bfe.u32 	%r480, %r473, 15, 14;
+	and.b32  	%r481, %r480, 16380;
+	add.s32 	%r483, %r481, %r130;
+	ld.shared.u32 	%r484, [%r483+16384];
+	and.b32  	%r485, %r484, %r479;
+	setp.eq.s32	%p67, %r485, 0;
+	@%p67 bra 	BB3_92;
+
+	and.b32  	%r486, %r474, 4095;
+	mul.wide.u32 	%rd43, %r486, 4;
+	add.s64 	%rd44, %rd3, %rd43;
+	atom.global.add.u32 	%r487, [%rd44], 1;
+	min.s32 	%r488, %r487, %r75;
+	mad.lo.s32 	%r489, %r486, %r126, %r488;
+	mul.wide.s32 	%rd45, %r489, 8;
+	add.s64 	%rd46, %rd1, %rd45;
+	st.global.v2.u32 	[%rd46], {%r474, %r473};
+
+BB3_92:
+	add.s32 	%r721, %r721, 1;
+
+BB3_93:
+	setp.lt.u32	%p68, %r76, 4;
+	@%p68 bra 	BB3_111;
+
+BB3_94:
+	shl.b32 	%r490, %r721, 9;
+	add.s32 	%r491, %r490, %r6;
+	add.s32 	%r492, %r491, %r9;
+	mul.wide.s32 	%rd47, %r492, 8;
+	add.s64 	%rd9, %rd4, %rd47;
+	setp.ge.s32	%p69, %r491, %r2;
+	@%p69 bra 	BB3_98;
+
+	ld.global.v2.u32 	{%r493, %r494}, [%rd9];
+	or.b32  	%r495, %r493, %r494;
+	setp.eq.s32	%p70, %r495, 0;
+	@%p70 bra 	BB3_98;
+
+	and.b32  	%r496, %r493, 536866816;
+	bfe.u32 	%r497, %r496, 12, 5;
+	mov.u32 	%r498, 1;
+	shl.b32 	%r499, %r498, %r497;
+	bfe.u32 	%r500, %r493, 15, 14;
+	and.b32  	%r501, %r500, 16380;
+	add.s32 	%r503, %r501, %r130;
+	ld.shared.u32 	%r504, [%r503+16384];
+	and.b32  	%r505, %r504, %r499;
+	setp.eq.s32	%p71, %r505, 0;
+	@%p71 bra 	BB3_98;
+
+	and.b32  	%r506, %r494, 4095;
+	mul.wide.u32 	%rd48, %r506, 4;
+	add.s64 	%rd49, %rd3, %rd48;
+	atom.global.add.u32 	%r507, [%rd49], 1;
+	min.s32 	%r508, %r507, %r75;
+	mad.lo.s32 	%r509, %r506, %r126, %r508;
+	mul.wide.s32 	%rd50, %r509, 8;
+	add.s64 	%rd51, %rd1, %rd50;
+	st.global.v2.u32 	[%rd51], {%r494, %r493};
+
+BB3_98:
+	add.s32 	%r512, %r491, 512;
+	setp.ge.s32	%p72, %r512, %r2;
+	@%p72 bra 	BB3_102;
+
+	ld.global.v2.u32 	{%r513, %r514}, [%rd9+4096];
+	or.b32  	%r515, %r513, %r514;
+	setp.eq.s32	%p73, %r515, 0;
+	@%p73 bra 	BB3_102;
+
+	and.b32  	%r516, %r513, 536866816;
+	bfe.u32 	%r517, %r516, 12, 5;
+	mov.u32 	%r518, 1;
+	shl.b32 	%r519, %r518, %r517;
+	bfe.u32 	%r520, %r513, 15, 14;
+	and.b32  	%r521, %r520, 16380;
+	add.s32 	%r523, %r521, %r130;
+	ld.shared.u32 	%r524, [%r523+16384];
+	and.b32  	%r525, %r524, %r519;
+	setp.eq.s32	%p74, %r525, 0;
+	@%p74 bra 	BB3_102;
+
+	and.b32  	%r526, %r514, 4095;
+	mul.wide.u32 	%rd52, %r526, 4;
+	add.s64 	%rd53, %rd3, %rd52;
+	atom.global.add.u32 	%r527, [%rd53], 1;
+	min.s32 	%r528, %r527, %r75;
+	mad.lo.s32 	%r529, %r526, %r126, %r528;
+	mul.wide.s32 	%rd54, %r529, 8;
+	add.s64 	%rd55, %rd1, %rd54;
+	st.global.v2.u32 	[%rd55], {%r514, %r513};
+
+BB3_102:
+	add.s32 	%r532, %r491, 1024;
+	setp.ge.s32	%p75, %r532, %r2;
+	@%p75 bra 	BB3_106;
+
+	ld.global.v2.u32 	{%r533, %r534}, [%rd9+8192];
+	or.b32  	%r535, %r533, %r534;
+	setp.eq.s32	%p76, %r535, 0;
+	@%p76 bra 	BB3_106;
+
+	and.b32  	%r536, %r533, 536866816;
+	bfe.u32 	%r537, %r536, 12, 5;
+	mov.u32 	%r538, 1;
+	shl.b32 	%r539, %r538, %r537;
+	bfe.u32 	%r540, %r533, 15, 14;
+	and.b32  	%r541, %r540, 16380;
+	add.s32 	%r543, %r541, %r130;
+	ld.shared.u32 	%r544, [%r543+16384];
+	and.b32  	%r545, %r544, %r539;
+	setp.eq.s32	%p77, %r545, 0;
+	@%p77 bra 	BB3_106;
+
+	and.b32  	%r546, %r534, 4095;
+	mul.wide.u32 	%rd56, %r546, 4;
+	add.s64 	%rd57, %rd3, %rd56;
+	atom.global.add.u32 	%r547, [%rd57], 1;
+	min.s32 	%r548, %r547, %r75;
+	mad.lo.s32 	%r549, %r546, %r126, %r548;
+	mul.wide.s32 	%rd58, %r549, 8;
+	add.s64 	%rd59, %rd1, %rd58;
+	st.global.v2.u32 	[%rd59], {%r534, %r533};
+
+BB3_106:
+	add.s32 	%r552, %r491, 1536;
+	setp.ge.s32	%p78, %r552, %r2;
+	@%p78 bra 	BB3_110;
+
+	ld.global.v2.u32 	{%r553, %r554}, [%rd9+12288];
+	or.b32  	%r555, %r553, %r554;
+	setp.eq.s32	%p79, %r555, 0;
+	@%p79 bra 	BB3_110;
+
+	and.b32  	%r556, %r553, 536866816;
+	bfe.u32 	%r557, %r556, 12, 5;
+	mov.u32 	%r558, 1;
+	shl.b32 	%r559, %r558, %r557;
+	bfe.u32 	%r560, %r553, 15, 14;
+	and.b32  	%r561, %r560, 16380;
+	add.s32 	%r563, %r561, %r130;
+	ld.shared.u32 	%r564, [%r563+16384];
+	and.b32  	%r565, %r564, %r559;
+	setp.eq.s32	%p80, %r565, 0;
+	@%p80 bra 	BB3_110;
+
+	and.b32  	%r566, %r554, 4095;
+	mul.wide.u32 	%rd60, %r566, 4;
+	add.s64 	%rd61, %rd3, %rd60;
+	atom.global.add.u32 	%r567, [%rd61], 1;
+	min.s32 	%r568, %r567, %r75;
+	mad.lo.s32 	%r569, %r566, %r126, %r568;
+	mul.wide.s32 	%rd62, %r569, 8;
+	add.s64 	%rd63, %rd1, %rd62;
+	st.global.v2.u32 	[%rd63], {%r554, %r553};
+
+BB3_110:
+	add.s32 	%r721, %r721, 4;
+	setp.lt.s32	%p81, %r721, %r7;
+	@%p81 bra 	BB3_94;
+
+BB3_111:
+	@%p29 bra 	BB3_148;
+
+	add.s32 	%r100, %r126, -1;
+	mov.u32 	%r574, 1;
+	max.s32 	%r101, %r8, %r574;
+	and.b32  	%r573, %r101, 3;
+	setp.eq.s32	%p83, %r573, 0;
+	@%p83 bra 	BB3_130;
+
+	setp.eq.s32	%p84, %r573, 1;
+	@%p84 bra 	BB3_125;
+
+	setp.eq.s32	%p85, %r573, 2;
+	@%p85 bra 	BB3_120;
+
+	setp.ge.s32	%p86, %r6, %r3;
+	@%p86 bra 	BB3_116;
+
+	ld.global.v2.u32 	{%r577, %r578}, [%rd7];
+	or.b32  	%r579, %r577, %r578;
+	setp.eq.s32	%p87, %r579, 0;
+	mov.u32 	%r725, %r574;
+	@%p87 bra 	BB3_120;
+
+	and.b32  	%r581, %r577, 536866816;
+	bfe.u32 	%r582, %r581, 12, 5;
+	mov.u32 	%r725, 1;
+	shl.b32 	%r583, %r725, %r582;
+	bfe.u32 	%r584, %r577, 15, 14;
+	and.b32  	%r585, %r584, 16380;
+	add.s32 	%r587, %r585, %r130;
+	ld.shared.u32 	%r588, [%r587+16384];
+	and.b32  	%r589, %r588, %r583;
+	setp.eq.s32	%p88, %r589, 0;
+	@%p88 bra 	BB3_120;
+
+	and.b32  	%r591, %r578, 4095;
+	mul.wide.u32 	%rd64, %r591, 4;
+	add.s64 	%rd65, %rd3, %rd64;
+	atom.global.add.u32 	%r592, [%rd65], 1;
+	min.s32 	%r593, %r592, %r100;
+	mad.lo.s32 	%r594, %r591, %r126, %r593;
+	mul.wide.s32 	%rd66, %r594, 8;
+	add.s64 	%rd67, %rd1, %rd66;
+	st.global.v2.u32 	[%rd67], {%r578, %r577};
+	bra.uni 	BB3_120;
+
+BB3_116:
+	mov.u32 	%r725, %r574;
+
+BB3_120:
+	shl.b32 	%r595, %r725, 9;
+	add.s32 	%r105, %r595, %r6;
+	setp.ge.s32	%p89, %r105, %r3;
+	@%p89 bra 	BB3_124;
+
+	add.s32 	%r596, %r105, %r9;
+	mul.wide.s32 	%rd68, %r596, 8;
+	add.s64 	%rd69, %rd2, %rd68;
+	ld.global.v2.u32 	{%r597, %r598}, [%rd69];
+	or.b32  	%r599, %r597, %r598;
+	setp.eq.s32	%p90, %r599, 0;
+	@%p90 bra 	BB3_124;
+
+	and.b32  	%r600, %r597, 536866816;
+	bfe.u32 	%r601, %r600, 12, 5;
+	mov.u32 	%r602, 1;
+	shl.b32 	%r603, %r602, %r601;
+	bfe.u32 	%r604, %r597, 15, 14;
+	and.b32  	%r605, %r604, 16380;
+	add.s32 	%r607, %r605, %r130;
+	ld.shared.u32 	%r608, [%r607+16384];
+	and.b32  	%r609, %r608, %r603;
+	setp.eq.s32	%p91, %r609, 0;
+	@%p91 bra 	BB3_124;
+
+	and.b32  	%r610, %r598, 4095;
+	mul.wide.u32 	%rd70, %r610, 4;
+	add.s64 	%rd71, %rd3, %rd70;
+	atom.global.add.u32 	%r611, [%rd71], 1;
+	min.s32 	%r612, %r611, %r100;
+	mad.lo.s32 	%r613, %r610, %r126, %r612;
+	mul.wide.s32 	%rd72, %r613, 8;
+	add.s64 	%rd73, %rd1, %rd72;
+	st.global.v2.u32 	[%rd73], {%r598, %r597};
+
+BB3_124:
+	add.s32 	%r725, %r725, 1;
+
+BB3_125:
+	shl.b32 	%r614, %r725, 9;
+	add.s32 	%r110, %r614, %r6;
+	setp.ge.s32	%p92, %r110, %r3;
+	@%p92 bra 	BB3_129;
+
+	add.s32 	%r615, %r110, %r9;
+	mul.wide.s32 	%rd74, %r615, 8;
+	add.s64 	%rd75, %rd2, %rd74;
+	ld.global.v2.u32 	{%r616, %r617}, [%rd75];
+	or.b32  	%r618, %r616, %r617;
+	setp.eq.s32	%p93, %r618, 0;
+	@%p93 bra 	BB3_129;
+
+	and.b32  	%r619, %r616, 536866816;
+	bfe.u32 	%r620, %r619, 12, 5;
+	mov.u32 	%r621, 1;
+	shl.b32 	%r622, %r621, %r620;
+	bfe.u32 	%r623, %r616, 15, 14;
+	and.b32  	%r624, %r623, 16380;
+	add.s32 	%r626, %r624, %r130;
+	ld.shared.u32 	%r627, [%r626+16384];
+	and.b32  	%r628, %r627, %r622;
+	setp.eq.s32	%p94, %r628, 0;
+	@%p94 bra 	BB3_129;
+
+	and.b32  	%r629, %r617, 4095;
+	mul.wide.u32 	%rd76, %r629, 4;
+	add.s64 	%rd77, %rd3, %rd76;
+	atom.global.add.u32 	%r630, [%rd77], 1;
+	min.s32 	%r631, %r630, %r100;
+	mad.lo.s32 	%r632, %r629, %r126, %r631;
+	mul.wide.s32 	%rd78, %r632, 8;
+	add.s64 	%rd79, %rd1, %rd78;
+	st.global.v2.u32 	[%rd79], {%r617, %r616};
+
+BB3_129:
+	add.s32 	%r725, %r725, 1;
+
+BB3_130:
+	setp.lt.u32	%p95, %r101, 4;
+	@%p95 bra 	BB3_148;
+
+BB3_131:
+	shl.b32 	%r633, %r725, 9;
+	add.s32 	%r634, %r633, %r6;
+	add.s32 	%r635, %r634, %r9;
+	mul.wide.s32 	%rd80, %r635, 8;
+	add.s64 	%rd10, %rd2, %rd80;
+	setp.ge.s32	%p96, %r634, %r3;
+	@%p96 bra 	BB3_135;
+
+	ld.global.v2.u32 	{%r636, %r637}, [%rd10];
+	or.b32  	%r638, %r636, %r637;
+	setp.eq.s32	%p97, %r638, 0;
+	@%p97 bra 	BB3_135;
+
+	and.b32  	%r639, %r636, 536866816;
+	bfe.u32 	%r640, %r639, 12, 5;
+	mov.u32 	%r641, 1;
+	shl.b32 	%r642, %r641, %r640;
+	bfe.u32 	%r643, %r636, 15, 14;
+	and.b32  	%r644, %r643, 16380;
+	add.s32 	%r646, %r644, %r130;
+	ld.shared.u32 	%r647, [%r646+16384];
+	and.b32  	%r648, %r647, %r642;
+	setp.eq.s32	%p98, %r648, 0;
+	@%p98 bra 	BB3_135;
+
+	and.b32  	%r649, %r637, 4095;
+	mul.wide.u32 	%rd81, %r649, 4;
+	add.s64 	%rd82, %rd3, %rd81;
+	atom.global.add.u32 	%r650, [%rd82], 1;
+	min.s32 	%r651, %r650, %r100;
+	mad.lo.s32 	%r652, %r649, %r126, %r651;
+	mul.wide.s32 	%rd83, %r652, 8;
+	add.s64 	%rd84, %rd1, %rd83;
+	st.global.v2.u32 	[%rd84], {%r637, %r636};
+
+BB3_135:
+	add.s32 	%r655, %r634, 512;
+	setp.ge.s32	%p99, %r655, %r3;
+	@%p99 bra 	BB3_139;
+
+	ld.global.v2.u32 	{%r656, %r657}, [%rd10+4096];
+	or.b32  	%r658, %r656, %r657;
+	setp.eq.s32	%p100, %r658, 0;
+	@%p100 bra 	BB3_139;
+
+	and.b32  	%r659, %r656, 536866816;
+	bfe.u32 	%r660, %r659, 12, 5;
+	mov.u32 	%r661, 1;
+	shl.b32 	%r662, %r661, %r660;
+	bfe.u32 	%r663, %r656, 15, 14;
+	and.b32  	%r664, %r663, 16380;
+	add.s32 	%r666, %r664, %r130;
+	ld.shared.u32 	%r667, [%r666+16384];
+	and.b32  	%r668, %r667, %r662;
+	setp.eq.s32	%p101, %r668, 0;
+	@%p101 bra 	BB3_139;
+
+	and.b32  	%r669, %r657, 4095;
+	mul.wide.u32 	%rd85, %r669, 4;
+	add.s64 	%rd86, %rd3, %rd85;
+	atom.global.add.u32 	%r670, [%rd86], 1;
+	min.s32 	%r671, %r670, %r100;
+	mad.lo.s32 	%r672, %r669, %r126, %r671;
+	mul.wide.s32 	%rd87, %r672, 8;
+	add.s64 	%rd88, %rd1, %rd87;
+	st.global.v2.u32 	[%rd88], {%r657, %r656};
+
+BB3_139:
+	add.s32 	%r675, %r634, 1024;
+	setp.ge.s32	%p102, %r675, %r3;
+	@%p102 bra 	BB3_143;
+
+	ld.global.v2.u32 	{%r676, %r677}, [%rd10+8192];
+	or.b32  	%r678, %r676, %r677;
+	setp.eq.s32	%p103, %r678, 0;
+	@%p103 bra 	BB3_143;
+
+	and.b32  	%r679, %r676, 536866816;
+	bfe.u32 	%r680, %r679, 12, 5;
+	mov.u32 	%r681, 1;
+	shl.b32 	%r682, %r681, %r680;
+	bfe.u32 	%r683, %r676, 15, 14;
+	and.b32  	%r684, %r683, 16380;
+	add.s32 	%r686, %r684, %r130;
+	ld.shared.u32 	%r687, [%r686+16384];
+	and.b32  	%r688, %r687, %r682;
+	setp.eq.s32	%p104, %r688, 0;
+	@%p104 bra 	BB3_143;
+
+	and.b32  	%r689, %r677, 4095;
+	mul.wide.u32 	%rd89, %r689, 4;
+	add.s64 	%rd90, %rd3, %rd89;
+	atom.global.add.u32 	%r690, [%rd90], 1;
+	min.s32 	%r691, %r690, %r100;
+	mad.lo.s32 	%r692, %r689, %r126, %r691;
+	mul.wide.s32 	%rd91, %r692, 8;
+	add.s64 	%rd92, %rd1, %rd91;
+	st.global.v2.u32 	[%rd92], {%r677, %r676};
+
+BB3_143:
+	add.s32 	%r695, %r634, 1536;
+	setp.ge.s32	%p105, %r695, %r3;
+	@%p105 bra 	BB3_147;
+
+	ld.global.v2.u32 	{%r696, %r697}, [%rd10+12288];
+	or.b32  	%r698, %r696, %r697;
+	setp.eq.s32	%p106, %r698, 0;
+	@%p106 bra 	BB3_147;
+
+	and.b32  	%r699, %r696, 536866816;
+	bfe.u32 	%r700, %r699, 12, 5;
+	mov.u32 	%r701, 1;
+	shl.b32 	%r702, %r701, %r700;
+	bfe.u32 	%r703, %r696, 15, 14;
+	and.b32  	%r704, %r703, 16380;
+	add.s32 	%r706, %r704, %r130;
+	ld.shared.u32 	%r707, [%r706+16384];
+	and.b32  	%r708, %r707, %r702;
+	setp.eq.s32	%p107, %r708, 0;
+	@%p107 bra 	BB3_147;
+
+	and.b32  	%r709, %r697, 4095;
+	mul.wide.u32 	%rd93, %r709, 4;
+	add.s64 	%rd94, %rd3, %rd93;
+	atom.global.add.u32 	%r710, [%rd94], 1;
+	min.s32 	%r711, %r710, %r100;
+	mad.lo.s32 	%r712, %r709, %r126, %r711;
+	mul.wide.s32 	%rd95, %r712, 8;
+	add.s64 	%rd96, %rd1, %rd95;
+	st.global.v2.u32 	[%rd96], {%r697, %r696};
+
+BB3_147:
+	add.s32 	%r725, %r725, 4;
+	setp.lt.s32	%p108, %r725, %r8;
+	@%p108 bra 	BB3_131;
+
+BB3_148:
 	ret;
 }
 
@@ -1756,7 +2855,7 @@ BB2_74:
 	.reg .b32 	%r<11>;
 	.reg .b64 	%rd<20>;
 	// demoted variable
-	.shared .align 4 .u32 FluffyTail$__cuda_local_var_207303_30_non_const_destIdx;
+	.shared .align 4 .u32 FluffyTail$__cuda_local_var_207397_30_non_const_destIdx;
 
 	ld.param.u64 	%rd2, [FluffyTail_param_0];
 	ld.param.u64 	%rd3, [FluffyTail_param_1];
@@ -1770,18 +2869,18 @@ BB2_74:
 	ld.global.u32 	%r1, [%rd8];
 	mov.u32 	%r2, %tid.x;
 	setp.ne.s32	%p1, %r2, 0;
-	@%p1 bra 	BB3_2;
+	@%p1 bra 	BB4_2;
 
 	cvta.to.global.u64 	%rd9, %rd4;
 	atom.global.add.u32 	%r4, [%rd9], %r1;
-	st.shared.u32 	[FluffyTail$__cuda_local_var_207303_30_non_const_destIdx], %r4;
+	st.shared.u32 	[FluffyTail$__cuda_local_var_207397_30_non_const_destIdx], %r4;
 
-BB3_2:
+BB4_2:
 	bar.sync 	0;
 	setp.ge.s32	%p2, %r2, %r1;
-	@%p2 bra 	BB3_4;
+	@%p2 bra 	BB4_4;
 
-	ld.shared.u32 	%r5, [FluffyTail$__cuda_local_var_207303_30_non_const_destIdx];
+	ld.shared.u32 	%r5, [FluffyTail$__cuda_local_var_207397_30_non_const_destIdx];
 	add.s32 	%r6, %r5, %r2;
 	cvta.to.global.u64 	%rd10, %rd3;
 	mul.wide.s32 	%rd11, %r6, 8;
@@ -1796,7 +2895,7 @@ BB3_2:
 	ld.global.v2.u32 	{%r7, %r8}, [%rd19];
 	st.global.v2.u32 	[%rd12], {%r7, %r8};
 
-BB3_4:
+BB4_4:
 	ret;
 }
 
@@ -1809,7 +2908,7 @@ BB3_4:
 	.param .u64 FluffyRecovery_param_4
 )
 {
-	.local .align 16 .b8 	__local_depot4[512];
+	.local .align 16 .b8 	__local_depot5[512];
 	.reg .b64 	%SP;
 	.reg .b64 	%SPL;
 	.reg .pred 	%p<51>;
@@ -1817,23 +2916,23 @@ BB3_4:
 	.reg .b32 	%r<143>;
 	.reg .b64 	%rd<154>;
 	// demoted variable
-	.shared .align 4 .b8 FluffyRecovery$__cuda_local_var_207320_30_non_const_nonces[168];
+	.shared .align 4 .b8 FluffyRecovery$__cuda_local_var_207414_30_non_const_nonces[168];
 
-	mov.u64 	%rd153, __local_depot4;
+	mov.u64 	%rd153, __local_depot5;
 	cvta.local.u64 	%SP, %rd153;
 	add.u64 	%rd30, %SP, 0;
 	cvta.to.local.u64 	%rd1, %rd30;
 	mov.u32 	%r1, %tid.x;
 	shl.b32 	%r19, %r1, 2;
-	mov.u32 	%r20, FluffyRecovery$__cuda_local_var_207320_30_non_const_nonces;
+	mov.u32 	%r20, FluffyRecovery$__cuda_local_var_207414_30_non_const_nonces;
 	add.s32 	%r2, %r20, %r19;
 	setp.gt.s32	%p2, %r1, 41;
-	@%p2 bra 	BB4_2;
+	@%p2 bra 	BB5_2;
 
 	mov.u32 	%r21, 0;
 	st.shared.u32 	[%r2], %r21;
 
-BB4_2:
+BB5_2:
 	mov.u32 	%r3, %ctaid.x;
 	mov.u32 	%r4, %ntid.x;
 	bar.sync 	0;
@@ -1841,7 +2940,7 @@ BB4_2:
 	shl.b32 	%r6, %r23, 10;
 	mov.u32 	%r139, 0;
 
-BB4_3:
+BB5_3:
 	ld.param.u64 	%rd150, [FluffyRecovery_param_0];
 	ld.param.u64 	%rd149, [FluffyRecovery_param_1];
 	ld.param.u64 	%rd148, [FluffyRecovery_param_2];
@@ -1851,7 +2950,7 @@ BB4_3:
 	mov.u32 	%r140, -64;
 	mov.u64 	%rd145, %rd1;
 
-BB4_4:
+BB5_4:
 	xor.b64  	%rd31, %rd146, %rd147;
 	add.s64 	%rd32, %rd31, %rd148;
 	{
@@ -2258,16 +3357,16 @@ BB4_4:
 	add.s64 	%rd145, %rd145, 8;
 	add.s32 	%r140, %r140, 1;
 	setp.ne.s32	%p3, %r140, 0;
-	@%p3 bra 	BB4_4;
+	@%p3 bra 	BB5_4;
 
 	add.s64 	%rd138, %rd1, 504;
 	ld.local.u64 	%rd17, [%rd138];
 	mov.u16 	%rs4, 63;
 
-BB4_6:
+BB5_6:
 	setp.eq.s16	%p4, %rs4, 63;
 	mov.u64 	%rd151, %rd17;
-	@%p4 bra 	BB4_8;
+	@%p4 bra 	BB5_8;
 
 	cvt.s32.s16	%r122, %rs4;
 	mul.wide.s32 	%rd116, %r122, 8;
@@ -2275,8 +3374,8 @@ BB4_6:
 	ld.local.u64 	%rd118, [%rd117];
 	xor.b64  	%rd151, %rd118, %rd17;
 
-BB4_8:
-	mov.u32 	%r141, FluffyRecovery$__cuda_local_var_207320_30_non_const_nonces;
+BB5_8:
+	mov.u32 	%r141, FluffyRecovery$__cuda_local_var_207414_30_non_const_nonces;
 	mov.u32 	%r137, %tid.x;
 	mov.u32 	%r136, %ntid.x;
 	mov.u32 	%r135, %ctaid.x;
@@ -2292,190 +3391,190 @@ BB4_8:
 	mov.u32 	%r142, -42;
 	mov.u64 	%rd152, recovery;
 
-BB4_9:
+BB5_9:
 	ld.const.u64 	%rd122, [%rd152];
 	setp.eq.s64	%p5, %rd122, %rd20;
 	setp.eq.s64	%p6, %rd122, %rd21;
 	or.pred  	%p7, %p5, %p6;
-	@!%p7 bra 	BB4_11;
-	bra.uni 	BB4_10;
+	@!%p7 bra 	BB5_11;
+	bra.uni 	BB5_10;
 
-BB4_10:
+BB5_10:
 	st.shared.u32 	[%r141], %r11;
 
-BB4_11:
+BB5_11:
 	ld.const.u64 	%rd123, [%rd152+8];
 	setp.eq.s64	%p8, %rd123, %rd20;
 	setp.eq.s64	%p9, %rd123, %rd21;
 	or.pred  	%p10, %p8, %p9;
-	@!%p10 bra 	BB4_13;
-	bra.uni 	BB4_12;
+	@!%p10 bra 	BB5_13;
+	bra.uni 	BB5_12;
 
-BB4_12:
+BB5_12:
 	st.shared.u32 	[%r141+4], %r11;
 
-BB4_13:
+BB5_13:
 	ld.const.u64 	%rd124, [%rd152+16];
 	setp.eq.s64	%p11, %rd124, %rd20;
 	setp.eq.s64	%p12, %rd124, %rd21;
 	or.pred  	%p13, %p11, %p12;
-	@!%p13 bra 	BB4_15;
-	bra.uni 	BB4_14;
+	@!%p13 bra 	BB5_15;
+	bra.uni 	BB5_14;
 
-BB4_14:
+BB5_14:
 	st.shared.u32 	[%r141+8], %r11;
 
-BB4_15:
+BB5_15:
 	ld.const.u64 	%rd125, [%rd152+24];
 	setp.eq.s64	%p14, %rd125, %rd20;
 	setp.eq.s64	%p15, %rd125, %rd21;
 	or.pred  	%p16, %p14, %p15;
-	@!%p16 bra 	BB4_17;
-	bra.uni 	BB4_16;
+	@!%p16 bra 	BB5_17;
+	bra.uni 	BB5_16;
 
-BB4_16:
+BB5_16:
 	st.shared.u32 	[%r141+12], %r11;
 
-BB4_17:
+BB5_17:
 	ld.const.u64 	%rd126, [%rd152+32];
 	setp.eq.s64	%p17, %rd126, %rd20;
 	setp.eq.s64	%p18, %rd126, %rd21;
 	or.pred  	%p19, %p17, %p18;
-	@!%p19 bra 	BB4_19;
-	bra.uni 	BB4_18;
+	@!%p19 bra 	BB5_19;
+	bra.uni 	BB5_18;
 
-BB4_18:
+BB5_18:
 	st.shared.u32 	[%r141+16], %r11;
 
-BB4_19:
+BB5_19:
 	ld.const.u64 	%rd127, [%rd152+40];
 	setp.eq.s64	%p20, %rd127, %rd20;
 	setp.eq.s64	%p21, %rd127, %rd21;
 	or.pred  	%p22, %p20, %p21;
-	@!%p22 bra 	BB4_21;
-	bra.uni 	BB4_20;
+	@!%p22 bra 	BB5_21;
+	bra.uni 	BB5_20;
 
-BB4_20:
+BB5_20:
 	st.shared.u32 	[%r141+20], %r11;
 
-BB4_21:
+BB5_21:
 	ld.const.u64 	%rd128, [%rd152+48];
 	setp.eq.s64	%p23, %rd128, %rd20;
 	setp.eq.s64	%p24, %rd128, %rd21;
 	or.pred  	%p25, %p23, %p24;
-	@!%p25 bra 	BB4_23;
-	bra.uni 	BB4_22;
+	@!%p25 bra 	BB5_23;
+	bra.uni 	BB5_22;
 
-BB4_22:
+BB5_22:
 	st.shared.u32 	[%r141+24], %r11;
 
-BB4_23:
+BB5_23:
 	ld.const.u64 	%rd129, [%rd152+56];
 	setp.eq.s64	%p26, %rd129, %rd20;
 	setp.eq.s64	%p27, %rd129, %rd21;
 	or.pred  	%p28, %p26, %p27;
-	@!%p28 bra 	BB4_25;
-	bra.uni 	BB4_24;
+	@!%p28 bra 	BB5_25;
+	bra.uni 	BB5_24;
 
-BB4_24:
+BB5_24:
 	st.shared.u32 	[%r141+28], %r11;
 
-BB4_25:
+BB5_25:
 	ld.const.u64 	%rd130, [%rd152+64];
 	setp.eq.s64	%p29, %rd130, %rd20;
 	setp.eq.s64	%p30, %rd130, %rd21;
 	or.pred  	%p31, %p29, %p30;
-	@!%p31 bra 	BB4_27;
-	bra.uni 	BB4_26;
+	@!%p31 bra 	BB5_27;
+	bra.uni 	BB5_26;
 
-BB4_26:
+BB5_26:
 	st.shared.u32 	[%r141+32], %r11;
 
-BB4_27:
+BB5_27:
 	ld.const.u64 	%rd131, [%rd152+72];
 	setp.eq.s64	%p32, %rd131, %rd20;
 	setp.eq.s64	%p33, %rd131, %rd21;
 	or.pred  	%p34, %p32, %p33;
-	@!%p34 bra 	BB4_29;
-	bra.uni 	BB4_28;
+	@!%p34 bra 	BB5_29;
+	bra.uni 	BB5_28;
 
-BB4_28:
+BB5_28:
 	st.shared.u32 	[%r141+36], %r11;
 
-BB4_29:
+BB5_29:
 	ld.const.u64 	%rd132, [%rd152+80];
 	setp.eq.s64	%p35, %rd132, %rd20;
 	setp.eq.s64	%p36, %rd132, %rd21;
 	or.pred  	%p37, %p35, %p36;
-	@!%p37 bra 	BB4_31;
-	bra.uni 	BB4_30;
+	@!%p37 bra 	BB5_31;
+	bra.uni 	BB5_30;
 
-BB4_30:
+BB5_30:
 	st.shared.u32 	[%r141+40], %r11;
 
-BB4_31:
+BB5_31:
 	ld.const.u64 	%rd133, [%rd152+88];
 	setp.eq.s64	%p38, %rd133, %rd20;
 	setp.eq.s64	%p39, %rd133, %rd21;
 	or.pred  	%p40, %p38, %p39;
-	@!%p40 bra 	BB4_33;
-	bra.uni 	BB4_32;
+	@!%p40 bra 	BB5_33;
+	bra.uni 	BB5_32;
 
-BB4_32:
+BB5_32:
 	st.shared.u32 	[%r141+44], %r11;
 
-BB4_33:
+BB5_33:
 	ld.const.u64 	%rd134, [%rd152+96];
 	setp.eq.s64	%p41, %rd134, %rd20;
 	setp.eq.s64	%p42, %rd134, %rd21;
 	or.pred  	%p43, %p41, %p42;
-	@!%p43 bra 	BB4_35;
-	bra.uni 	BB4_34;
+	@!%p43 bra 	BB5_35;
+	bra.uni 	BB5_34;
 
-BB4_34:
+BB5_34:
 	st.shared.u32 	[%r141+48], %r11;
 
-BB4_35:
+BB5_35:
 	ld.const.u64 	%rd135, [%rd152+104];
 	setp.eq.s64	%p44, %rd135, %rd20;
 	setp.eq.s64	%p45, %rd135, %rd21;
 	or.pred  	%p46, %p44, %p45;
-	@!%p46 bra 	BB4_37;
-	bra.uni 	BB4_36;
+	@!%p46 bra 	BB5_37;
+	bra.uni 	BB5_36;
 
-BB4_36:
+BB5_36:
 	st.shared.u32 	[%r141+52], %r11;
 
-BB4_37:
+BB5_37:
 	add.s32 	%r142, %r142, 14;
 	add.s32 	%r141, %r141, 56;
 	add.s64 	%rd152, %rd152, 112;
 	setp.ne.s32	%p47, %r142, 0;
-	@%p47 bra 	BB4_9;
+	@%p47 bra 	BB5_9;
 
 	add.s16 	%rs2, %rs4, -1;
 	setp.gt.s16	%p48, %rs4, 0;
 	mov.u16 	%rs4, %rs2;
-	@%p48 bra 	BB4_6;
+	@%p48 bra 	BB5_6;
 
 	add.s32 	%r139, %r139, 64;
 	setp.lt.s32	%p49, %r139, 1024;
-	@%p49 bra 	BB4_3;
+	@%p49 bra 	BB5_3;
 
 	mov.u32 	%r126, %tid.x;
 	setp.lt.s32	%p1, %r126, 42;
 	bar.sync 	0;
-	@!%p1 bra 	BB4_43;
-	bra.uni 	BB4_41;
+	@!%p1 bra 	BB5_43;
+	bra.uni 	BB5_41;
 
-BB4_41:
+BB5_41:
 	mov.u32 	%r130, %tid.x;
 	shl.b32 	%r129, %r130, 2;
-	mov.u32 	%r128, FluffyRecovery$__cuda_local_var_207320_30_non_const_nonces;
+	mov.u32 	%r128, FluffyRecovery$__cuda_local_var_207414_30_non_const_nonces;
 	add.s32 	%r127, %r128, %r129;
 	ld.shared.u32 	%r18, [%r127];
 	setp.eq.s32	%p50, %r18, 0;
-	@%p50 bra 	BB4_43;
+	@%p50 bra 	BB5_43;
 
 	ld.param.u64 	%rd144, [FluffyRecovery_param_4];
 	cvta.to.global.u64 	%rd143, %rd144;
@@ -2484,7 +3583,7 @@ BB4_41:
 	add.s64 	%rd137, %rd143, %rd136;
 	st.global.u32 	[%rd137], %r18;
 
-BB4_43:
+BB5_43:
 	ret;
 }
 
