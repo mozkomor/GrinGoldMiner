@@ -15,34 +15,34 @@ using System.Threading.Tasks;
 
 namespace Mozkomor.GrinGoldMiner
 {
-    public static class FileInfoExtensions
-    {
-        public static DateTime TryGetDateFromFileName(this FileInfo f, DateTime defaultValue)
-        {
-            try
-            {
-                var name = f.Name;
-                DateTime parsed;
-                try
-                {
-                    if (name.Split('.').Count() > 1)
-                    {
-                        name = name.Split('.')[0];
-                    }
-                }
-                catch { }
+    //public static class FileInfoExtensions
+    //{
+    //    public static DateTime TryGetDateFromFileName(this FileInfo f, DateTime defaultValue)
+    //    {
+    //        try
+    //        {
+    //            var name = f.Name;
+    //            DateTime parsed;
+    //            try
+    //            {
+    //                if (name.Split('.').Count() > 1)
+    //                {
+    //                    name = name.Split('.')[0];
+    //                }
+    //            }
+    //            catch { }
 
-                if (DateTime.TryParseExact(name, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out parsed))
-                    return parsed;
-                else
-                    return defaultValue;
-            }
-            catch
-            {
-                return defaultValue;
-            }
-        }
-    }
+    //            if (DateTime.TryParseExact(name, "yyyyMMddHHmmss", CultureInfo.InvariantCulture, System.Globalization.DateTimeStyles.None, out parsed))
+    //                return parsed;
+    //            else
+    //                return defaultValue;
+    //        }
+    //        catch
+    //        {
+    //            return defaultValue;
+    //        }
+    //    }
+    //}
     public enum LogLevel
     {
         DEBUG,
@@ -60,13 +60,12 @@ namespace Mozkomor.GrinGoldMiner
     {
         public LogLevel FileMinimumLogLevel { get; set; }
         public LogLevel ConsoleMinimumLogLevel { get; set; }
+
         /// <summary>
         /// How many days old logs to keep. Will delete older logs when "Logger.SetLogPath()" (once a day or on app first log write) is called.
         /// </summary>
-        [DefaultValueAttribute(1)] 
         public int KeepDays { get; set; }
 
-        [DefaultValueAttribute(false)]
         public bool DisableLogging { get; set; }
     }
     public class Logger
@@ -74,7 +73,7 @@ namespace Mozkomor.GrinGoldMiner
         private static LogOptions logOptions;
         private static string _logPath;
         private static DateTime _lastDayLogCreated;
-        private static Dictionary<string,int> msgcnt = new Dictionary<string,int>();
+        private static Dictionary<string, int> msgcnt = new Dictionary<string, int>();
         public static string[] last5msg = new string[5];
         public static volatile ConsoleOutputMode consoleMode = ConsoleOutputMode.STATIC_TUI;
 
@@ -104,9 +103,9 @@ namespace Mozkomor.GrinGoldMiner
             var logdir = Path.Combine(execdir, "logs");
             if (!Directory.Exists(logdir))
                 Directory.CreateDirectory(logdir);
-            var file = DateTime.Now.ToString("yyyyMMddHHmmss")+".txt";
+            var file = DateTime.Now.ToString("yyyyMMddHHmmss") + ".txt";
             _logPath = Path.Combine(logdir, file);
-            Task.Run(() => { try { DeleteOldLogs(logdir,logOptions?.KeepDays ?? 1); } catch { } });
+            Task.Run(() => { try { DeleteOldLogs(logdir, logOptions?.KeepDays ?? 1); } catch { } });
         }
 
         private static void DeleteOldLogs(string logdir, int olderThanDays)
@@ -116,21 +115,16 @@ namespace Mozkomor.GrinGoldMiner
                 if (string.IsNullOrEmpty(logdir) || olderThanDays == 0) //prevent default (0) from old configs
                     return;
 
-                //foreach(var f in Directory.GetFiles(logdir))
-                //{
-                //    var fi = new FileInfo(f);
-                //    if (fi.CreationTime < DateTime.Now.AddDays(-1 * olderThanDays))
-                //        fi.Delete();
-                //}
-                Directory.GetFiles(logdir)
-                 .Select(f => new FileInfo(f))
-                 .Where(f => f.TryGetDateFromFileName(defaultValue: DateTime.Now) < DateTime.Now.AddDays(-1 * olderThanDays)) //if failed to parse date, set to "now" so it does NOT delete files we failed to parse
-                 .ToList()
-                 .ForEach(f => f.Delete());
+                foreach (var f in Directory.GetFiles(logdir))
+                {
+                    var fi = new FileInfo(f);
+                    if (fi.LastWriteTime < DateTime.Now.AddDays(-1 * olderThanDays))
+                        fi.Delete();
+                }
             }
-            catch { }
+            catch(Exception ex) { Console.WriteLine($"ERROR while deleting old logs {ex.Message}"); }
         }
-     
+
         public static void SetLogOptions(LogOptions options)
         {
             logOptions = options;
@@ -141,7 +135,7 @@ namespace Mozkomor.GrinGoldMiner
             {
                 try { callerFilePath = Path.GetFileName(callerFilePath) ?? callerFilePath; } catch { }
             }
-            
+
             var msg = $"Exception in: {callerFilePath} # {callerLineNumber} # {callerMemberName} Message: {ex.Message}";
             Log(LogLevel.ERROR, msg);
         }
@@ -156,18 +150,14 @@ namespace Mozkomor.GrinGoldMiner
 #if DEBUG
                 logOptions = new LogOptions() {FileMinimumLogLevel = LogLevel.DEBUG, ConsoleMinimumLogLevel = LogLevel.DEBUG, KeepDays = 1, DisableLogging = false };
 #else
-                logOptions = new LogOptions() {FileMinimumLogLevel = LogLevel.ERROR, ConsoleMinimumLogLevel = LogLevel.INFO,  KeepDays = 1,  DisableLogging = false };
+                    logOptions = new LogOptions() { FileMinimumLogLevel = LogLevel.ERROR, ConsoleMinimumLogLevel = LogLevel.INFO, KeepDays = 1, DisableLogging = false };
 #endif
                 }
 
                 if (level == LogLevel.ERROR && criticalErrors.Count < 1000)
                     criticalErrors.Enqueue(msg);
 
-                if (logOptions.DisableLogging == true)
-                    return;
-
-
-                if (level >= logOptions.FileMinimumLogLevel)
+                if (level >= logOptions.FileMinimumLogLevel && !logOptions.DisableLogging)
                 {
                     lock (lock1)
                     {
@@ -178,6 +168,7 @@ namespace Mozkomor.GrinGoldMiner
                         }
                     }
                 }
+
                 if (level >= logOptions.ConsoleMinimumLogLevel)
                 {
                     msg = msg.Trim();
@@ -208,7 +199,7 @@ namespace Mozkomor.GrinGoldMiner
 
         public static string GetlastLogs()
         {
-            return $"{Shorten(last5msg[0])}\n{Shorten(last5msg[1])}\n{Shorten(last5msg[2] )}\n{Shorten(last5msg[3])}\n{Shorten(last5msg[4])}";
+            return $"{Shorten(last5msg[0])}\n{Shorten(last5msg[1])}\n{Shorten(last5msg[2])}\n{Shorten(last5msg[3])}\n{Shorten(last5msg[4])}";
         }
 
         public static string Shorten(string s)
