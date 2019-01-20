@@ -37,12 +37,21 @@
     0
   </CPUOffloadValue>
   
+  <!-- If autodection failed, you can define your GPUs manually, something like this: -->
   <GPUOptions>
     <GPUOption>
+      <GPUName>GeForce GTX 1080 Ti</GPUName>
       <GPUType>NVIDIA</GPUType>
       <DeviceID>0</DeviceID>
       <PlatformID>0</PlatformID>
-      <Enabled>false</Enabled>
+      <Enabled>true</Enabled>
+    </GPUOption>
+    <GPUOption>
+      <GPUName>Ellesmere</GPUName>
+      <GPUType>AMD</GPUType>
+      <DeviceID>0</DeviceID>
+      <PlatformID>0</PlatformID>
+      <Enabled>true</Enabled>
     </GPUOption>
   </GPUOptions>
 </Config>
