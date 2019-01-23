@@ -9,9 +9,11 @@ General GGM chat https://gitter.im/GrinGoldMiner/community
 For more information about grin, wallet and node downloads see https://github.com/mimblewimble/grin
 Node and wallet do not work with with Windows Subsystem Linux (WSL), use Virtual Machine or dedicated machine. Windows node+wallet being developed here  https://github.com/GrinPlusPlus/GrinPlusPlus
 
-Contact us at mozkomorkaban@gmail.com; professional farm-friendly version of the miner is also in the development
+Closed source GGM build with 10-15% extra speed, local json API and other features at https://grinpro.io/
 
-GGM releases will collect 1% fee for the Grin Development Fund and 1% fee for further miner development
+Contact us at mozkomorkaban@gmail.com
+
+GGM/GrinPro releases will collect 1% fee for the Grin Development Fund and 1% fee for further miner development
 
 [FAQ and Help here](help.md)  - how to configure your backup pool connection, how to load config from different location, how to switch to rolling console mode and more...
 
