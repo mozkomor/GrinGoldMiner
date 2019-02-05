@@ -184,12 +184,12 @@ namespace CudaSolver
 
                 meanSeedB = ctx.LoadKernelPTX(resourceStream, "FluffySeed2B");
                 meanSeedB.BlockDimensions = 128;
-                meanSeedB.GridDimensions = 1024;
+                meanSeedB.GridDimensions = 2048;
                 meanSeedB.PreferredSharedMemoryCarveout = CUshared_carveout.MaxShared;
 
                 meanSeedB_4 = ctx.LoadKernelPTX(resourceStream, "FluffySeed2B");
                 meanSeedB_4.BlockDimensions = 128;
-                meanSeedB_4.GridDimensions = 512;
+                meanSeedB_4.GridDimensions = 1024;
                 meanSeedB_4.PreferredSharedMemoryCarveout = CUshared_carveout.MaxShared;
 
                 meanRound = ctx.LoadKernelPTX(resourceStream, "FluffyRound");
@@ -381,7 +381,9 @@ namespace CudaSolver
                     {
                         //Console.WriteLine("Trimmed in {0}ms to {1} edges", timer.ElapsedMilliseconds, count[0]);
 
-                        CGraph cg = new CGraph();
+                        CGraph cg = FinderBag.GetFinder();
+                        if (cg == null) continue;
+
                         cg.SetEdges(h_a, (int)count[0]);
                         cg.SetHeader(currentJob);
 
@@ -415,6 +417,7 @@ namespace CudaSolver
                                    finally
                                    {
                                        findersInFlight--;
+                                       FinderBag.ReturnFinder(cg);
                                    }
                                }
 
@@ -441,7 +444,7 @@ namespace CudaSolver
                     }
                     else
                     {
-                        CGraph cg = new CGraph();
+                        CGraph cg = FinderBag.GetFinder();
                         cg.SetEdges(h_a, (int)count[0]);
                         cg.SetHeader(currentJob);
 
@@ -473,6 +476,7 @@ namespace CudaSolver
                                 finally
                                 {
                                     findersInFlight--;
+                                    FinderBag.ReturnFinder(cg);
                                 }
                             }
                         });

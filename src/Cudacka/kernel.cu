@@ -52,7 +52,7 @@ typedef u64 nonce_t;
 
 #define CTHREADS 512
 #define BKTMASK4K (4096-1)
-#define BKTGRAN 32
+#define BKTGRAN 64
 
 #define ROTL(x,b) ( ((x) << (b)) | ( (x) >> (64 - (b))) )
 #define SIPROUND \

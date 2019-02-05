@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,29 @@ using SharedSerialization;
 
 namespace CudaSolver
 {
+    // inspided by Gringoo miner by eth_saver
+    public static class FinderBag
+    {
+        private static ConcurrentBag<CGraph> finders = new ConcurrentBag<CGraph>();
+
+        public static CGraph GetFinder()
+        {
+            if (finders.TryTake(out CGraph finder))
+                return finder;
+            else
+            {
+                return new CGraph();
+            }                
+        }
+
+        public static void ReturnFinder(CGraph finder)
+        {
+            if (finders.Count < 10)
+                finders.Add(finder);
+        }
+    }
+
+
     public class CGraph
     {
         public static bool ShowCycles = false;
@@ -17,18 +41,25 @@ namespace CudaSolver
 
         private int[] edges;
         private int maxlength = 8192;
+        private int edgeCount = 0;
 
         private Job job;
 
         public int dupes = 0;
 
+        public CGraph()
+        {
+            graphU = new Dictionary<uint, uint>(edgeCount);
+            graphV = new Dictionary<uint, uint>(edgeCount);
+            edges = new int[200000];
+        }
+        
         public void SetEdges(int[] edgesExternal, int count)
         {
-            edges = new int[count*2];
+            edgeCount = count;
             Array.Copy(edgesExternal, edges, count * 2);
-
-            graphU = new Dictionary<uint, uint>(count);
-            graphV = new Dictionary<uint, uint>(count);
+            graphU.Clear();
+            graphV.Clear();
         }
 
         public void SetHeader(Job jobToSolve)
@@ -38,17 +69,19 @@ namespace CudaSolver
 
         internal void FindSolutions(ConcurrentQueue<Solution> solutions, int cyclen = 42)
         {
-            for (int ee = 0; ee < edges.Length/2; ee++)
+            for (int ee = 0; ee < edgeCount; ee++)
             {
                 Edge e = new Edge() { Item1 = (uint)edges[ee * 2 + 0], Item2 = (uint)edges[ee * 2 + 1] };
                 {
-                    if (graphU.ContainsKey(e.Item1) && graphU[e.Item1] == e.Item2)
+                    if (graphU.TryGetValue(e.Item1, out uint I1) && I1 == e.Item2)
+                    //if (graphU.ContainsKey(e.Item1) && graphU[e.Item1] == e.Item2)
                     {
                         dupes++;
                         continue;
                     }
 
-                    if (graphV.ContainsKey(e.Item2) && graphV[e.Item2] == e.Item1)
+                    if (graphV.TryGetValue(e.Item2, out uint I2) && I2 == e.Item1)
+                    //if (graphV.ContainsKey(e.Item2) && graphV[e.Item2] == e.Item1)
                     {
                         dupes++;
                         continue;
@@ -177,17 +210,15 @@ namespace CudaSolver
 
             Dictionary<uint, uint> graph = _startInGraphU ? graphU : graphV;
 
-
             graph = _startInGraphU ? graphU : graphV;
 
             path.Add(key);
 
-            while (graph.ContainsKey(key))
+            uint v = 0;
+            //while (graph.ContainsKey(key))
+            while (graph.TryGetValue(key, out v))
             {
-                uint v = graph[key];
-
-                if (path.Count >= maxlength)
-                    break;
+                if ((path.Count >= maxlength)) break;
 
                 path.Add(v);
 

@@ -40,13 +40,15 @@ typedef u64 nonce_t;
   do { \
     v0 += v1; v2 += v3; v1 = rotate(v1,(ulong)13); \
     v3 = rotate(v3,(ulong)16); v1 ^= v0; v3 ^= v2; \
-    v0 = rotate(v0,(ulong)32); v2 += v1; v0 += v3; \
+    v0 = rorX(v0); v2 += v1; v0 += v3; \
     v1 = rotate(v1,(ulong)17);   v3 = rotate(v3,(ulong)21); \
-    v1 ^= v2; v3 ^= v0; v2 = rotate(v2,(ulong)32); \
+    v1 ^= v2; v3 ^= v0; v2 = rorX(v2); \
   } while(0)
 
+//  tweak by eth_saver
+static inline ulong rorX(ulong vw) { uint2 v = as_uint2(vw);	return as_ulong((uint2)(v.y, v.x)); }
 
-void Increase2bCounter(__local u32 * ecounters, const int bucket)
+inline void Increase2bCounter(__local u32 * ecounters, const int bucket)
 {
 	int word = bucket >> 5;
 	unsigned char bit = bucket & 0x1F;
@@ -58,7 +60,7 @@ void Increase2bCounter(__local u32 * ecounters, const int bucket)
 		atomic_or(ecounters + word + 4096, mask);
 }
 
-bool Read2bCounter(__local u32 * ecounters, const int bucket)
+inline bool Read2bCounter(__local u32 * ecounters, const int bucket)
 {
 	int word = bucket >> 5;
 	unsigned char bit = bucket & 0x1F;
@@ -100,12 +102,10 @@ __kernel  void FluffySeed2A(const u64 v0i, const u64 v1i, const u64 v2i, const u
 		for (u32 b = 0; b < EDGE_BLOCK_SIZE; b++)
 		{
 			v3 ^= blockNonce + b;
-			for (int r = 0; r < 2; r++)
-				SIPROUND;
+			SIPROUND;SIPROUND;
 			v0 ^= blockNonce + b;
 			v2 ^= 0xff;
-			for (int r = 0; r < 4; r++)
-				SIPROUND;
+			SIPROUND;SIPROUND;SIPROUND;SIPROUND;
 
 			sipblock[b] = (v0 ^ v1) ^ (v2  ^ v3);
 
@@ -118,7 +118,8 @@ __kernel  void FluffySeed2A(const u64 v0i, const u64 v1i, const u64 v2i, const u
 			uint2 hash = (uint2)(lookup & EDGEMASK, (lookup >> 32) & EDGEMASK);
 			int bucket = hash.x & 63;
 
-			barrier(CLK_LOCAL_MEM_FENCE);
+			//  tweak by eth_saver
+			//barrier(CLK_LOCAL_MEM_FENCE);
 
 			int counter = atomic_add(counters + bucket, (u32)1);
 			int counterLocal = counter % 16;
@@ -131,7 +132,7 @@ __kernel  void FluffySeed2A(const u64 v0i, const u64 v1i, const u64 v2i, const u
 				int cnt = min((int)atomic_add(indexes + bucket, 8), (int)(DUCK_A_EDGES_64 - 8));
 				int idx = ((bucket < 32 ? bucket : bucket - 32) * DUCK_A_EDGES_64 + cnt) / 4;
 				buffer = bucket < 32 ? bufferA : bufferB;
-
+/*
 				buffer[idx] = (ulong4)(
 					atom_xchg(&tmp[bucket][8 - counterLocal], (u64)0),
 					atom_xchg(&tmp[bucket][9 - counterLocal], (u64)0),
@@ -144,6 +145,12 @@ __kernel  void FluffySeed2A(const u64 v0i, const u64 v1i, const u64 v2i, const u
 					atom_xchg(&tmp[bucket][14 - counterLocal], (u64)0),
 					atom_xchg(&tmp[bucket][15 - counterLocal], (u64)0)
 				);
+*/
+				//  tweak by eth_saver
+				vstore4(vload4(0, &tmp[bucket][8 - counterLocal]), idx, (ulong*)buffer);
+				vstore4(vload4(0, &tmp[bucket][12 - counterLocal]), (idx + 1), (ulong*)buffer);
+				for (uchar i = 0; i < 8; i++)
+					tmp[bucket][8 + i - counterLocal] = 0;
 			}
 
 		}
@@ -155,9 +162,6 @@ __kernel  void FluffySeed2A(const u64 v0i, const u64 v1i, const u64 v2i, const u
 	{
 		int counter = counters[lid];
 		int counterBase = (counter % 16) >= 8 ? 8 : 0;
-		int counterCount = (counter % 8);
-		for (int i = 0; i < (8 - counterCount); i++)
-			tmp[lid][counterBase + counterCount + i] = 0;
 		int cnt = min((int)atomic_add(indexes + lid, 8), (int)(DUCK_A_EDGES_64 - 8));
 		int idx = ( (lid < 32 ? lid : lid - 32) * DUCK_A_EDGES_64 + cnt) / 4;
 		buffer = lid < 32 ? bufferA : bufferB;
@@ -207,7 +211,8 @@ __kernel  void FluffySeed2B(const __global uint2 * source, __global ulong4 * des
 
 			int bucket = (edge.x >> 6) & (64 - 1);
 
-			barrier(CLK_LOCAL_MEM_FENCE);
+			//  tweak by eth_saver
+			//barrier(CLK_LOCAL_MEM_FENCE);
 
 			int counter = 0;
 			int counterLocal = 0;
@@ -225,7 +230,7 @@ __kernel  void FluffySeed2B(const __global uint2 * source, __global ulong4 * des
 			{
 				int cnt = min((int)atomic_add(destinationIndexes + startBlock * 64 + myBucket * 64 + bucket, 8), (int)(DUCK_A_EDGES - 8));
 				int idx = (offsetMem + (((myBucket - offsetBucket) * 64 + bucket) * DUCK_A_EDGES + cnt)) / 4;
-
+/*
 				destination[idx] = (ulong4)(
 					atom_xchg(&tmp[bucket][8 - counterLocal], 0),
 					atom_xchg(&tmp[bucket][9 - counterLocal], 0),
@@ -238,7 +243,14 @@ __kernel  void FluffySeed2B(const __global uint2 * source, __global ulong4 * des
 					atom_xchg(&tmp[bucket][14 - counterLocal], 0),
 					atom_xchg(&tmp[bucket][15 - counterLocal], 0)
 				);
+*/
+				//  tweak by eth_saver
+				vstore4(vload4(0, &tmp[bucket][8 - counterLocal]), idx, (ulong*)destination);
+				vstore4(vload4(0, &tmp[bucket][12 - counterLocal]), (idx + 1), (ulong*)destination);
+				for (uchar i = 0; i < 8; i++)
+					tmp[bucket][8 + i - counterLocal] = 0;
 			}
+			
 		}
 	}
 

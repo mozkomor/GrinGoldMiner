@@ -216,6 +216,20 @@ namespace OpenCl.DotNetCore.CommandQueues
             }
         }
 
+        // amd_min3er (TM)
+        public unsafe int[] EnqueueReadBufferUnsafe(MemoryObject memoryObject, int outputSize)
+        {
+            IntPtr zero = IntPtr.Zero;
+            int[] array = new int[outputSize];
+            fixed (int* numPtr = array)
+            {
+                Result result = EnqueuedCommandsNativeApi.EnqueueReadBuffer(this.Handle, memoryObject.Handle, 1U, UIntPtr.Zero, new UIntPtr((uint)(4 * outputSize)), (IntPtr)((void*)numPtr), 0U, (IntPtr[])null, zero);
+                if (result != Result.Success)
+                    throw new OpenClException("The memory object could not be read.", result);
+            }
+            return array;
+        }
+
         public unsafe static void Copy(IntPtr source, int[] destination, int startIndex, int length)
         {
             unsafe

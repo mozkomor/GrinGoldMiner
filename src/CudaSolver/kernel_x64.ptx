@@ -794,10 +794,10 @@ BB1_2:
 	bar.sync 	0;
 	mov.u32 	%r30, %ctaid.x;
 	shr.s32 	%r31, %r30, 31;
-	shr.u32 	%r32, %r31, 27;
+	shr.u32 	%r32, %r31, 26;
 	add.s32 	%r33, %r30, %r32;
-	shr.s32 	%r1, %r33, 5;
-	and.b32  	%r34, %r33, -32;
+	shr.s32 	%r1, %r33, 6;
+	and.b32  	%r34, %r33, -64;
 	sub.s32 	%r35, %r30, %r34;
 	add.s32 	%r36, %r1, %r22;
 	cvta.to.global.u64 	%rd6, %rd4;
@@ -806,8 +806,8 @@ BB1_2:
 	ld.global.u32 	%r37, [%rd8];
 	mov.u32 	%r38, 8454144;
 	min.s32 	%r2, %r37, %r38;
-	mad.lo.s32 	%r183, %r35, 264192, %r23;
-	mov.u32 	%r184, -2064;
+	mad.lo.s32 	%r183, %r35, 132096, %r23;
+	mov.u32 	%r184, -1032;
 	cvta.to.global.u64 	%rd14, %rd2;
 
 BB1_3:
