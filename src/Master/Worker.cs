@@ -251,7 +251,10 @@ namespace Mozkomor.GrinGoldMiner
                 if (!gpu.Enabled || IsTerminated)
                     return true;
 
-                (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, settings);
+                lock (stream)
+                {
+                    (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, settings);
+                }
                 return true;
             }
             catch (Exception ex)
