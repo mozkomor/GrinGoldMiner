@@ -14,6 +14,7 @@ namespace Mozkomor.GrinGoldMiner
         public Connection PrimaryConnection { get; set; }
         public Connection SecondaryConnection { get; set; }
         public LogOptions LogOptions { get; set; }
+        public int ReconnectToPrimary { get; set; }
         public int CPUOffloadValue { get; set; }
         public List<GPUOption> GPUOptions { get; set; }
 
@@ -24,7 +25,15 @@ namespace Mozkomor.GrinGoldMiner
             var c2 = new Connection() { ConnectionAddress = "backup_pooladdress", ConnectionPort = 13416, Login = "login", Password = "password", Ssl = false };
             var logOptions = new LogOptions() {ConsoleMinimumLogLevel = LogLevel.INFO, FileMinimumLogLevel = LogLevel.WARNING, KeepDays=1, DisableLogging = false };
             List<GPUOption> gpuOptions = new List<GPUOption>() { new GPUOption() { DeviceID = 0, Enabled = true, GPUType = WorkerType.NVIDIA, PlatformID = 0 } };
-            return new Config() { PrimaryConnection = c1, SecondaryConnection = c2, CPUOffloadValue = 0, GPUOptions = gpuOptions, LogOptions = logOptions };
+            return new Config()
+            {
+                PrimaryConnection = c1,
+                SecondaryConnection = c2,
+                ReconnectToPrimary = 0,
+                CPUOffloadValue = 0,
+                GPUOptions = gpuOptions,
+                LogOptions = logOptions
+            };
         }
     }
 

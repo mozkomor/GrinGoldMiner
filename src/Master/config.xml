@@ -22,6 +22,12 @@
     <Password></Password>  
   </SecondaryConnection>
 
+  <!-- When mining on backup stratum connection, miner can periodically check
+      if primary connection is available again and reconnect there
+      Value is in minutes (integer)
+      0 = off -->
+  <ReconnectToPrimary>0</ReconnectToPrimary>
+
   <LogOptions>
     <!-- set true if you dont want any logs written on disk -->
     <DisableLogging>false</DisableLogging>
