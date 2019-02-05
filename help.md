@@ -58,7 +58,8 @@ DEBUG will slow down your mining and fill your disk really quickly.
  value is integer between 5 and 90 
  Experimental for Rigs with more cards and really slow CPUs.   
    
-   
+### Sample config.xml with comments
+[commented config.xml](/src/Master/config.xml)
 
 
 

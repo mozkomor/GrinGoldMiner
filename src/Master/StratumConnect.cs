@@ -63,7 +63,7 @@ namespace Mozkomor.GrinGoldMiner
         public int BadPacketCnt = 0;
         private volatile bool terminated = false;
         private int mined = 0;
-        internal Stats statistics;
+        //internal Stats statistics;
         
 
         public Action ReconnectAction { get; internal set; }
@@ -92,6 +92,7 @@ namespace Mozkomor.GrinGoldMiner
             if (hasInvalidLogin)
             {
                 IsConnected = false;
+                Logger.Log(LogLevel.WARNING, $"Will NOT connect to {ip}:{port} as {login}, server reported invalid login. Please check your connection login details.");
                 return;
             }
 
@@ -150,7 +151,7 @@ namespace Mozkomor.GrinGoldMiner
         //tls
         private bool ValidateServerCertificate(object sender, X509Certificate certificate, X509Chain chain, SslPolicyErrors sslPolicyErrors)
         {
-            if ((sslPolicyErrors == SslPolicyErrors.None) || (sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch))
+            if ((sslPolicyErrors == SslPolicyErrors.None) /*|| (sslPolicyErrors == SslPolicyErrors.RemoteCertificateNameMismatch)*/)
                 return true;
 
             Logger.Log(LogLevel.ERROR, $"Certificate error: {sslPolicyErrors}");
@@ -259,7 +260,7 @@ namespace Mozkomor.GrinGoldMiner
                                     Logger.Log(LogLevel.INFO, "######  Block mined!  #" + (++mined).ToString("D4") + "  ######"); // 8 chars
                                     //Console.WriteLine("###################################");
                                     Console.ResetColor();
-                                    statistics.mined++;
+                                    //statistics.mined++;
                                     sharesAccepted++;
                                 }
                                 if(msg.ContainsKey("error"))
@@ -359,13 +360,34 @@ namespace Mozkomor.GrinGoldMiner
                 //listenerCancel.ThrowIfCancellationRequested();
 
             }
-            catch (System.IO.IOException ex)
-            {
-                Logger.Log(LogLevel.DEBUG, "Catched Socket exeption in listener: " + ex.Message);
-            }
             catch (System.Net.Sockets.SocketException ex)
             {
+                IsConnected = false;
                 Logger.Log(LogLevel.DEBUG, $"(sc id {id}):Catched Socket exeption in listener: " + ex.Message);
+            }
+            catch (System.IO.IOException ex)
+            {
+                if (IsConnected == false)
+                {
+                    Logger.Log(LogLevel.DEBUG, "Catched Socket exeption in listener: " + ex.Message);
+                }
+
+                else
+                {
+
+                    IsConnected = false;
+
+                    if (ex.InnerException != null && ex.InnerException is SocketException)
+                    {
+                        var errc1 = ((SocketException)ex.InnerException).ErrorCode;
+                        //var errc2 = ((SocketException)ex.InnerException).NativeErrorCode;
+                        //var errc3 = ((SocketException)ex.InnerException).SocketErrorCode;
+                        // https://docs.microsoft.com/en-us/windows/desktop/winsock/windows-sockets-error-codes-2
+
+                        if (errc1 == 10053) //WSAECONNABORTED - happens when ssl and port combination not supported by pool
+                            Logger.Log(LogLevel.ERROR, "Check that your stratum connection details are correct. Ssl (true/false) and port must be supported by pool in this combination.");
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -464,7 +486,7 @@ namespace Mozkomor.GrinGoldMiner
                 }
                 catch (Exception ex) { Logger.Log(ex); }
 
-                Task.Delay(2000).Wait();
+                Task.Delay(5000).Wait();
             }
         }
 
@@ -521,6 +543,7 @@ namespace Mozkomor.GrinGoldMiner
             }
             catch (Exception ex)
             {
+                IsConnected = false;
                 Logger.Log(ex);
                 return false;
             }

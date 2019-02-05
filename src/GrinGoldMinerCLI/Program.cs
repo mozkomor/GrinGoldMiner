@@ -102,7 +102,7 @@ namespace Mozkomor.GrinGoldMinerCLI
 
                     foreach (var dev in devices)
                     {
-                        if (dev.memory > (long)1024 * 1024 * 1024 * 7)
+                        if (dev.memory > (long)1024 * 1024 * 1024 * 4)
                         {
                             generated_config.GPUOptions.Add(new SharedSerialization.GPUOption()
                             {
@@ -368,7 +368,7 @@ namespace Mozkomor.GrinGoldMinerCLI
                             string who = ConnectionManager.IsInFee() ? "FEE" : (conn?.login ?? "USER");
                             who = who.Length > 10 ? who.Substring(0, 10)+".." : who;
 
-                            Console.WriteLine("Grin Gold Miner 2.7 - Happy Graphfinding");
+                            Console.WriteLine("Grin Gold Miner 2.9 - Make mining grin again");
                             Console.WriteLine("------------------------------------------------------------------------------------------");
                             WipeLine();
                             Console.Write("Mining for: ");

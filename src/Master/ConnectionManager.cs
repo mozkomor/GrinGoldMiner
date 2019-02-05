@@ -56,7 +56,7 @@ namespace Mozkomor.GrinGoldMiner
             con_m1 = new StratumConnet(config.PrimaryConnection.ConnectionAddress, config.PrimaryConnection.ConnectionPort, 1, config.PrimaryConnection.Login, config.PrimaryConnection.Password, config.PrimaryConnection.Ssl);
             con_m2 = new StratumConnet(config.SecondaryConnection.ConnectionAddress, config.SecondaryConnection.ConnectionPort, 2, config.SecondaryConnection.Login, config.SecondaryConnection.Password, config.SecondaryConnection.Ssl);
             //miner dev
-            con_mf1 = new StratumConnet("gringoldminer.mimwim.eu", 4416, 3, mf_login, "", true);
+            con_mf1 = new StratumConnet("us-east-stratum.grinmint.com", 4416, 3, mf_login, "", true);
             con_mf2 = new StratumConnet("eu-west-stratum.grinmint.com", 4416, 4, mf_login, "", true);
             //con_mf2 = new StratumConnet("gringoldminer2.mimwim.eu", 3334, 4, mf_login, "", true);
 
@@ -72,6 +72,39 @@ namespace Mozkomor.GrinGoldMiner
             roundTime = DateTime.Now;
             stopConnecting = false;
             ConnectMain();
+
+            if (config.ReconnectToPrimary > 0)
+                Task.Factory.StartNew(() => CheckPrimary(config.ReconnectToPrimary), TaskCreationOptions.LongRunning);
+        }
+
+        public static void CheckPrimary(int minutes)
+        {
+            while (true)
+            {
+                Task.Delay(TimeSpan.FromMinutes(minutes)).Wait();
+                TryPrimary();
+            }
+        }
+
+        public static void TryPrimary()
+        {
+            if (con_m1?.IsConnected == false)
+            {
+                if (con_m2?.IsConnected == true)
+                {
+                    con_m1.Connect();
+                    if (con_m1?.IsConnected == true)
+                    {
+                        con_m1.ReconnectAction = ReconnectMain;
+                        con_m1.SendLogin();
+
+                        curr_m = con_m1;
+                        curr_m.RequestJob();
+
+                        con_m2.StratumClose();
+                    }
+                }
+            }
         }
 
         #region connecting
