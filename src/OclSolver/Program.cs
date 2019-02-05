@@ -35,7 +35,7 @@ namespace OclSolver
         const long INDEX_SIZE = 256 * 256 * 4;
 
         // set this in dry debug runs
-        static int platformID = 1;
+        static int platformID = 0;
         static int deviceID = 0;
 
         static int port = 13500;
