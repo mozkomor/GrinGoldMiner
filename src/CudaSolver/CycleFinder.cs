@@ -47,6 +47,8 @@ namespace CudaSolver
 
         public int dupes = 0;
 
+        public volatile bool SolutionFound = false;
+
         public CGraph()
         {
             graphU = new Dictionary<uint, uint>(edgeCount);
@@ -60,6 +62,8 @@ namespace CudaSolver
             Array.Copy(edgesExternal, edges, count * 2);
             graphU.Clear();
             graphV.Clear();
+            SolutionFound = false;
+            dupes = 0;
         }
 
         public void SetHeader(Job jobToSolve)
@@ -136,6 +140,8 @@ namespace CudaSolver
 
                             cycleEdges.AddRange(path1t.Zip(path1t.Skip(1), (second, first) => new Edge(first, second)));
                             cycleEdges.AddRange(path2t.Zip(path2t.Skip(1), (second, first) => new Edge(first, second)));
+
+                            SolutionFound = true;
 
                             lock (solutions)
                             {

@@ -55,6 +55,22 @@ namespace SharedSerialization
             k3 = BitConverter.ToUInt64(blaked, 24);
         }
 
+        private void MutateJob(ref long nce)
+        {
+            graphAttempts++;
+            var header = new byte[76];
+            Array.Clear(header, 0, 76);
+            nonce = hnonce = (ulong)++nce;
+            var bytes = BitConverter.GetBytes((uint)hnonce)./*Reverse().*/ToArray();
+            header = header.Concat(bytes).ToArray();
+            var hash = new Crypto.Blake2B(256);
+            byte[] blaked = hash.ComputeHash(header);
+            k0 = BitConverter.ToUInt64(blaked, 0);
+            k1 = BitConverter.ToUInt64(blaked, 8);
+            k2 = BitConverter.ToUInt64(blaked, 16);
+            k3 = BitConverter.ToUInt64(blaked, 24);
+        }
+
         public byte[] GetHeaderBytes()
         {
             return Enumerable.Range(0, pre_pow.Length)
@@ -74,6 +90,15 @@ namespace SharedSerialization
             next.MutateJob();
             return next;
         }
+
+        public Job NextSequential(ref long nonce)
+        {
+            Job next = new Job() { scale = this.scale, origin = this.origin, difficulty = this.difficulty, height = this.height, jobID = this.jobID, pre_pow = this.pre_pow, timestamp = this.timestamp, graphAttempts = this.graphAttempts };
+            next.MutateJob(ref nonce);
+            return next;
+        }
+
+
     }
     [SerializableAttribute]
     public struct Edge

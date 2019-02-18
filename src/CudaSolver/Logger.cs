@@ -17,11 +17,14 @@ namespace CudaSolver
                 {
                     Console.WriteLine(string.Format("{0}:\t {1}, {2}, {3}", DateTime.Now, level.ToString(), message, e != null ? e.Message : ""));
                 }
-                lock (Comms.logsOut)
+                if (Comms.IsConnected())
                 {
-                    Comms.logsOut.Enqueue(new LogMessage() { level = level, ex = e,  message = message, time = DateTime.Now });
+                    lock (Comms.logsOut)
+                    {
+                        Comms.logsOut.Enqueue(new LogMessage() { level = level, ex = e, message = message, time = DateTime.Now });
+                    }
+                    Comms.SetEvent();
                 }
-                Comms.SetEvent();
             }
             catch
             {

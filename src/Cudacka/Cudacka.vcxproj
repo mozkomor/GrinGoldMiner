@@ -93,6 +93,8 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
       <CodeGeneration>compute_61,sm_61</CodeGeneration>
       <NvccCompilation>ptx</NvccCompilation>
       <CompileOut>$(OutDir)\kernel_x64.ptx</CompileOut>
+      <InterleaveSourceInPTX>true</InterleaveSourceInPTX>
+      <GenerateLineInfo>true</GenerateLineInfo>
     </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

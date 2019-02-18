@@ -17,30 +17,34 @@ namespace CudaSolver
 {
     class Program
     {
-        const long DUCK_SIZE_A = 129L;
-        const long DUCK_SIZE_B = 82L;
+        const long DUCK_SIZE_A = 134L;
+        const long DUCK_SIZE_B = 84L;
         const long BUFFER_SIZE_A = DUCK_SIZE_A * 1024 * 4096;
-        const long BUFFER_SIZE_B = DUCK_SIZE_B * 1024 * 4096 / 2;
-        const long BUFFER_SIZE_U32 = (DUCK_SIZE_A + DUCK_SIZE_B / 2) * 1024 * 4096;
+        const long BUFFER_SIZE_B = DUCK_SIZE_B * 1024 * 4096;
+        const long BUFFER_SIZE_U32 = (DUCK_SIZE_A + DUCK_SIZE_B / 4) * 1024 * 4096;
         const long DUCK_EDGES_A = DUCK_SIZE_A * 1024;
         const long DUCK_EDGES_B = DUCK_SIZE_B * 1024;
 
-        const long INDEX_SIZE = 64 * 64 * 4;
+        const long INDEX_SIZE = 4096 * 8;
+
+        const int EDGE_CNT = 1 << 29;
+        const int EDGE_SEG = EDGE_CNT / 4;
 
         static DeviceFamily d_Family = DeviceFamily.Other;
         static int deviceID = 0;
         static int port = 13500;
         static bool TEST = false;
+        static bool QTEST = false;
+        static int range = 10;
+        static Int64 nonce = 0;
         static volatile int trims = 0;
         static volatile int solutions = 0;
         static volatile int findersInFlight = 0;
 
         static CudaContext ctx;
         static CudaKernel meanSeedA;
-        static CudaKernel meanSeedB;
-        static CudaKernel meanSeedB_4;
         static CudaKernel meanRound;
-        static CudaKernel meanRound_2;
+        static CudaKernel meanRound_4;
         static CudaKernel meanTail;
         static CudaKernel meanRecover;
         static CudaKernel meanRoundJoin;
@@ -56,8 +60,8 @@ namespace CudaSolver
         static int[] h_a = null;
         static CudaPageLockedHostMemory<int> hAligned_a = null;
 
-        static UInt32[] h_indexesA = new UInt32[INDEX_SIZE*2];
-        static UInt32[] h_indexesB = new UInt32[INDEX_SIZE*2];
+        static UInt32[] h_indexesA = new UInt32[INDEX_SIZE];
+        static UInt32[] h_indexesB = new UInt32[INDEX_SIZE];
 
         static Job currentJob;
         static Job nextJob;
@@ -74,12 +78,23 @@ namespace CudaSolver
         {
             try
             {
-                if (args.Length > 0)
-                    deviceID = int.Parse(args[0]);
+                if (args.Length == 1 && args[0].ToLower().Contains("fidelity"))
+                {
+                    string[] fseg = args[0].Split(':');
+                    deviceID = int.Parse(fseg[1]);
+                    nonce = Int64.Parse(fseg[2]) - 1;
+                    range = int.Parse(fseg[3]);
+                    QTEST = true;
+                }
+                else
+                {
+                    if (args.Length > 0)
+                        deviceID = int.Parse(args[0]);
+                }
             }
             catch (Exception ex)
             {
-                Logger.Log(LogLevel.Error, "Device ID parse error");
+                Logger.Log(LogLevel.Error, "Device ID parse error: " + ex.Message);
             }
 
             try
@@ -177,32 +192,21 @@ namespace CudaSolver
                 var resourceStream = assembly.GetManifestResourceStream("CudaSolver.kernel_x64.ptx");
                 ctx = new CudaContext(deviceID, !fastCuda ? (CUCtxFlags.BlockingSync | CUCtxFlags.MapHost) : CUCtxFlags.MapHost);
 
-                meanSeedA = ctx.LoadKernelPTX(resourceStream, "FluffySeed2A");
-                meanSeedA.BlockDimensions = 128;
-                meanSeedA.GridDimensions = 2048;
-                meanSeedA.PreferredSharedMemoryCarveout = CUshared_carveout.MaxShared;
+                meanSeedA = ctx.LoadKernelPTX(resourceStream, "FluffySeed4K", new CUJITOption[] { CUJITOption.MaxRegisters }, new object[] { (uint)40 });
+                meanSeedA.BlockDimensions = 512;
+                meanSeedA.GridDimensions = 1024;
 
-                meanSeedB = ctx.LoadKernelPTX(resourceStream, "FluffySeed2B");
-                meanSeedB.BlockDimensions = 128;
-                meanSeedB.GridDimensions = 2048;
-                meanSeedB.PreferredSharedMemoryCarveout = CUshared_carveout.MaxShared;
-
-                meanSeedB_4 = ctx.LoadKernelPTX(resourceStream, "FluffySeed2B");
-                meanSeedB_4.BlockDimensions = 128;
-                meanSeedB_4.GridDimensions = 1024;
-                meanSeedB_4.PreferredSharedMemoryCarveout = CUshared_carveout.MaxShared;
-
-                meanRound = ctx.LoadKernelPTX(resourceStream, "FluffyRound");
+                meanRound = ctx.LoadKernelPTX(resourceStream, "FluffyRound", new CUJITOption[] { CUJITOption.MaxRegisters }, new object[] { (uint)40 });
                 meanRound.BlockDimensions = 512;
                 meanRound.GridDimensions = 4096;
                 meanRound.PreferredSharedMemoryCarveout = CUshared_carveout.MaxShared;
 
-                meanRound_2 = ctx.LoadKernelPTX(resourceStream, "FluffyRound");
-                meanRound_2.BlockDimensions = 512;
-                meanRound_2.GridDimensions = 2048;
-                meanRound_2.PreferredSharedMemoryCarveout = CUshared_carveout.MaxShared;
+                meanRound_4 = ctx.LoadKernelPTX(resourceStream, "FluffyRound_S", new CUJITOption[] { CUJITOption.MaxRegisters }, new object[] { (uint)40 });
+                meanRound_4.BlockDimensions = 512;
+                meanRound_4.GridDimensions = 1024;
+                meanRound_4.PreferredSharedMemoryCarveout = CUshared_carveout.MaxShared;
 
-                meanRoundJoin = ctx.LoadKernelPTX(resourceStream, "FluffyRound_J");
+                meanRoundJoin = ctx.LoadKernelPTX(resourceStream, "FluffyRound_J", new CUJITOption[] { CUJITOption.MaxRegisters }, new object[] { (uint)40 });
                 meanRoundJoin.BlockDimensions = 512;
                 meanRoundJoin.GridDimensions = 4096;
                 meanRoundJoin.PreferredSharedMemoryCarveout = CUshared_carveout.MaxShared;
@@ -229,11 +233,11 @@ namespace CudaSolver
             try
             {
                 d_buffer = new CudaDeviceVariable<ulong>(BUFFER_SIZE_U32);
-                d_bufferMid = new CudaDeviceVariable<ulong>(d_buffer.DevicePointer + (BUFFER_SIZE_B * 8));
-                d_bufferB = new CudaDeviceVariable<ulong>(d_buffer.DevicePointer + (BUFFER_SIZE_A * 8));
+                d_bufferMid = new CudaDeviceVariable<ulong>(d_buffer.DevicePointer + (BUFFER_SIZE_B * 2));
+                d_bufferB = new CudaDeviceVariable<ulong>(d_buffer.DevicePointer + (BUFFER_SIZE_B * 8));
 
-                d_indexesA = new CudaDeviceVariable<uint>(INDEX_SIZE * 2);
-                d_indexesB = new CudaDeviceVariable<uint>(INDEX_SIZE * 2);
+                d_indexesA = new CudaDeviceVariable<uint>(INDEX_SIZE);
+                d_indexesB = new CudaDeviceVariable<uint>(INDEX_SIZE);
 
                 Array.Clear(h_indexesA, 0, h_indexesA.Length);
                 Array.Clear(h_indexesB, 0, h_indexesA.Length);
@@ -242,7 +246,6 @@ namespace CudaSolver
                 d_indexesB = h_indexesB;
 
                 streamPrimary = new CudaStream(CUStreamFlags.NonBlocking);
-                streamSecondary = new CudaStream(CUStreamFlags.NonBlocking);
             }
             catch (Exception ex)
             {
@@ -292,7 +295,7 @@ namespace CudaSolver
                     }
 
                     // test runs only once
-                    if (TEST && loopCnt++ > 100)
+                    if (TEST && ++loopCnt >= range)
                         Comms.IsTerminated = true;
 
                     Solution s;
@@ -305,14 +308,26 @@ namespace CudaSolver
                         s.nonces = new uint[42];
                         d_indexesB.CopyToHost(s.nonces, 0, 0, 42 * 4);
                         s.nonces = s.nonces.OrderBy(n => n).ToArray();
-                        lock (Comms.graphSolutionsOut)
+                        if (Comms.IsConnected())
                         {
                             Comms.graphSolutionsOut.Enqueue(s);
+                            Comms.SetEvent();
                         }
-                        Comms.SetEvent();
+                        if (QTEST)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine($"Solution for nonce {s.job.nonce}: {string.Join(' ', s.nonces)}");
+                            Console.ResetColor();
+                        }
                     }
 
-                    currentJob = currentJob.Next();
+                    if (QTEST)
+                    {
+                        currentJob = currentJob.NextSequential(ref nonce);
+                        Console.WriteLine($"Nonce: {nonce} K0: {currentJob.k0:X} K1: {currentJob.k1:X} K2: {currentJob.k2:X} K3: {currentJob.k3:X}");
+                    }
+                    else
+                        currentJob = currentJob.Next();
 
                     Logger.Log(LogLevel.Debug, string.Format("GPU NV{4}:Trimming #{4}: {0} {1} {2} {3}", currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, currentJob.jobID, deviceID));
 
@@ -321,20 +336,28 @@ namespace CudaSolver
                     d_indexesA.MemsetAsync(0, streamPrimary.Stream);
                     d_indexesB.MemsetAsync(0, streamPrimary.Stream);
 
-                    meanSeedA.RunAsync(streamPrimary.Stream, currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, d_bufferMid.DevicePointer, d_indexesB.DevicePointer);
-                    meanSeedB_4.RunAsync(streamPrimary.Stream, d_bufferMid.DevicePointer, d_buffer.DevicePointer, d_indexesB.DevicePointer, d_indexesA.DevicePointer, 0);
-                    meanSeedB_4.RunAsync(streamPrimary.Stream, d_bufferMid.DevicePointer, d_buffer.DevicePointer + ((BUFFER_SIZE_A * 8) / 4) * 1, d_indexesB.DevicePointer, d_indexesA.DevicePointer, 16);
-                    meanSeedB_4.RunAsync(streamPrimary.Stream, d_bufferMid.DevicePointer, d_buffer.DevicePointer + ((BUFFER_SIZE_A * 8) / 4) * 2, d_indexesB.DevicePointer, d_indexesA.DevicePointer, 32);
-                    meanSeedB_4.RunAsync(streamPrimary.Stream, d_bufferMid.DevicePointer, d_buffer.DevicePointer + ((BUFFER_SIZE_A * 8) / 4) * 3, d_indexesB.DevicePointer, d_indexesA.DevicePointer, 48);
+                    meanSeedA.RunAsync(streamPrimary.Stream, currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, d_bufferMid.DevicePointer, d_indexesB.DevicePointer, 0);
+                    meanSeedA.RunAsync(streamPrimary.Stream, currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, d_bufferMid.DevicePointer + ((BUFFER_SIZE_A * 8) / 4 / 4) * 1, d_indexesB.DevicePointer + (4096 * 4), EDGE_SEG);
+                    meanSeedA.RunAsync(streamPrimary.Stream, currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, d_bufferMid.DevicePointer + ((BUFFER_SIZE_A * 8) / 4 / 4) * 2, d_indexesB.DevicePointer + (4096 * 8), EDGE_SEG * 2);
+                    meanSeedA.RunAsync(streamPrimary.Stream, currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, d_bufferMid.DevicePointer + ((BUFFER_SIZE_A * 8) / 4 / 4) * 3, d_indexesB.DevicePointer + (4096 * 12), EDGE_SEG * 3);
+
+                    meanRound_4.RunAsync(streamPrimary.Stream, d_bufferMid.DevicePointer, d_buffer.DevicePointer, d_indexesB.DevicePointer, d_indexesA.DevicePointer, DUCK_EDGES_A / 4, DUCK_EDGES_B / 4, 0);
+                    meanRound_4.RunAsync(streamPrimary.Stream, d_bufferMid.DevicePointer, d_buffer.DevicePointer + ((BUFFER_SIZE_B * 8) / 4) * 1, d_indexesB.DevicePointer, d_indexesA.DevicePointer, DUCK_EDGES_A / 4, DUCK_EDGES_B / 4, 1024);
+                    meanRound_4.RunAsync(streamPrimary.Stream, d_bufferMid.DevicePointer, d_buffer.DevicePointer + ((BUFFER_SIZE_B * 8) / 4) * 2, d_indexesB.DevicePointer, d_indexesA.DevicePointer, DUCK_EDGES_A / 4, DUCK_EDGES_B / 4, 2048);
+                    meanRound_4.RunAsync(streamPrimary.Stream, d_bufferMid.DevicePointer, d_buffer.DevicePointer + ((BUFFER_SIZE_B * 8) / 4) * 3, d_indexesB.DevicePointer, d_indexesA.DevicePointer, DUCK_EDGES_A / 4, DUCK_EDGES_B / 4, 3072);
 
                     d_indexesB.MemsetAsync(0, streamPrimary.Stream);
-                    meanRound_2.RunAsync(streamPrimary.Stream, d_buffer.DevicePointer + ((BUFFER_SIZE_A * 8) / 4) * 2, d_bufferB.DevicePointer, d_indexesA.DevicePointer + (2048 * 4), d_indexesB.DevicePointer + (4096 * 4), DUCK_EDGES_A, DUCK_EDGES_B / 2);
-                    meanRound_2.RunAsync(streamPrimary.Stream, d_buffer.DevicePointer, d_bufferB.DevicePointer - (BUFFER_SIZE_B * 8), d_indexesA.DevicePointer, d_indexesB.DevicePointer, DUCK_EDGES_A, DUCK_EDGES_B / 2);
-                    d_indexesA.MemsetAsync(0, streamPrimary.Stream);
-                    meanRoundJoin.RunAsync(streamPrimary.Stream, d_bufferB.DevicePointer - (BUFFER_SIZE_B * 8), d_bufferB.DevicePointer, d_buffer.DevicePointer, d_indexesB.DevicePointer, d_indexesA.DevicePointer, DUCK_EDGES_B / 2, DUCK_EDGES_B / 2);
+                    meanRoundJoin.RunAsync(streamPrimary.Stream,
+                        d_buffer.DevicePointer,
+                        d_buffer.DevicePointer + ((BUFFER_SIZE_B * 8) / 4) * 1,
+                        d_buffer.DevicePointer + ((BUFFER_SIZE_B * 8) / 4) * 2,
+                        d_buffer.DevicePointer + ((BUFFER_SIZE_B * 8) / 4) * 3,
+                        d_bufferB.DevicePointer,
+                        d_indexesA.DevicePointer,
+                        d_indexesB.DevicePointer, DUCK_EDGES_B / 4, DUCK_EDGES_B / 2);
 
-                    //d_indexesA.MemsetAsync(0, streamPrimary.Stream);
-                    //meanRound.RunAsync(streamPrimary.Stream, d_bufferB.DevicePointer, d_buffer.DevicePointer, d_indexesB.DevicePointer, d_indexesA.DevicePointer, DUCK_EDGES_B, DUCK_EDGES_B / 2);
+                    d_indexesA.MemsetAsync(0, streamPrimary.Stream);
+                    meanRound.RunAsync(streamPrimary.Stream, d_bufferB.DevicePointer, d_buffer.DevicePointer, d_indexesB.DevicePointer, d_indexesA.DevicePointer, DUCK_EDGES_B / 2, DUCK_EDGES_B / 2);
                     d_indexesB.MemsetAsync(0, streamPrimary.Stream);
                     meanRound.RunAsync(streamPrimary.Stream, d_buffer.DevicePointer, d_bufferB.DevicePointer, d_indexesA.DevicePointer, d_indexesB.DevicePointer, DUCK_EDGES_B / 2, DUCK_EDGES_B / 2);
                     d_indexesA.MemsetAsync(0, streamPrimary.Stream);
@@ -342,7 +365,7 @@ namespace CudaSolver
                     d_indexesB.MemsetAsync(0, streamPrimary.Stream);
                     meanRound.RunAsync(streamPrimary.Stream, d_buffer.DevicePointer, d_bufferB.DevicePointer, d_indexesA.DevicePointer, d_indexesB.DevicePointer, DUCK_EDGES_B / 2, DUCK_EDGES_B / 4);
 
-                    for (int i = 0; i < trimRounds; i++)
+                    for (int i = 0; i < (TEST ? 80 : trimRounds); i++)
                     {
                         d_indexesA.MemsetAsync(0, streamPrimary.Stream);
                         meanRound.RunAsync(streamPrimary.Stream, d_bufferB.DevicePointer, d_buffer.DevicePointer, d_indexesB.DevicePointer, d_indexesA.DevicePointer, DUCK_EDGES_B / 4, DUCK_EDGES_B / 4);
@@ -353,7 +376,6 @@ namespace CudaSolver
                     d_indexesA.MemsetAsync(0, streamPrimary.Stream);
                     meanTail.RunAsync(streamPrimary.Stream, d_bufferB.DevicePointer, d_buffer.DevicePointer, d_indexesB.DevicePointer, d_indexesA.DevicePointer);
 
-                    ctx.Synchronize();
                     streamPrimary.Synchronize();
 
                     uint[] count = new uint[2];
@@ -387,8 +409,6 @@ namespace CudaSolver
                         cg.SetEdges(h_a, (int)count[0]);
                         cg.SetHeader(currentJob);
 
-                        //currentJob = currentJob.Next();
-
                         Task.Factory.StartNew(() =>
                            {
                                Stopwatch sw = new Stopwatch();
@@ -405,7 +425,7 @@ namespace CudaSolver
                                            cg.FindSolutions(graphSolutions);
                                            cycleTime.Stop();
                                            AdjustTrims(cycleTime.ElapsedMilliseconds);
-                                           if (graphSolutions.Count > 0) solutions++;
+                                           if (cg.SolutionFound) solutions++;
                                        }
                                        else
                                            Logger.Log(LogLevel.Warning, "CPU overloaded!");
@@ -431,7 +451,8 @@ namespace CudaSolver
                                }
                                //Console.WriteLine("Finder completed in {0}ms on {1} edges with {2} solution(s)", sw.ElapsedMilliseconds, count[0], graphSolutions.Count);
                                //Console.WriteLine("Duped edges: {0}", cg.dupes);
-                               Logger.Log(LogLevel.Info, string.Format("Finder completed in {0}ms on {1} edges with {2} solution(s) and {3} dupes", sw.ElapsedMilliseconds, count[0], graphSolutions.Count, cg.dupes));
+                               if (!QTEST)
+                                Logger.Log(LogLevel.Info, string.Format("Finder completed in {0}ms on {1} edges with {2} solution(s) and {3} dupes", sw.ElapsedMilliseconds, count[0], graphSolutions.Count, cg.dupes));
                            });
 
                         //h_indexesA = d_indexesA;
@@ -501,7 +522,6 @@ namespace CudaSolver
                 d_indexesB.Dispose();
 
                 streamPrimary.Dispose();
-                streamSecondary.Dispose();
 
                 hAligned_a.Dispose();
 
