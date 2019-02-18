@@ -118,9 +118,6 @@ __kernel  void FluffySeed2A(const u64 v0i, const u64 v1i, const u64 v2i, const u
 			uint2 hash = (uint2)(lookup & EDGEMASK, (lookup >> 32) & EDGEMASK);
 			int bucket = hash.x & 63;
 
-			//  tweak by eth_saver
-			//barrier(CLK_LOCAL_MEM_FENCE);
-
 			int counter = atomic_add(counters + bucket, (u32)1);
 			int counterLocal = counter % 16;
 			tmp[bucket][counterLocal] = hash.x | ((u64)hash.y << 32);
@@ -130,22 +127,8 @@ __kernel  void FluffySeed2A(const u64 v0i, const u64 v1i, const u64 v2i, const u
 			if ((counter > 0) && (counterLocal == 0 || counterLocal == 8))
 			{
 				int cnt = min((int)atomic_add(indexes + bucket, 8), (int)(DUCK_A_EDGES_64 - 8));
-				int idx = ((bucket < 32 ? bucket : bucket - 32) * DUCK_A_EDGES_64 + cnt) / 4;
+				int idx = ((bucket < 32 ? bucket : bucket - 32) * (int)DUCK_A_EDGES_64 + cnt) / 4;
 				buffer = bucket < 32 ? bufferA : bufferB;
-/*
-				buffer[idx] = (ulong4)(
-					atom_xchg(&tmp[bucket][8 - counterLocal], (u64)0),
-					atom_xchg(&tmp[bucket][9 - counterLocal], (u64)0),
-					atom_xchg(&tmp[bucket][10 - counterLocal], (u64)0),
-					atom_xchg(&tmp[bucket][11 - counterLocal], (u64)0)
-				);
-				buffer[idx + 1] = (ulong4)(
-					atom_xchg(&tmp[bucket][12 - counterLocal], (u64)0),
-					atom_xchg(&tmp[bucket][13 - counterLocal], (u64)0),
-					atom_xchg(&tmp[bucket][14 - counterLocal], (u64)0),
-					atom_xchg(&tmp[bucket][15 - counterLocal], (u64)0)
-				);
-*/
 				//  tweak by eth_saver
 				vstore4(vload4(0, &tmp[bucket][8 - counterLocal]), idx, (ulong*)buffer);
 				vstore4(vload4(0, &tmp[bucket][12 - counterLocal]), (idx + 1), (ulong*)buffer);
@@ -211,9 +194,6 @@ __kernel  void FluffySeed2B(const __global uint2 * source, __global ulong4 * des
 
 			int bucket = (edge.x >> 6) & (64 - 1);
 
-			//  tweak by eth_saver
-			//barrier(CLK_LOCAL_MEM_FENCE);
-
 			int counter = 0;
 			int counterLocal = 0;
 
@@ -229,21 +209,7 @@ __kernel  void FluffySeed2B(const __global uint2 * source, __global ulong4 * des
 			if ((counter > 0) && (counterLocal == 0 || counterLocal == 8))
 			{
 				int cnt = min((int)atomic_add(destinationIndexes + startBlock * 64 + myBucket * 64 + bucket, 8), (int)(DUCK_A_EDGES - 8));
-				int idx = (offsetMem + (((myBucket - offsetBucket) * 64 + bucket) * DUCK_A_EDGES + cnt)) / 4;
-/*
-				destination[idx] = (ulong4)(
-					atom_xchg(&tmp[bucket][8 - counterLocal], 0),
-					atom_xchg(&tmp[bucket][9 - counterLocal], 0),
-					atom_xchg(&tmp[bucket][10 - counterLocal], 0),
-					atom_xchg(&tmp[bucket][11 - counterLocal], 0)
-				);
-				destination[idx + 1] = (ulong4)(
-					atom_xchg(&tmp[bucket][12 - counterLocal], 0),
-					atom_xchg(&tmp[bucket][13 - counterLocal], 0),
-					atom_xchg(&tmp[bucket][14 - counterLocal], 0),
-					atom_xchg(&tmp[bucket][15 - counterLocal], 0)
-				);
-*/
+				int idx = (offsetMem + (((myBucket - offsetBucket) * 64 + bucket) * (int)DUCK_A_EDGES + cnt)) / 4;
 				//  tweak by eth_saver
 				vstore4(vload4(0, &tmp[bucket][8 - counterLocal]), idx, (ulong*)destination);
 				vstore4(vload4(0, &tmp[bucket][12 - counterLocal]), (idx + 1), (ulong*)destination);

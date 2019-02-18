@@ -109,6 +109,68 @@ namespace OclSolver
                 return;
             }
 
+            if (deviceID < 0)
+            {
+                try
+                {
+
+                    //Environment.SetEnvironmentVariable("GPU_FORCE_64BIT_PTR", "1", EnvironmentVariableTarget.Machine);
+                    Environment.SetEnvironmentVariable("GPU_MAX_HEAP_SIZE", "100", EnvironmentVariableTarget.User);
+                    Environment.SetEnvironmentVariable("GPU_USE_SYNC_OBJECTS", "1", EnvironmentVariableTarget.User);
+                    Environment.SetEnvironmentVariable("GPU_MAX_ALLOC_PERCENT", "100", EnvironmentVariableTarget.User);
+                    Environment.SetEnvironmentVariable("GPU_SINGLE_ALLOC_PERCENT", "100", EnvironmentVariableTarget.User);
+                    Environment.SetEnvironmentVariable("GPU_64BIT_ATOMICS", "1", EnvironmentVariableTarget.User);
+                    Environment.SetEnvironmentVariable("GPU_MAX_WORKGROUP_SIZE", "1024", EnvironmentVariableTarget.User);
+                    //Environment.SetEnvironmentVariable("AMD_OCL_BUILD_OPTIONS_APPEND", "-cl-std=CL2.0", EnvironmentVariableTarget.Machine);
+
+                    GpuDevicesMessage gpum = new GpuDevicesMessage() { devices = new List<GpuDevice>() };
+
+                    try
+                    {
+                        //foreach (Platform platform in platforms)
+                        for (int p = 0; p < platforms.Count(); p++)
+                        {
+                            try
+                            {
+                                Platform platform = platforms[p];
+                                var devices = platform.GetDevices(DeviceType.Gpu).ToList();
+                                //foreach (Device device in platform.GetDevices(DeviceType.All))
+                                for (int d = 0; d < devices.Count(); d++)
+                                {
+                                    try
+                                    {
+                                        Device device = devices[d];
+                                        string name = device.Name;
+                                        string pName = platform.Name;
+                                        //Console.WriteLine(device.Name + " " + platform.Version.VersionString);
+                                        gpum.devices.Add(new GpuDevice() { deviceID = d, platformID = p, platformName = pName, name = name, memory = device.GlobalMemorySize });
+
+                                        if (TEST)
+                                            Console.WriteLine($"{d} {p} {name} {pName} {device.GlobalMemorySize}");
+                                    }
+                                    catch { }
+                                }
+                            }
+                            catch { }
+                        }
+                    }
+                    catch { }
+
+                    Comms.gpuMsg = gpum;
+                    Comms.SetEvent();
+                    Task.Delay(1000).Wait();
+                    Comms.Close();
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(LogLevel.Error, "Unable to enumerate OpenCL devices " + ex.Message);
+                    Task.Delay(500).Wait();
+                    Comms.Close();
+                    return;
+                }
+            }
+
             if (TEST)
             {
                 currentJob = nextJob = new Job()
@@ -147,50 +209,7 @@ namespace OclSolver
                     return;
                 }
 
-                if (deviceID < 0)
-                {
-                    try
-                    {
-                        
-                        //Environment.SetEnvironmentVariable("GPU_FORCE_64BIT_PTR", "1", EnvironmentVariableTarget.Machine);
-                        Environment.SetEnvironmentVariable("GPU_MAX_HEAP_SIZE", "100", EnvironmentVariableTarget.User);
-                        Environment.SetEnvironmentVariable("GPU_USE_SYNC_OBJECTS", "1", EnvironmentVariableTarget.User);
-                        Environment.SetEnvironmentVariable("GPU_MAX_ALLOC_PERCENT", "100", EnvironmentVariableTarget.User);
-                        Environment.SetEnvironmentVariable("GPU_SINGLE_ALLOC_PERCENT", "100", EnvironmentVariableTarget.User);
-                        Environment.SetEnvironmentVariable("GPU_64BIT_ATOMICS", "1", EnvironmentVariableTarget.User);
-                        Environment.SetEnvironmentVariable("GPU_MAX_WORKGROUP_SIZE", "1024", EnvironmentVariableTarget.User);
-                        //Environment.SetEnvironmentVariable("AMD_OCL_BUILD_OPTIONS_APPEND", "-cl-std=CL2.0", EnvironmentVariableTarget.Machine);
 
-                        GpuDevicesMessage gpum = new GpuDevicesMessage() { devices = new List<GpuDevice>() };
-                        //foreach (Platform platform in platforms)
-                        for (int p = 0; p < platforms.Count(); p++)
-                        {
-                            Platform platform = platforms[p];
-                            var devices = platform.GetDevices(DeviceType.Gpu).ToList();
-                            //foreach (Device device in platform.GetDevices(DeviceType.All))
-                            for (int d = 0; d < devices.Count(); d++)
-                            {
-                                Device device = devices[d];
-                                string name = device.Name;
-                                string pName = platform.Name;
-                                //Console.WriteLine(device.Name + " " + platform.Version.VersionString);
-                                gpum.devices.Add(new GpuDevice() { deviceID = d, platformID = p, platformName = pName, name = name, memory = device.GlobalMemorySize });
-                            }
-                        }
-                        Comms.gpuMsg = gpum;
-                        Comms.SetEvent();
-                        Task.Delay(1000).Wait();
-                        Comms.Close();
-                        return;
-                    }
-                    catch (Exception ex)
-                    {
-                        Logger.Log(LogLevel.Error, "Unable to enumerate OpenCL devices");
-                        Task.Delay(500).Wait();
-                        Comms.Close();
-                        return;
-                    }
-                }
             }
 
             try
@@ -349,7 +368,7 @@ namespace OclSolver
                                                 }
 
                                                 // test runs only once
-                                                if (TEST && loopCnt++ > 100000)
+                                                if (TEST && loopCnt++ > 1000)
                                                     Comms.IsTerminated = true;
 
                                                 Logger.Log(LogLevel.Debug, string.Format("GPU AMD{4}:Trimming #{4}: {0} {1} {2} {3}", currentJob.k0, currentJob.k1, currentJob.k2, currentJob.k3, currentJob.jobID, deviceID));
