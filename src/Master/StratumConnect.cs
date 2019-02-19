@@ -144,7 +144,11 @@ namespace Mozkomor.GrinGoldMiner
             catch (Exception ex)
             {
                 IsConnected = false;
-                Logger.Log(ex);
+
+                if (id == 2 && (ip.ToLower() == "backup_pooladdress" || ip.ToLower() == "pool"))
+                    Logger.Log(LogLevel.ERROR, $"Can't connect to {ip}. You can configure backup pool address in config.xml");
+                else
+                    Logger.Log(ex);
             }
         }
 
