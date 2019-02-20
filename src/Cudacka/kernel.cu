@@ -108,11 +108,6 @@ typedef u64 nonce_t;
 	}\
 }
 
-__device__ __forceinline__ void st_cs_u32_v2(uint2 *p_dest, const uint2 n_value)
-{
-	asm("st.global.cs.v2.u32 [%0], {%1, %2};" :: "l"(p_dest), "r"(n_value.x), "r"(n_value.y));
-}
-
 __device__ __forceinline__  void Increase2bCounter(u32 * ecounters, const int bucket)
 {
 	int word = bucket >> 5;

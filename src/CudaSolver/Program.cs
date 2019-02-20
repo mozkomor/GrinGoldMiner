@@ -381,10 +381,10 @@ namespace CudaSolver
                     uint[] count = new uint[2];
                     d_indexesA.CopyToHost(count, 0, 0, 8);
 
-                    if (count[0] > 4194304)
+                    if (count[0] > 131071)
                     {
                         // trouble
-                        count[0] = 4194304;
+                        count[0] = 131071;
                         // log
                     }
 
@@ -414,7 +414,7 @@ namespace CudaSolver
                                Stopwatch sw = new Stopwatch();
                                sw.Start();
 
-                               if (count[0] < 200000)
+                               if (count[0] < 131071)
                                {
                                    try
                                    {
@@ -425,7 +425,7 @@ namespace CudaSolver
                                            cg.FindSolutions(graphSolutions);
                                            cycleTime.Stop();
                                            AdjustTrims(cycleTime.ElapsedMilliseconds);
-                                           if (cg.SolutionFound) solutions++;
+                                           //if (cg.SolutionFound) solutions++;
                                        }
                                        else
                                            Logger.Log(LogLevel.Warning, "CPU overloaded!");

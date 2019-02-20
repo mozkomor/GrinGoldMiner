@@ -430,7 +430,7 @@ namespace OclSolver
                                                 commandQueue.EnqueueNDRangeKernel(kernelTail, 1, 4096 * 1024, 1024, 0);
 
                                                 edgesCount = commandQueue.EnqueueReadBuffer<uint>(bufferI2, 1);
-                                                edgesCount[0] = edgesCount[0] > 1000000 ? 1000000 : edgesCount[0];
+                                                edgesCount[0] = edgesCount[0] > 131071 ? 131071 : edgesCount[0];
                                                 edgesLeft = commandQueue.EnqueueReadBufferUnsafe(bufferA1, (int)edgesCount[0] * 2);
 
                                                 OpenCl.DotNetCore.Interop.CommandQueues.CommandQueuesNativeApi.Flush(commandQueue.Handle);
@@ -449,7 +449,7 @@ namespace OclSolver
 
                                                 Task.Factory.StartNew(() =>
                                                 {
-                                                    if (edgesCount[0] < 200000)
+                                                    if (edgesCount[0] < 131071)
                                                     {
                                                         try
                                                         {
