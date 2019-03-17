@@ -32,3 +32,5 @@ VIDEO GUIDE:
 Cuda and OpenCL solveres are released under FAIR MINING license https://github.com/tromp/cuckoo/blob/master/LICENSE.txt
 
 Thanks to OhGodACompany for sending GTX1080Ti
+
+bounty btc: 3MRRCuFmS3GciugRRawkuAbLLcpNVXSJqm
