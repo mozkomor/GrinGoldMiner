@@ -11,7 +11,7 @@ Node and wallet do not work with with Windows Subsystem Linux (WSL), use Virtual
 
 Closed source GGM build with 10-15% extra speed, local json API and other features at https://grinpro.io/
 
-Contact us at mozkomorkaban@gmail.com Discord GrinPro/GGM https://discord.gg/vGQ2fR
+Contact us at mozkomorkaban@gmail.com Discord GrinPro/GGM https://discord.gg/QcEdmAS
 
 GGM/GrinPro releases will collect 1% fee for the Grin Development Fund and 1% fee for further miner development
 
