@@ -1,0 +1,99 @@
+﻿@model  GrinProMiner.Models.SimpleStatus
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>GrinPro.io</title>
+
+    <style type="text/css">
+
+        /*:root {
+            --blue: #DF691A;
+            --indigo: #6610f2;
+            --purple: #6f42c1;
+            --pink: #e83e8c;
+            --red: #d9534f;
+            --orange: #f0ad4e;
+            --yellow: #f0ad4e;
+            --green: #5cb85c;
+            --teal: #20c997;
+            --cyan: #5bc0de;
+            --white: #fff;
+            --gray: #868e96;
+            --gray-dark: #343a40;
+            --primary: #DF691A;
+            --secondary: #4E5D6C;
+            --success: #5cb85c;
+            --info: #5bc0de;
+            --warning: #f0ad4e;
+            --danger: #d9534f;
+            --light: #abb6c2;
+            --dark: #4E5D6C;
+            --breakpoint-xs: 0;
+            --breakpoint-sm: 576px;
+            --breakpoint-md: 768px;
+            --breakpoint-lg: 992px;
+            --breakpoint-xl: 1200px;
+            --font-family-sans-serif: "Lato", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+            --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        }*/
+
+        body {
+            background-color: #343a40;
+            color: white;
+            font-size: large;
+            margin:20px 20px 20px 20px;
+        }
+
+        h4 {
+            background-color: #DF691A;
+            color: black;
+        }
+
+        a:hover, a:active, a:visited {
+            color: #5cb85c;
+        }
+    </style>
+</head>
+<body>
+    <h4>GrinPro.io Miner</h4>
+    Connection: @Model.ConnectionAddress <br />
+    Status: @Model.ConnectionStatus <br />
+    Last Job: @Model.LastJob <br />
+    Last Share: @Model.LastShare <br />
+    <br />
+    <hr />
+    <b>Shares</b><br />
+    Found: @Model.Shares.Found<br />
+    Submitted: @Model.Shares.Submitted<br />
+    Accepted: @Model.Shares.Accepted<br />
+    TooLate: @Model.Shares.TooLate<br />
+    Invalid: @Model.Shares.FailedToValidate<br />
+    <br />
+    <hr />
+    Workers
+    <br />
+    @foreach (var worker in Model.Workers)
+    {
+        <span>ID: @worker.ID</span><br />
+        <span>STATUS: @worker.Status</span><br />
+        <span>GPS: @worker.GraphsPerSecond</span><br />
+        <span>TotalSols: @worker.TotalSols</span><br />
+    }
+
+    <br/>
+     <hr />
+    <div>
+        Access JSON API at: <a href="/api">	&#47;api</a> <br/>
+        API can be used to get status of the miner, information about GPUs, Connections, Config.<br />
+        API can also SET current stratum connection and config options.<br />
+        API DOCS: <a href="https://grinpro.io/api.html">https://grinpro.io/api.html</a>
+    </div>
+
+</body>
+</html>

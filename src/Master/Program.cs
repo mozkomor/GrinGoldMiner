@@ -44,7 +44,7 @@ namespace Mozkomor.GrinGoldMiner
 
             Logger.SetLogOptions(config.LogOptions);
             WorkerManager.Init(config);
-            ConnectionManager.Init(config);
+            ConnectionManager.Init(config, "grin29");
 
             while (Console.ReadKey().Key != ConsoleKey.Q)
             {

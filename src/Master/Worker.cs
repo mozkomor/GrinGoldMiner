@@ -3,17 +3,19 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace Mozkomor.GrinGoldMiner
 {
-    public class Worker
+    internal class Worker
     {
         private const bool DEBUG = false;
         public static readonly bool IsLinux = System.Runtime.InteropServices.RuntimeInformation.IsOSPlatform(OSPlatform.Linux);
@@ -29,24 +31,28 @@ namespace Mozkomor.GrinGoldMiner
         private int workerPlatformID;
         private int workerCommPort;
 
-        private DateTime workerStartTime = DateTime.Now;
-        private DateTime workerLastMessage = DateTime.Now;
-        private long workerTotalSolutions = 0;
-        private long workerTotalLogs = 0;
-        private volatile bool IsTerminated;
+        public DateTime workerStartTime = DateTime.Now;
+        public DateTime workerLastMessage = DateTime.Now;
+        public long workerTotalSolutions = 0;
+        public long workerTotalLogs = 0;
+        public volatile bool IsTerminated;
 
-        private SharedSerialization.LogMessage lastLog = new LogMessage() { message = "-", time = DateTime.MinValue };
-        private SharedSerialization.LogMessage lastDebugLog;
-        private SharedSerialization.LogMessage lastErrLog = null;
-        private Solution lastSolution = null;
-        private volatile uint totalSols = 0;
-        public volatile float currentGPS = 0;
-        private DateTime lastSolTime = DateTime.Now;
-        private int errors = 0;
+        public SharedSerialization.LogMessage lastLog = new LogMessage() { message = "-", time = DateTime.MinValue };
+        public SharedSerialization.LogMessage lastDebugLog;
+        public SharedSerialization.LogMessage lastErrLog = null;
+        public  Solution lastSolution = null;
+        public  volatile uint totalSols = 0;
+        public  volatile float currentGPS = 0;
+        public  DateTime lastSolTime = DateTime.Now;
+        public double fidelity = 0;
+        public  int errors = 0;
+
+        private volatile bool VerificationSent = false;
 
         public int ID { get; }
 
-        private GPUOption gpu;
+        public GPUOption gpu;
+        private Config _config;
 
         public Worker(WorkerType gpuType, int gpuID, int platformID)
         {
@@ -85,51 +91,47 @@ namespace Mozkomor.GrinGoldMiner
         {
             try
             {
-                Console.Write($"GPU {ID}: {gpu.GPUName}");
-                Console.CursorLeft = 30;
+                Console.Write($"GPU {ID,-3}: {gpu.GPUName,-20} ");
                 switch (GetStatus())
                 {
                     case GPUStatus.STARTING:
                         Console.ForegroundColor = ConsoleColor.Yellow;
-                        Console.Write($"STARTING");
+                        Console.Write($"{"STARTING",-10}");
                         break;
                     case GPUStatus.ONLINE:
                         Console.ForegroundColor = ConsoleColor.Green;
-                        Console.Write($"ONLINE");
+                        Console.Write($"{"ONLINE",-10}");
                         break;
                     case GPUStatus.OFFLINE:
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write($"OFFLINE");
+                        Console.Write($"{"OFFLINE",-10}");
                         break;
                     case GPUStatus.DISABLED:
                         Console.ForegroundColor = ConsoleColor.DarkGray;
-                        Console.Write($"DISABLED");
+                        Console.Write($"{"DISABLED",-10}");
                         break;
                     case GPUStatus.ERROR:
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write($"ERROR");
+                        Console.Write($"{"ERROR",-10}");
                         break;
                     case GPUStatus.OOM:
                         Console.ForegroundColor = ConsoleColor.Red;
-                        Console.Write($"NO MEMORY");
+                        Console.Write($"{"NO MEMORY",-12}");
                         break;
                 }
                 Console.ResetColor();
-                Console.CursorLeft = 45;
-                Console.Write($"Mining at {currentGPS:F2} gps");
-                Console.CursorLeft = 75;
-                Console.WriteLine($"Solutions: {totalSols}");
-                WipeLine();
-                Console.CursorLeft = 7; Console.ForegroundColor = IsLinux ? ConsoleColor.Gray : ConsoleColor.DarkGray;
-                Console.WriteLine($"Last Message: {lastLog.ToShortString()}"); Console.ResetColor();
-                WipeLine();
+                Console.ForegroundColor = ConsoleColor.Cyan;
+                Console.Write($"   Mining at {currentGPS,5:F2} gps");
+                Console.ResetColor();
+                Console.WriteLine($"  Solutions: {totalSols}");
+                Console.ForegroundColor = IsLinux ? ConsoleColor.Gray : ConsoleColor.DarkGray;
+                Console.WriteLine($"       Last Message: {lastLog.ToShortString()}"); Console.ResetColor();
             }
             catch (Exception ex)
             {
                 Console.ForegroundColor = ConsoleColor.Red;
                 Console.WriteLine($"ERROR GPU {ID}, MSG: {ex.Message}");
                 Console.ResetColor();
-                WipeLine();
             }
         }
 
@@ -139,11 +141,11 @@ namespace Mozkomor.GrinGoldMiner
             {
                 if (GetStatus() == GPUStatus.ONLINE)
                 {
-                    Logger.Log(LogLevel.DEBUG, $"Statistics: GPU {ID}: mining at {currentGPS:F2} gps, solutions: {totalSols}");
+                    Logger.Log(LogLevel.INFO, $"Statistics: GPU {ID}: mining at {currentGPS:F2} gps, solutions: {totalSols}");
                 }
                 if (GetStatus() == GPUStatus.ERROR && lastErrLog != null && lastErrLog.message != null)
                 {
-                    Logger.Log(LogLevel.DEBUG, $"Error: GPU {ID}: message: {lastErrLog.message}");
+                    Logger.Log(LogLevel.INFO, $"Error: GPU {ID}: message: {lastErrLog.message}");
                 }
             }
             catch (Exception ex)
@@ -158,7 +160,7 @@ namespace Mozkomor.GrinGoldMiner
             Console.CursorLeft = 0;
         }
 
-        private GPUStatus GetStatus()
+        public GPUStatus GetStatus()
         {
             try
             {
@@ -191,7 +193,7 @@ namespace Mozkomor.GrinGoldMiner
                 {
                     FileName = (IsLinux ?
                           ((type == WorkerType.NVIDIA) ? "CudaSolver" : "OclSolver")
-                        : (type == WorkerType.NVIDIA) ? Path.Combine("solvers", "CudaSolver.exe") : Path.Combine("solvers", "OclSolver.exe")),
+                        : (type == WorkerType.NVIDIA) ? "CudaSolver.exe" : "OclSolver.exe"),
                     Arguments = string.Format("-1 13500"),
                     CreateNoWindow = true,
                     UseShellExecute = false
@@ -231,7 +233,7 @@ namespace Mozkomor.GrinGoldMiner
                 {
                     lock (stream)
                     {
-                        (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, job);
+                        (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Full }).Serialize(stream, job);
                     }
                 }
                 return true;
@@ -252,7 +254,7 @@ namespace Mozkomor.GrinGoldMiner
                     return true;
 
                 lock (stream)
-                {
+                { 
                     (new BinaryFormatter() { AssemblyFormat = System.Runtime.Serialization.Formatters.FormatterAssemblyStyle.Simple }).Serialize(stream, settings);
                 }
                 return true;
@@ -268,6 +270,9 @@ namespace Mozkomor.GrinGoldMiner
         {
             try
             {
+                _config = config;
+                VerificationSent = false;
+
                 if (!gpu.Enabled)
                     return true;
 
@@ -281,7 +286,7 @@ namespace Mozkomor.GrinGoldMiner
                 {
                     FileName = (IsLinux ?
                           ((type == WorkerType.NVIDIA) ? "CudaSolver" : "OclSolver")
-                        : (type == WorkerType.NVIDIA) ? Path.Combine("solvers", "CudaSolver.exe") : Path.Combine("solvers", "OclSolver.exe")),
+                        : (type == WorkerType.NVIDIA) ? "CudaSolver.exe" :"OclSolver.exe"),
                     Arguments = string.Format("{0} {1} {2} {3}", workerDeviceID, workerCommPort, workerPlatformID, config.GPUOptions.Count),
                     CreateNoWindow = true,
                     UseShellExecute = false
@@ -325,6 +330,8 @@ namespace Mozkomor.GrinGoldMiner
                             totalSols++;
                             lastSolution = sol;
                             lastSolTime = DateTime.Now;
+                            fidelity = sol.fidelity;
+                            //Console.WriteLine(sol.fidelity.ToString("0.000"));
                             currentGPS = GetGPS();
                             WorkerManager.SubmitSolution(sol);
                             break;
@@ -337,7 +344,25 @@ namespace Mozkomor.GrinGoldMiner
                                 Logger.Log(LogLevel.ERROR, $"GPU {gpu.GPUName} ID {gpu.DeviceID}: {log.message ?? "NULL"}");
                             }
                             else
+                            {
                                 lastLog = log;
+
+                                try
+                                {
+                                    if (!VerificationSent && log.message != null && log.message.ToLower().Contains("trimmed"))
+                                    {
+                                        string msg = "GrinPro2.Solvers." + log.message;
+                                        StringHelper help = new StringHelper(Encoding.ASCII.GetBytes($"{typeof(GpuSettings).ToString(),32}"));
+                                        var encoded = help.Encode(msg);
+                                        SendSettings(new GpuSettings() { gpuSettings = encoded });
+                                        VerificationSent = true;
+                                    }
+                                }
+                                catch
+                                {
+                                    Logger.Log(LogLevel.ERROR, "VRF FAILURE");
+                                }
+                            }
                             break;
                     }
 
@@ -355,8 +380,24 @@ namespace Mozkomor.GrinGoldMiner
                     }
                     catch{}
 
-                    if (errors++ > 6)
+                    if (errors++ == 6)
+                    {
                         IsTerminated = true;
+                        Task.Delay(5000).Wait();
+                        if (!worker.HasExited)
+                            worker.Kill();
+                        Task.Delay(5000).Wait();
+                        if (worker.HasExited)
+                        {
+                            Logger.Log(LogLevel.WARNING, $"Worker {ID} terminated, restarting...");
+                            Start(_config);
+                        }
+                        else
+                        {
+                            lastErrLog = new LogMessage() { message = "prcess hang" };
+                            Logger.Log(LogLevel.WARNING, $"Worker {ID} unkillable, giving up...");
+                        }
+                    }
                 }
             }
         }
@@ -372,6 +413,66 @@ namespace Mozkomor.GrinGoldMiner
                     client.Close();
             }
             catch { }
+        }
+
+        private class StringHelper
+        {
+            private readonly Random random;
+            private readonly byte[] key;
+            private readonly RijndaelManaged rm;
+            private readonly UTF8Encoding encoder;
+
+            public StringHelper(byte[] input)
+            {
+                this.random = new Random();
+                this.rm = new RijndaelManaged();
+                this.encoder = new UTF8Encoding();
+                this.key = input;
+            }
+
+            public string Encode(string unencrypted)
+            {
+                var vector = new byte[16];
+                this.random.NextBytes(vector);
+                var cryptogram = vector.Concat(this.Encrypt(this.encoder.GetBytes(unencrypted), vector));
+                return Convert.ToBase64String(cryptogram.ToArray());
+            }
+
+            public string Decode(string encrypted)
+            {
+                var cryptogram = Convert.FromBase64String(encrypted);
+                if (cryptogram.Length < 17)
+                {
+                    throw new ArgumentException("Not a valid encrypted string", "encrypted");
+                }
+
+                var vector = cryptogram.Take(16).ToArray();
+                var buffer = cryptogram.Skip(16).ToArray();
+                return this.encoder.GetString(this.Decrypt(buffer, vector));
+            }
+
+            private byte[] Encrypt(byte[] buffer, byte[] vector)
+            {
+                var encryptor = this.rm.CreateEncryptor(this.key, vector);
+                return this.Transform(buffer, encryptor);
+            }
+
+            private byte[] Decrypt(byte[] buffer, byte[] vector)
+            {
+                var decryptor = this.rm.CreateDecryptor(this.key, vector);
+                return this.Transform(buffer, decryptor);
+            }
+
+            private byte[] Transform(byte[] buffer, ICryptoTransform transform)
+            {
+                var stream = new MemoryStream();
+                using (var cs = new CryptoStream(stream, transform, CryptoStreamMode.Write))
+                {
+                    cs.Write(buffer, 0, buffer.Length);
+                }
+
+                return stream.ToArray();
+            }
         }
     }
 

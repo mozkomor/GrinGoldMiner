@@ -7,9 +7,9 @@
     <ConnectionPort>4416</ConnectionPort>
     <Ssl>true</Ssl>
     <Login>userlogin</Login>
-    <Password>secretpwd</Password>  
+    <Password>secretpwd</Password>
   </PrimaryConnection>
-  
+
   <!-- Backup connection to POOL or your own grin node. 
     When primary connection is down this is used. 
     Reconnection chooses randomly between primary and secondary until
@@ -19,7 +19,7 @@
     <ConnectionPort>3416</ConnectionPort>
     <Ssl>false</Ssl>
     <Login>userlogin</Login>
-    <Password></Password>  
+    <Password></Password>
   </SecondaryConnection>
 
   <!-- When mining on backup stratum connection, miner can periodically check
@@ -27,6 +27,18 @@
       Value is in minutes (integer)
       0 = off -->
   <ReconnectToPrimary>0</ReconnectToPrimary>
+
+  <!-- GrinPro can connect to remote dashbaord - see grinpro.io downloads section  -->
+  <RemoteDashboard>
+    <!-- IP address of Remote Dashboard whre miner should connect
+    will use http api, e.g.: 10.0.0.113  -->
+    <DashboardAddress></DashboardAddress>
+    <!-- optional name for this rig in remote dashboard  -->
+    <RigName></RigName>
+    <!--How often (in seconds) should miner push status info to remote dashboard.
+        If 0 then miner doesnt push, instead dashboard needs to pull (based on user interaction (refreshing page)) -->
+    <SendInterval>0</SendInterval>
+  </RemoteDashboard>
 
   <LogOptions>
     <!-- set true if you dont want any logs written on disk -->
@@ -37,27 +49,53 @@
     <!-- logs that are older than this (in days) will be deleted -->
     <KeepDays>2</KeepDays>
   </LogOptions>
-  
+
   <!-- integer value between 10 and 90 for Rigs with very slow processors -->
   <CPUOffloadValue>
     0
   </CPUOffloadValue>
-  
-  <!-- If autodection failed, you can define your GPUs manually, something like this: -->
-  <GPUOptions>
-    <GPUOption>
-      <GPUName>GeForce GTX 1080 Ti</GPUName>
-      <GPUType>NVIDIA</GPUType>
-      <DeviceID>0</DeviceID>
-      <PlatformID>0</PlatformID>
-      <Enabled>true</Enabled>
-    </GPUOption>
-    <GPUOption>
-      <GPUName>Ellesmere</GPUName>
-      <GPUType>AMD</GPUType>
-      <DeviceID>0</DeviceID>
-      <PlatformID>0</PlatformID>
-      <Enabled>true</Enabled>
-    </GPUOption>
-  </GPUOptions>
+
+  <!-- This is example for 6 GPUs (5 enabled) - 3 NVidias, 3 AMDs. -->
+  <GPUOption>
+    <GPUName>GeForce GTX 1070</GPUName>
+    <GPUType>NVIDIA</GPUType>
+    <DeviceID>0</DeviceID>
+    <PlatformID>0</PlatformID>
+    <Enabled>true</Enabled>
+  </GPUOption>
+  <GPUOption>
+    <GPUName>GeForce GTX 1070</GPUName>
+    <GPUType>NVIDIA</GPUType>
+    <DeviceID>1</DeviceID>
+    <PlatformID>0</PlatformID>
+    <Enabled>true</Enabled>
+  </GPUOption>
+  <GPUOption>
+    <GPUName>P106-100</GPUName>
+    <GPUType>NVIDIA</GPUType>
+    <DeviceID>2</DeviceID>
+    <PlatformID>0</PlatformID>
+    <Enabled>true</Enabled>
+  </GPUOption>
+  <GPUOption>
+    <GPUName>Ellesmere</GPUName>
+    <GPUType>AMD</GPUType>
+    <DeviceID>0</DeviceID>
+    <PlatformID>0</PlatformID>
+    <Enabled>true</Enabled>
+  </GPUOption>
+  <GPUOption>
+    <GPUName>gfx900</GPUName>
+    <GPUType>AMD</GPUType>
+    <DeviceID>0</DeviceID>
+    <PlatformID>1</PlatformID>
+    <Enabled>true</Enabled>
+  </GPUOption>
+  <GPUOption>
+    <GPUName>gfx900</GPUName>
+    <GPUType>AMD</GPUType>
+    <DeviceID>1</DeviceID>
+    <PlatformID>1</PlatformID>
+    <Enabled>false</Enabled>
+  </GPUOption>
 </Config>

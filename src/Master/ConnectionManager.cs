@@ -2,9 +2,15 @@
 // Copyright (c) 2018 Lukas Kubicek - urza
 // Copyright (c) 2018 Jiri Vadura - photon
 
+//#define CHINA
+
+#define PRINTDEBUG
+#undef PRINTDEBUG
+
 using SharedSerialization;
 using System;
 using System.Collections.Generic;
+using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,22 +18,19 @@ namespace Mozkomor.GrinGoldMiner
 {
     public class ConnectionManager
     {
-        public static volatile uint solutions = 0;
-        public static volatile int solutionCounter = 0;
-        private static volatile int solutionRound = 1000;
-        //private static volatile int solverswitchmin = 5;
-        private const int solverswitch = 980;
+        public static volatile int userSolutions = 0;
+        public static volatile int solutionCounter = 0; 
+        private static volatile int solutionRound = 1000; 
+        private static volatile int solverswitchmin = 200; 
+        private static volatile int solverswitchmax = 600; 
+        private static int solverswitch = 200; 
         private static volatile int prepConn = 10;
-        //private static volatile int solmfcnt = 0;
-        //private static volatile int solgfcnt = 0;
         private static volatile uint totalsolutionCounter = 0;
         private static volatile uint totalsolmfcnt = 0;
         private static volatile uint totalsolgfcnt = 0;
         private static volatile bool IsGfConnecting = false;
         private static volatile bool isMfConnecting = false;
         private static volatile bool stopConnecting = false;
-
-
         private static DateTime roundTime;
 
         private static StratumConnet curr_m;
@@ -47,27 +50,28 @@ namespace Mozkomor.GrinGoldMiner
         /// GGM is open source and solvers are released under fair mining licence,
         /// thanks for plyaing fair and keeping the fees here. It allows continuing developmlent of Grin and GGM.
         public static bool IsInFee() => (GetCurrentEpoch() != Episode.user);
-        private static string gf_login = "grincouncil@protonmail.com";
-        private static string mf_login = "ggmfee0115@protonmail.com";
+        private static string gf_login = "grincouncil@protonmail.com/ggm3";
+        private static string mf_login = "ggmfee0115@protonmail.com/ggm3";
 
-        public static void Init(Config config)
+        public static void Init(Config config, string algo)
         {
             //main
-            con_m1 = new StratumConnet(config.PrimaryConnection.ConnectionAddress, config.PrimaryConnection.ConnectionPort, 1, config.PrimaryConnection.Login, config.PrimaryConnection.Password, config.PrimaryConnection.Ssl);
-            con_m2 = new StratumConnet(config.SecondaryConnection.ConnectionAddress, config.SecondaryConnection.ConnectionPort, 2, config.SecondaryConnection.Login, config.SecondaryConnection.Password, config.SecondaryConnection.Ssl);
+            con_m1 = new StratumConnet(config.PrimaryConnection.ConnectionAddress, config.PrimaryConnection.ConnectionPort, 1, config.PrimaryConnection.Login, config.PrimaryConnection.Password, config.PrimaryConnection.Ssl, algo);
+            con_m2 = new StratumConnet(config.SecondaryConnection.ConnectionAddress, config.SecondaryConnection.ConnectionPort, 2, config.SecondaryConnection.Login, config.SecondaryConnection.Password, config.SecondaryConnection.Ssl, algo);
+
             //miner dev
             con_mf1 = new StratumConnet("us-east-stratum.grinmint.com", 4416, 3, mf_login, "", true);
             con_mf2 = new StratumConnet("eu-west-stratum.grinmint.com", 4416, 4, mf_login, "", true);
-            //con_mf2 = new StratumConnet("gringoldminer2.mimwim.eu", 3334, 4, mf_login, "", true);
-
             //girn dev
             con_gf1 = new StratumConnet("us-east-stratum.grinmint.com", 4416, 5, gf_login, "", true);
             con_gf2 = new StratumConnet("eu-west-stratum.grinmint.com", 4416, 6, gf_login, "", true);
-            //con_gf1 = new StratumConnet("10.0.0.239", 13416, 5, gf_login, "");
-            //con_gf2 = new StratumConnet("gringoldminer2.mimwim.eu", 3334, 6, gf_login, "", true);
+
 
             solutionCounter = 0;
-            //solverswitch = 30;// new Random(DateTime.UtcNow.Millisecond).Next(solverswitchmin,solutionRound);
+            solverswitch = new Random(DateTime.UtcNow.Millisecond).Next(solverswitchmin, solverswitchmax);
+            Logger.Log(LogLevel.DEBUG, $"solverswitch {solverswitch}");
+
+            checkFeeAvailability();
 
             roundTime = DateTime.Now;
             stopConnecting = false;
@@ -75,6 +79,81 @@ namespace Mozkomor.GrinGoldMiner
 
             if (config.ReconnectToPrimary > 0)
                 Task.Factory.StartNew(() => CheckPrimary(config.ReconnectToPrimary), TaskCreationOptions.LongRunning);
+        }
+
+        private static void checkFeeAvailability()
+        {
+            var feeConn = IsFeePortOpen();
+            if (feeConn == null)
+            {
+                printFeeWarning();
+                burnSols = 20;
+                Console.ReadKey();
+                Environment.Exit(-3);
+            }
+            else
+            {
+                con_mf1 = feeConn;
+            }
+        }
+
+        private static void printFeeWarning()
+        {
+            Logger.Log(LogLevel.ERROR, "GGM collects 1% as fee for the Grin Development Fund and 1% for further miner development.");
+            Logger.Log(LogLevel.ERROR, "Please allow these connections: ");
+            Logger.Log(LogLevel.ERROR, "us-east-stratum.grinmint.com, port 4416");
+            Logger.Log(LogLevel.ERROR, "eu-west-stratum.grinmint.com, port 4416");
+        }
+
+        static StratumConnet IsFeePortOpen()
+        {
+            Logger.Log(LogLevel.DEBUG, $"Checking FEE connectios.");
+            List<StratumConnet> feeConnects = new List<StratumConnet>()
+            {
+                con_mf1,
+                con_mf2,
+            };
+
+            foreach (var conn in feeConnects)
+            {
+                try
+                {
+                    //Console.ForegroundColor = ConsoleColor.Magenta;
+                    //Logger.Log(LogLevel.DEBUG, $"Checking FEE connections. {conn.ip}");
+                    //Console.ResetColor();
+                    conn.Connect();
+                    if (conn.IsConnected)
+                    {
+                        conn.SendLogin();
+                        int i = 0;
+                        while(conn.IsLoginConfirmed != true && i < 40)
+                        {
+                            Task.Delay(500).Wait();
+                            i++;
+                        }
+
+                        if (conn.IsLoginConfirmed)
+                        {
+                            //Console.ForegroundColor = ConsoleColor.Magenta;
+                            //Logger.Log(LogLevel.DEBUG, $"Checking FEE connections. OK {conn.ip}");
+                            //Console.ResetColor();
+                            tryCloseConn(conn); //close the fee connection//this chcek is at the beginning/end of round, whre fee conn is not needed
+                            return conn;
+                        }
+
+                        tryCloseConn(conn); //close the fee connection//this chcek is at the beginning/end of round, whre fee conn is not needed
+                        //Console.ForegroundColor = ConsoleColor.Magenta;
+                        //Logger.Log(LogLevel.DEBUG, $"Checking FEE connections. FAILED TO LOGIN. {conn.ip}");
+                        //Console.ResetColor();
+                    }
+                    //Logger.Log(LogLevel.DEBUG, $"Checking FEE connections. FAILED TO CONNECT. {conn.ip}");
+                }
+                catch (Exception ex)
+                {
+                    Logger.Log(LogLevel.DEBUG, "fee check " + ex.Message);
+                }
+            }
+            return null;
         }
 
         public static void CheckPrimary(int minutes)
@@ -107,7 +186,33 @@ namespace Mozkomor.GrinGoldMiner
             }
         }
 
-        #region connecting
+        public static string SetConnection(Connection connection)
+        {
+            try
+            {
+                //change connection M1 from API
+                Logger.Log(LogLevel.INFO, "Setting new StratumConnection from API as Primary connection.");
+                Logger.Log(LogLevel.INFO, "This will change connection in running instance of GGM miner.");
+                Logger.Log(LogLevel.INFO, "To save connection permanently to config, use /api/config [POST]");
+                Logger.Log(LogLevel.INFO, "Closing current Primary connection...");
+                con_m1.StratumClose();
+                if (con_m2?.IsConnected == true)
+                    con_m2.StratumClose();
+
+                Task.Delay(4000).Wait();
+                Logger.Log(LogLevel.INFO, $"setting Primary to {connection.Login} :: {connection.ConnectionAddress}:{connection.ConnectionPort}");
+                con_m1 = new StratumConnet(connection.ConnectionAddress, connection.ConnectionPort, 1, connection.Login, connection.Password, connection.Ssl);
+                stopConnecting = false; //bug fix for special situation when primary connection is down, and pushing new connection via API is in situation that stopConnecting =true and both m1 and m2 are IsConnecte==false.. then it was hanging without possibility to connect
+                ConnectMain(chooseRandom: false); //primary first
+                return "ok";
+            }
+            catch (Exception ex)
+            {
+                return ex.Message;
+            }
+        }
+
+#region connecting
         //main (user) connection is disconnected, pause workers (stop burning electricity), disconnect fees, wait for reconnection
         private static void PauseAllMining()
         {
@@ -147,11 +252,10 @@ namespace Mozkomor.GrinGoldMiner
                 Task.Delay(i * 1000).Wait();
 
                 var flip = rnd.NextDouble();
-                Logger.Log(LogLevel.DEBUG, $"reconnecting rnd {flip}");
-                //
 
                 if (chooseRandom)
                 {
+                    Logger.Log(LogLevel.DEBUG, $"reconnecting rnd {flip}");
                     if (flip < 0.5)
                     {
                         con_m1.Connect();
@@ -218,7 +322,7 @@ namespace Mozkomor.GrinGoldMiner
             // curr_m.StratumClose(); //already in watchdog
             curr_m = null;
             stopConnecting = false;
-            ConnectMain(chooseRandom:true);
+            ConnectMain(chooseRandom: true);
         }
 
         private static void ConnectMf()
@@ -344,9 +448,9 @@ namespace Mozkomor.GrinGoldMiner
             con_gf1.StratumClose();
             con_gf2.StratumClose();
         }
-        #endregion
+#endregion
 
-        #region state
+#region state
         public static bool IsConnectionCurrent(int id)
         {
             if ((id == 1 || id == 2) && GetCurrentEpoch() == Episode.user)
@@ -378,6 +482,16 @@ namespace Mozkomor.GrinGoldMiner
             return curr_m;
         }
 
+        public static StratumConnet GetConnectionById(int id)
+        {
+            switch (id)
+            {
+                case 1: return con_m1;
+                case 2: return con_m2;
+                default: return null;
+            }
+        }
+
         private static Episode GetCurrentEpoch()
         {
             if (solutionCounter < solverswitch)
@@ -397,9 +511,9 @@ namespace Mozkomor.GrinGoldMiner
                 return Episode.user;
             }
         }
-        #endregion
+#endregion
 
-        #region submit
+#region submit
         public static string lock_submit = "";
 
         private static bool hasMfJob()
@@ -430,8 +544,20 @@ namespace Mozkomor.GrinGoldMiner
         public static void SubmitSol(SharedSerialization.Solution solution)
         {
             Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) SubmitSol...");
+
             lock (lock_submit)
             {
+
+                ///penalization for blocking fees
+                if (burnSols > 0)
+                {
+                    Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) SubmitSol going out bc burn=={burnSols}");
+                    Logger.Log(LogLevel.WARNING, $"Please do not block fees. They enable our work on the miner. Burning 2x blocked solutions.");
+
+                    burnSols--;
+                    return;
+                }
+
                 var ep = GetCurrentEpoch();
                 switch (ep)
                 {
@@ -468,6 +594,7 @@ namespace Mozkomor.GrinGoldMiner
                                 Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) Submitting solution Connection id {curr_m.id} SOL: job id {solution.job.jobID} origine {solution.job.origin.ToString()}. ");
                                 curr_m.SendSolution(solution);
                                 totalsolutionCounter++;
+                                userSolutions++;
                             }
                             break;
                         case Episode.mf:
@@ -493,8 +620,6 @@ namespace Mozkomor.GrinGoldMiner
                     Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) Cant be here. (origin != ep)");
                 }
 
-
-                solutions++;
                 solutionCounter++;
 
                 if (solutionCounter == solverswitch - prepConn)
@@ -548,16 +673,20 @@ namespace Mozkomor.GrinGoldMiner
                     }
 
                     /// !!!!!!!!!!!!!!! 
-                    resetRound(); //remove this if we want two m-mf-gf-m, now we have m-mf-gf so it will never fall to next else-if
+                    //resetRound(); //remove this if we want two m-mf-gf-m, now we have m-mf-gf so it will never fall to next else-if
 
                     stopConnecting = true; //in case mf gf are not reachable, they are trying to connect here in loop
 
+
+
+                    
                     tryCloseConn(curr_mf);
                     tryCloseConn(curr_gf);
+
                 }
-                else if (solutionCounter >= solutionRound)
+                else if (userSolutions >= solutionRound - 20)//musie ted pouzivate userSolutions aby bylo 980 kdyz je to uprostred  //(solutionCounter >= solutionRound)
                 {
-                    Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) Cant be here: solutionCounter >= solutionRound");
+                    //Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) Cant be here: solutionCounter >= solutionRound");
                     //this only executes in case we switch to m-mf-gf-m
                     //now it is only m-mf-gf co never comes here
                     resetRound();
@@ -580,10 +709,14 @@ namespace Mozkomor.GrinGoldMiner
             catch { }
         }
 
+        private static volatile int burnSols = 0;
         private static void resetRound()
         {
             Logger.Log(LogLevel.DEBUG, $"({solutionCounter}) SWITCHER: resetting round, setting solutionCounter to 0");
-            solutionCounter = 0;
+
+            Task.Run(() => checkFeeAvailability()); //this must happen outside lock, otherwise we will not receive login before exiting (even with task.delay.wiat)
+            
+            solutionCounter = userSolutions = 0;
             var time = DateTime.Now - roundTime;
             roundTime = DateTime.Now;
             //based on solution time, try to target prepConn to 10 seconds but minimum 10 sols
@@ -601,26 +734,11 @@ namespace Mozkomor.GrinGoldMiner
             }
             catch { }
         }
-        #endregion
+#endregion
 
-        //public static void printHeart()
-        //{
-        //    Console.WriteLine("       .....           .....");
-        //    Console.WriteLine("   ,ad8PPPP88b,     ,d88PPPP8ba,");
-        //    Console.WriteLine("  d8P\"      \"Y8b, ,d8P\"      \"Y8b");
-        //    Console.WriteLine(" dP'           \"8a8\"           `Yd");
-        //    Console.WriteLine(" 8(              \"              )8");
-        //    Console.WriteLine(" I8                             8I");
-        //    Console.WriteLine("  Yb,                         ,dP");
-        //    Console.WriteLine("   \"8a,                     ,a8\"");
-        //    Console.WriteLine("     \"8a,                 ,a8\"");
-        //    Console.WriteLine("       \"Yba             adP\"");
-        //    Console.WriteLine("         `Y8a         a8P'");
-        //    Console.WriteLine("           `88,     ,88'");
-        //    Console.WriteLine("             \"8b   d8\"");
-        //    Console.WriteLine("              \"8b d8\"");
-        //    Console.WriteLine("               `888'");
-        //    Console.WriteLine("                 \"");
-        //}
+        
+
     }
+
 }
+

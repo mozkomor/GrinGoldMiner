@@ -552,6 +552,8 @@ namespace OpenCl.DotNetCore.Interop.Devices
         /// <summary>
         /// If the cl_khr_spir extension is enabled, a space separated list of SPIR versions supported by the device. For example returning “1.2 2.0” in this query implies that SPIR version 1.2 and 2.0 are supported by the implementation.
         /// </summary>
-        SpirVersion = 0x40E0
+        SpirVersion = 0x40E0,
+
+        CL_DEVICE_TOPOLOGY_AMD = 0x4037,
     }
 }

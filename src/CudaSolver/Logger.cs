@@ -5,7 +5,7 @@ using SharedSerialization;
 
 namespace CudaSolver
 {
-    public static class Logger
+    internal static class Logger
     {
         public static volatile bool CopyToConsole = false;
 

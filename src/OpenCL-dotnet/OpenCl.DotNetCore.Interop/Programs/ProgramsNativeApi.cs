@@ -89,6 +89,7 @@ namespace OpenCl.DotNetCore.Interop.Programs
         /// 
         /// <c>Result.OutOfHostMemory</c> if there is a failure to allocate resources required by the OpenCL implementation on the host.
         /// </returns>
+        /*
         [IntroducedInOpenCl(1, 0)]
         [DllImport("OpenCL", EntryPoint = "clCreateProgramWithBinary")]
         public static extern IntPtr CreateProgramWithBinary(
@@ -98,6 +99,20 @@ namespace OpenCl.DotNetCore.Interop.Programs
             [In] [MarshalAs(UnmanagedType.LPArray)] UIntPtr[] lengths,
             [In] IntPtr binaries,
             [Out] [MarshalAs(UnmanagedType.I4)] out Result[] binaryStatus,
+            [Out] [MarshalAs(UnmanagedType.I4)] out Result errorCode
+        );
+        */
+        [IntroducedInOpenCl(1, 0)]
+        [DllImport("OpenCL", EntryPoint = "clCreateProgramWithBinary")]
+        public static extern IntPtr CreateProgramWithBinary(
+            [In] IntPtr context,
+            [In] [MarshalAs(UnmanagedType.U4)] uint numberOfDevices,
+            [In] [MarshalAs(UnmanagedType.LPArray)] IntPtr[] deviceList,
+            [In] [MarshalAs(UnmanagedType.LPArray)] UIntPtr[] lengths,
+            [In] [MarshalAs(UnmanagedType.LPArray)] IntPtr[] binList,
+            //[In] IntPtr binaries,
+            //[Out] [MarshalAs(UnmanagedType.I4)] out Result[] binaryStatus,
+            [Out] [MarshalAs(UnmanagedType.I4)] out Result binaryStatus,
             [Out] [MarshalAs(UnmanagedType.I4)] out Result errorCode
         );
 

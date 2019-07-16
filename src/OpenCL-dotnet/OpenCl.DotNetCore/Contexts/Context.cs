@@ -214,6 +214,53 @@ namespace OpenCl.DotNetCore.Contexts
         /// <returns>Returns the created program.</returns>
         public Program CreateAndBuildProgramFromString(string source) => this.CreateAndBuildProgramFromString(new List<string> { source });
 
+        public unsafe Program CreateAndBuildProgramFromBinary(byte[] source, Device dev)
+        {
+            fixed (byte* srcptr = source)
+            {
+                IntPtr sourcePtr = new IntPtr(srcptr);
+                // Loads the program from the specified source string
+                Result result;
+                IntPtr[] deviceList = new IntPtr[] { dev.Handle };
+                UIntPtr[] binSizes = new UIntPtr[] { new UIntPtr((uint)source.Length) };
+                IntPtr[] sourceList = new IntPtr[] { sourcePtr };
+
+                IntPtr programPointer = ProgramsNativeApi.CreateProgramWithBinary(this.Handle, 1, deviceList, binSizes, sourceList, out Result binStatus, out result);
+
+                // Checks if the program creation was successful, if not, then an exception is thrown
+                if (result != Result.Success)
+                    throw new OpenClException("The program could not be created.", result);
+
+                // Builds (compiles and links) the program and checks if it was successful, if not, then an exception is thrown
+                result = ProgramsNativeApi.BuildProgram(programPointer, 0, null, "-cl-std=CL2.0", IntPtr.Zero, IntPtr.Zero);
+                if (result != Result.Success)
+                {
+                    // Cycles over all devices and retrieves the build log for each one, so that the errors that occurred can be added to the exception message (if any error occur during the retrieval, the exception is thrown without the log)
+                    Dictionary<string, string> buildLogs = new Dictionary<string, string>();
+                    foreach (Device device in this.Devices)
+                    {
+                        try
+                        {
+                            string buildLog = this.GetProgramBuildInformation<string>(programPointer, device, ProgramBuildInformation.Log).Trim();
+                            if (!string.IsNullOrWhiteSpace(buildLog))
+                                buildLogs.Add(device.Name, buildLog);
+                        }
+                        catch (OpenClException)
+                        {
+                            continue;
+                        }
+                    }
+
+                    // Compiles the build logs into a formatted string and integrates it into the exception message
+                    string buildLogString = string.Join($"{Environment.NewLine}{Environment.NewLine}", buildLogs.Select(keyValuePair => $" Build log for device \"{keyValuePair.Key}\":{Environment.NewLine}{keyValuePair.Value}"));
+                    throw new OpenClException($"The program could not be compiled and linked.{Environment.NewLine}{Environment.NewLine}{buildLogString}", result);
+                }
+
+                // Creates the new program and returns it
+                return new Program(programPointer);
+            }
+        }
+
         /// <summary>
         /// Creates a program from the provided source streams asynchronously. The program is created, compiled, and linked.
         /// </summary>

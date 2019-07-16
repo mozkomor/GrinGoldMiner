@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.271
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Cudacka", "Cudacka.vcxproj", "{B87AA420-FC97-4320-9584-BD1E3863AA79}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B87AA420-FC97-4320-9584-BD1E3863AA79}.Debug|x64.ActiveCfg = Debug|x64
+		{B87AA420-FC97-4320-9584-BD1E3863AA79}.Debug|x64.Build.0 = Debug|x64
+		{B87AA420-FC97-4320-9584-BD1E3863AA79}.Release|x64.ActiveCfg = Release|x64
+		{B87AA420-FC97-4320-9584-BD1E3863AA79}.Release|x64.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {8F9B07F2-181E-4DEE-B2BB-A83EBDC66B56}
+	EndGlobalSection
+EndGlobal

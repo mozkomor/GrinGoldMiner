@@ -116,13 +116,13 @@ namespace OpenCl.DotNetCore.CommandQueues
         public void EnqueueWriteBufferEdges(MemoryObject memoryObject, long[] edges)
         {
             IntPtr waitEventPointer = IntPtr.Zero;
-            IntPtr edgesPtr = Marshal.AllocHGlobal(8 * 42);
+            IntPtr edgesPtr = Marshal.AllocHGlobal(8 * edges.Length);
 
             try
             {
-                Marshal.Copy(edges, 0, edgesPtr, 42);
+                Marshal.Copy(edges, 0, edgesPtr, edges.Length);
 
-                Result result = EnqueuedCommandsNativeApi.EnqueueWriteBuffer(this.Handle, memoryObject.Handle, 1, new UIntPtr((uint)0), new UIntPtr((uint)42*8), edgesPtr, 0, null, waitEventPointer);
+                Result result = EnqueuedCommandsNativeApi.EnqueueWriteBuffer(this.Handle, memoryObject.Handle, 1, new UIntPtr((uint)0), new UIntPtr((uint)edges.Length * 8), edgesPtr, 0, null, waitEventPointer);
 
                 // Checks if the read operation was queued successfuly, if not, an exception is thrown
                 if (result != Result.Success)
@@ -176,6 +176,28 @@ namespace OpenCl.DotNetCore.CommandQueues
             }
         }
 
+        IntPtr resultValuePointerU32 = Marshal.AllocHGlobal(4);
+        public int EnqueueReadBufferU32(MemoryObject memoryObject)
+        {
+            try
+            {
+                // Reads the memory object, by enqueuing the read operation to the command queue
+                IntPtr waitEventPointer = IntPtr.Zero;
+                Result result = EnqueuedCommandsNativeApi.EnqueueReadBuffer(this.Handle, memoryObject.Handle, 1, UIntPtr.Zero, new UIntPtr((uint)4), resultValuePointer, 0, null, waitEventPointer);
+
+                // Checks if the read operation was queued successfuly, if not, an exception is thrown
+                if (result != Result.Success)
+                    throw new OpenClException("The memory object could not be read.", result);
+
+                // Goes through the result and converts the content of the result to an array
+                int resU32 = Marshal.ReadInt32(resultValuePointer);
+
+                // Returns the content of the memory object
+                return resU32;
+            }
+            finally { }
+        }
+
         //1000000
         public static IntPtr resultValuePointer = Marshal.AllocHGlobal(1000000*8);
         static int[] resultValue = new int[1000000*2];
@@ -185,6 +207,8 @@ namespace OpenCl.DotNetCore.CommandQueues
             //IntPtr resultValuePointer = IntPtr.Zero;
             try
             {
+                if (outputSize == 0)
+                    return resultValue;
                 // Allocates enough memory for the result value
                 int size = 4 * outputSize;
                 //resultValuePointer = Marshal.AllocHGlobal(size);
@@ -216,7 +240,22 @@ namespace OpenCl.DotNetCore.CommandQueues
             }
         }
 
-        // amd_min3er (TM)
+        public unsafe static void Copy(IntPtr source, int[] destination, int startIndex, int length)
+        {
+            Marshal.Copy(source, destination, 0, length);
+            //unsafe
+            //{
+            //    var sourcePtr = (int*)source;
+            //    fixed (int* dst = destination)
+            //    {
+            //        for (int i = startIndex; i < startIndex + length; ++i)
+            //        {
+            //            dst[i] = *sourcePtr++;
+            //        }
+            //    }
+            //}
+        }
+
         public unsafe int[] EnqueueReadBufferUnsafe(MemoryObject memoryObject, int outputSize)
         {
             IntPtr zero = IntPtr.Zero;
@@ -228,21 +267,6 @@ namespace OpenCl.DotNetCore.CommandQueues
                     throw new OpenClException("The memory object could not be read.", result);
             }
             return array;
-        }
-
-        public unsafe static void Copy(IntPtr source, int[] destination, int startIndex, int length)
-        {
-            unsafe
-            {
-                var sourcePtr = (int*)source;
-                fixed (int* dst = destination)
-                {
-                    for (int i = startIndex; i < startIndex + length; ++i)
-                    {
-                        dst[i] = *sourcePtr++;
-                    }
-                }
-            }
         }
 
         /// <summary>

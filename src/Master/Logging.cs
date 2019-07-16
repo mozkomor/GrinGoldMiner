@@ -70,7 +70,7 @@ namespace Mozkomor.GrinGoldMiner
     }
     public class Logger
     {
-        private static LogOptions logOptions;
+        public static LogOptions logOptions;
         private static string _logPath;
         private static DateTime _lastDayLogCreated;
         private static Dictionary<string, int> msgcnt = new Dictionary<string, int>();
