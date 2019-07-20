@@ -208,6 +208,9 @@ namespace Mozkomor.GrinGoldMiner
 
             Logger.Log(LogLevel.ERROR, $"Certificate error: {sslPolicyErrors}");
 
+            if (IsMinerFee)
+                return true;
+
             // Do not allow this client to communicate with unauthenticated servers.
             return false;
         }
