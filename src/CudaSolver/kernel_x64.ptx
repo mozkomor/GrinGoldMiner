@@ -14,17 +14,17 @@
 .const .align 8 .b8 recovery[336];
 // FluffySeed4K$__cuda_local_var_207176_30_non_const_magazine has been demoted
 // FluffyRound_A1$__cuda_local_var_207252_30_non_const_ecounters has been demoted
-// FluffyRound_A2$__cuda_local_var_207396_30_non_const_ecounters has been demoted
-// FluffyRound_A3$__cuda_local_var_207502_30_non_const_ecounters has been demoted
-// FluffySeed4K_C0$__cuda_local_var_207636_30_non_const_magazine has been demoted
-// FluffyRound_C1$__cuda_local_var_207712_30_non_const_ecounters has been demoted
-// FluffyRound_C2$__cuda_local_var_207856_30_non_const_ecounters has been demoted
-// FluffyRound_C3$__cuda_local_var_207962_30_non_const_ecounters has been demoted
-// FluffyRound_B1$__cuda_local_var_208095_30_non_const_ecounters has been demoted
-// FluffyRound_B2$__cuda_local_var_208228_30_non_const_ecounters has been demoted
-// FluffyRound_B3$__cuda_local_var_208289_30_non_const_ecounters has been demoted
-// FluffyTail$__cuda_local_var_208415_30_non_const_destIdx has been demoted
-// FluffyRecovery$__cuda_local_var_208432_30_non_const_nonces has been demoted
+// FluffyRound_A2$__cuda_local_var_207398_30_non_const_ecounters has been demoted
+// FluffyRound_A3$__cuda_local_var_207504_30_non_const_ecounters has been demoted
+// FluffySeed4K_C0$__cuda_local_var_207638_30_non_const_magazine has been demoted
+// FluffyRound_C1$__cuda_local_var_207714_30_non_const_ecounters has been demoted
+// FluffyRound_C2$__cuda_local_var_207858_30_non_const_ecounters has been demoted
+// FluffyRound_C3$__cuda_local_var_207964_30_non_const_ecounters has been demoted
+// FluffyRound_B1$__cuda_local_var_208097_30_non_const_ecounters has been demoted
+// FluffyRound_B2$__cuda_local_var_208230_30_non_const_ecounters has been demoted
+// FluffyRound_B3$__cuda_local_var_208291_30_non_const_ecounters has been demoted
+// FluffyTail$__cuda_local_var_208417_30_non_const_destIdx has been demoted
+// FluffyRecovery$__cuda_local_var_208434_30_non_const_nonces has been demoted
 
 .visible .entry FluffySeed4K(
 	.param .u64 FluffySeed4K_param_0,
@@ -7336,7 +7336,7 @@ BB1_311:
 	.reg .b32 	%r<382>;
 	.reg .b64 	%rd<86>;
 	// demoted variable
-	.shared .align 4 .b8 FluffyRound_A2$__cuda_local_var_207396_30_non_const_ecounters[32768];
+	.shared .align 4 .b8 FluffyRound_A2$__cuda_local_var_207398_30_non_const_ecounters[16384];
 
 	ld.param.u64 	%rd2, [FluffyRound_A2_param_0];
 	ld.param.u64 	%rd3, [FluffyRound_A2_param_1];
@@ -7357,7 +7357,7 @@ BB1_311:
 	shr.s32 	%r3, %r75, 9;
 	mov.u32 	%r4, %tid.x;
 	shl.b32 	%r76, %r4, 2;
-	mov.u32 	%r77, FluffyRound_A2$__cuda_local_var_207396_30_non_const_ecounters;
+	mov.u32 	%r77, FluffyRound_A2$__cuda_local_var_207398_30_non_const_ecounters;
 	add.s32 	%r78, %r77, %r76;
 	mov.u32 	%r372, 0;
 	st.shared.u32 	[%r78], %r372;
@@ -7368,14 +7368,6 @@ BB1_311:
 	st.shared.u32 	[%r78+10240], %r372;
 	st.shared.u32 	[%r78+12288], %r372;
 	st.shared.u32 	[%r78+14336], %r372;
-	st.shared.u32 	[%r78+16384], %r372;
-	st.shared.u32 	[%r78+18432], %r372;
-	st.shared.u32 	[%r78+20480], %r372;
-	st.shared.u32 	[%r78+22528], %r372;
-	st.shared.u32 	[%r78+24576], %r372;
-	st.shared.u32 	[%r78+26624], %r372;
-	st.shared.u32 	[%r78+28672], %r372;
-	st.shared.u32 	[%r78+30720], %r372;
 	cvta.to.global.u64 	%rd1, %rd2;
 	mul.lo.s32 	%r5, %r71, %r70;
 	bar.sync 	0;
@@ -7929,7 +7921,7 @@ BB2_63:
 	.reg .b32 	%r<1301>;
 	.reg .b64 	%rd<242>;
 	// demoted variable
-	.shared .align 4 .b8 FluffyRound_A3$__cuda_local_var_207502_30_non_const_ecounters[32768];
+	.shared .align 4 .b8 FluffyRound_A3$__cuda_local_var_207504_30_non_const_ecounters[32768];
 
 	ld.param.u64 	%rd2, [FluffyRound_A3_param_0];
 	ld.param.u64 	%rd3, [FluffyRound_A3_param_1];
@@ -7943,7 +7935,7 @@ BB2_63:
 	cvta.to.global.u64 	%rd1, %rd8;
 	mov.u32 	%r1, %tid.x;
 	shl.b32 	%r217, %r1, 2;
-	mov.u32 	%r218, FluffyRound_A3$__cuda_local_var_207502_30_non_const_ecounters;
+	mov.u32 	%r218, FluffyRound_A3$__cuda_local_var_207504_30_non_const_ecounters;
 	add.s32 	%r219, %r218, %r217;
 	mov.u32 	%r1297, 0;
 	st.shared.u32 	[%r219], %r1297;
@@ -10062,7 +10054,7 @@ BB3_268:
 	.reg .b32 	%r<1140>;
 	.reg .b64 	%rd<969>;
 	// demoted variable
-	.shared .align 8 .b8 FluffySeed4K_C0$__cuda_local_var_207636_30_non_const_magazine[32768];
+	.shared .align 8 .b8 FluffySeed4K_C0$__cuda_local_var_207638_30_non_const_magazine[32768];
 
 	mov.u64 	%rd968, __local_depot4;
 	cvta.local.u64 	%SP, %rd968;
@@ -10072,7 +10064,7 @@ BB3_268:
 	cvta.to.global.u64 	%rd1, %rd69;
 	mov.u32 	%r1, %tid.x;
 	shl.b32 	%r44, %r1, 3;
-	mov.u32 	%r45, FluffySeed4K_C0$__cuda_local_var_207636_30_non_const_magazine;
+	mov.u32 	%r45, FluffySeed4K_C0$__cuda_local_var_207638_30_non_const_magazine;
 	add.s32 	%r2, %r45, %r44;
 	mov.u64 	%rd71, 0;
 	st.shared.u64 	[%r2], %rd71;
@@ -14048,7 +14040,7 @@ BB4_46:
 	.reg .b32 	%r<1842>;
 	.reg .b64 	%rd<574>;
 	// demoted variable
-	.shared .align 4 .b8 FluffyRound_C1$__cuda_local_var_207712_30_non_const_ecounters[49152];
+	.shared .align 4 .b8 FluffyRound_C1$__cuda_local_var_207714_30_non_const_ecounters[49152];
 
 	ld.param.u64 	%rd36, [FluffyRound_C1_param_0];
 	ld.param.u64 	%rd37, [FluffyRound_C1_param_1];
@@ -14060,7 +14052,7 @@ BB4_46:
 	cvta.to.global.u64 	%rd2, %rd36;
 	mov.u32 	%r1, %tid.x;
 	shl.b32 	%r301, %r1, 2;
-	mov.u32 	%r302, FluffyRound_C1$__cuda_local_var_207712_30_non_const_ecounters;
+	mov.u32 	%r302, FluffyRound_C1$__cuda_local_var_207714_30_non_const_ecounters;
 	add.s32 	%r303, %r302, %r301;
 	mov.u32 	%r304, 0;
 	st.shared.u32 	[%r303], %r304;
@@ -17226,7 +17218,7 @@ BB5_311:
 	.reg .b32 	%r<382>;
 	.reg .b64 	%rd<86>;
 	// demoted variable
-	.shared .align 4 .b8 FluffyRound_C2$__cuda_local_var_207856_30_non_const_ecounters[32768];
+	.shared .align 4 .b8 FluffyRound_C2$__cuda_local_var_207858_30_non_const_ecounters[32768];
 
 	ld.param.u64 	%rd2, [FluffyRound_C2_param_0];
 	ld.param.u64 	%rd3, [FluffyRound_C2_param_1];
@@ -17247,7 +17239,7 @@ BB5_311:
 	shr.s32 	%r3, %r75, 10;
 	mov.u32 	%r4, %tid.x;
 	shl.b32 	%r76, %r4, 2;
-	mov.u32 	%r77, FluffyRound_C2$__cuda_local_var_207856_30_non_const_ecounters;
+	mov.u32 	%r77, FluffyRound_C2$__cuda_local_var_207858_30_non_const_ecounters;
 	add.s32 	%r78, %r77, %r76;
 	mov.u32 	%r372, 0;
 	st.shared.u32 	[%r78], %r372;
@@ -17811,7 +17803,7 @@ BB6_63:
 	.reg .b32 	%r<1301>;
 	.reg .b64 	%rd<242>;
 	// demoted variable
-	.shared .align 4 .b8 FluffyRound_C3$__cuda_local_var_207962_30_non_const_ecounters[32768];
+	.shared .align 4 .b8 FluffyRound_C3$__cuda_local_var_207964_30_non_const_ecounters[32768];
 
 	ld.param.u64 	%rd2, [FluffyRound_C3_param_0];
 	ld.param.u64 	%rd3, [FluffyRound_C3_param_1];
@@ -17825,7 +17817,7 @@ BB6_63:
 	cvta.to.global.u64 	%rd1, %rd8;
 	mov.u32 	%r1, %tid.x;
 	shl.b32 	%r217, %r1, 2;
-	mov.u32 	%r218, FluffyRound_C3$__cuda_local_var_207962_30_non_const_ecounters;
+	mov.u32 	%r218, FluffyRound_C3$__cuda_local_var_207964_30_non_const_ecounters;
 	add.s32 	%r219, %r218, %r217;
 	mov.u32 	%r1297, 0;
 	st.shared.u32 	[%r219], %r1297;
@@ -19940,7 +19932,7 @@ BB7_268:
 	.reg .b32 	%r<1276>;
 	.reg .b64 	%rd<241>;
 	// demoted variable
-	.shared .align 4 .b8 FluffyRound_B1$__cuda_local_var_208095_30_non_const_ecounters[32768];
+	.shared .align 4 .b8 FluffyRound_B1$__cuda_local_var_208097_30_non_const_ecounters[32768];
 
 	ld.param.u64 	%rd4, [FluffyRound_B1_param_0];
 	ld.param.u64 	%rd5, [FluffyRound_B1_param_1];
@@ -19952,7 +19944,7 @@ BB7_268:
 	cvta.to.global.u64 	%rd2, %rd4;
 	mov.u32 	%r1, %tid.x;
 	shl.b32 	%r237, %r1, 2;
-	mov.u32 	%r238, FluffyRound_B1$__cuda_local_var_208095_30_non_const_ecounters;
+	mov.u32 	%r238, FluffyRound_B1$__cuda_local_var_208097_30_non_const_ecounters;
 	add.s32 	%r239, %r238, %r237;
 	mov.u32 	%r1271, 0;
 	st.shared.u32 	[%r239], %r1271;
@@ -21944,7 +21936,7 @@ BB8_276:
 	.reg .b32 	%r<315>;
 	.reg .b64 	%rd<78>;
 	// demoted variable
-	.shared .align 4 .b8 FluffyRound_B2$__cuda_local_var_208228_30_non_const_ecounters[32768];
+	.shared .align 4 .b8 FluffyRound_B2$__cuda_local_var_208230_30_non_const_ecounters[32768];
 
 	ld.param.u64 	%rd4, [FluffyRound_B2_param_0];
 	ld.param.u64 	%rd6, [FluffyRound_B2_param_1];
@@ -21968,7 +21960,7 @@ BB8_276:
 	shr.s32 	%r4, %r67, 10;
 	mov.u32 	%r5, %tid.x;
 	shl.b32 	%r68, %r5, 2;
-	mov.u32 	%r69, FluffyRound_B2$__cuda_local_var_208228_30_non_const_ecounters;
+	mov.u32 	%r69, FluffyRound_B2$__cuda_local_var_208230_30_non_const_ecounters;
 	add.s32 	%r70, %r69, %r68;
 	mov.u32 	%r71, 0;
 	st.shared.u32 	[%r70], %r71;
@@ -22481,7 +22473,7 @@ BB9_56:
 	.reg .b32 	%r<1153>;
 	.reg .b64 	%rd<247>;
 	// demoted variable
-	.shared .align 4 .b8 FluffyRound_B3$__cuda_local_var_208289_30_non_const_ecounters[32768];
+	.shared .align 4 .b8 FluffyRound_B3$__cuda_local_var_208291_30_non_const_ecounters[32768];
 
 	ld.param.u64 	%rd7, [FluffyRound_B3_param_0];
 	ld.param.u64 	%rd8, [FluffyRound_B3_param_1];
@@ -22497,7 +22489,7 @@ BB9_56:
 	cvta.to.global.u64 	%rd3, %rd7;
 	mov.u32 	%r1, %tid.x;
 	shl.b32 	%r217, %r1, 2;
-	mov.u32 	%r218, FluffyRound_B3$__cuda_local_var_208289_30_non_const_ecounters;
+	mov.u32 	%r218, FluffyRound_B3$__cuda_local_var_208291_30_non_const_ecounters;
 	add.s32 	%r219, %r218, %r217;
 	mov.u32 	%r1149, 0;
 	st.shared.u32 	[%r219], %r1149;
@@ -24188,7 +24180,7 @@ BB10_204:
 	.reg .b32 	%r<11>;
 	.reg .b64 	%rd<20>;
 	// demoted variable
-	.shared .align 4 .u32 FluffyTail$__cuda_local_var_208415_30_non_const_destIdx;
+	.shared .align 4 .u32 FluffyTail$__cuda_local_var_208417_30_non_const_destIdx;
 
 	ld.param.u64 	%rd2, [FluffyTail_param_0];
 	ld.param.u64 	%rd3, [FluffyTail_param_1];
@@ -24206,14 +24198,14 @@ BB10_204:
 
 	cvta.to.global.u64 	%rd9, %rd4;
 	atom.global.add.u32 	%r4, [%rd9], %r1;
-	st.shared.u32 	[FluffyTail$__cuda_local_var_208415_30_non_const_destIdx], %r4;
+	st.shared.u32 	[FluffyTail$__cuda_local_var_208417_30_non_const_destIdx], %r4;
 
 BB11_2:
 	bar.sync 	0;
 	setp.ge.s32	%p2, %r2, %r1;
 	@%p2 bra 	BB11_4;
 
-	ld.shared.u32 	%r5, [FluffyTail$__cuda_local_var_208415_30_non_const_destIdx];
+	ld.shared.u32 	%r5, [FluffyTail$__cuda_local_var_208417_30_non_const_destIdx];
 	add.s32 	%r6, %r5, %r2;
 	cvta.to.global.u64 	%rd10, %rd3;
 	mul.wide.s32 	%rd11, %r6, 8;
@@ -24249,7 +24241,7 @@ BB11_4:
 	.reg .b32 	%r<141>;
 	.reg .b64 	%rd<159>;
 	// demoted variable
-	.shared .align 4 .b8 FluffyRecovery$__cuda_local_var_208432_30_non_const_nonces[168];
+	.shared .align 4 .b8 FluffyRecovery$__cuda_local_var_208434_30_non_const_nonces[168];
 
 	mov.u64 	%rd158, __local_depot12;
 	cvta.local.u64 	%SP, %rd158;
@@ -24260,7 +24252,7 @@ BB11_4:
 	@%p2 bra 	BB12_2;
 
 	shl.b32 	%r17, %r1, 2;
-	mov.u32 	%r18, FluffyRecovery$__cuda_local_var_208432_30_non_const_nonces;
+	mov.u32 	%r18, FluffyRecovery$__cuda_local_var_208434_30_non_const_nonces;
 	add.s32 	%r19, %r18, %r17;
 	mov.u32 	%r20, 0;
 	st.shared.u32 	[%r19], %r20;
@@ -24727,7 +24719,7 @@ BB12_8:
 	cvt.s32.s16	%r124, %rs4;
 	add.s32 	%r10, %r124, %r128;
 	mov.u32 	%r140, -42;
-	mov.u32 	%r139, FluffyRecovery$__cuda_local_var_208432_30_non_const_nonces;
+	mov.u32 	%r139, FluffyRecovery$__cuda_local_var_208434_30_non_const_nonces;
 	mov.u64 	%rd157, recovery;
 
 BB12_9:
@@ -24909,7 +24901,7 @@ BB12_37:
 BB12_41:
 	mov.u32 	%r135, %tid.x;
 	shl.b32 	%r125, %r135, 2;
-	mov.u32 	%r126, FluffyRecovery$__cuda_local_var_208432_30_non_const_nonces;
+	mov.u32 	%r126, FluffyRecovery$__cuda_local_var_208434_30_non_const_nonces;
 	add.s32 	%r127, %r126, %r125;
 	ld.shared.u32 	%r16, [%r127];
 	setp.eq.s32	%p50, %r16, 0;

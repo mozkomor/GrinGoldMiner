@@ -403,20 +403,22 @@ extern "C" {
 		}
 
 	}
+
+	#define THREADS_A2 512
 	__global__  void FluffyRound_A2(const uint2 * source, uint2 * destination, const int * sourceIndexes, int * destinationIndexes, const int bktInSize, const int bktOutSize, const int round, int * aux)
 	{
 		const int lid = threadIdx.x;
 		const int group = blockIdx.x;
 
-		__shared__ u32 ecounters[8192];
+		__shared__ u32 ecounters[4096];
 
 		const int edgesInBucket = min(sourceIndexes[group], bktInSize);
-		const int loops = (edgesInBucket + CTHREADS512) / CTHREADS512;
+		const int loops = (edgesInBucket + THREADS_A2) / THREADS_A2;
 
 		const int offset = (bktInSize * group);
 
-		for (int i = 0; i < 16; i++)
-			ecounters[lid + (512 * i)] = 0;
+		for (int i = 0; i < 8; i++)
+			ecounters[lid + (THREADS_A2 * i)] = 0;
 
 		__syncthreads();
 
@@ -424,7 +426,7 @@ extern "C" {
 		{
 			for (int i = 0; i < loops - 1; i++)
 			{
-				const int lindex = (i * CTHREADS512) + lid;
+				const int lindex = (i * THREADS_A2) + lid;
 				if (lindex < edgesInBucket)
 				{
 					uint2 edge = source[offset + lindex];
@@ -433,7 +435,7 @@ extern "C" {
 			}
 
 			uint2 edge1;
-			int lindex = ((loops - 1) * CTHREADS512) + lid;
+			int lindex = ((loops - 1) * THREADS_A2) + lid;
 			if (lindex < edgesInBucket)
 			{
 				edge1 = ld_cs_u32_v2(&source[offset + lindex]);
@@ -454,7 +456,7 @@ extern "C" {
 
 			for (int i = loops - 2; i >= 0; i--)
 			{
-				const int lindex = (i * CTHREADS512) + lid;
+				const int lindex = (i * THREADS_A2) + lid;
 				if (lindex < edgesInBucket)
 				{
 					uint2 edge = source[offset + lindex];
