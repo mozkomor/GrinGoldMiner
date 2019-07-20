@@ -533,14 +533,14 @@ __kernel   void FluffyRound2J(const __global uint2 * srcA, __global uint2 * dst,
 	const int offset = bktInSize * group;
 	const __global uint2 * srcB = srcA + (4096 * DUCK_B_EDGES_4K / 2);
 
-	__local u32 ecounters[8192];
+	__local u32 ecounters[4096];
 
 	const int edgesInBucketA = min(sourceIndexes[group], bktInSize);
 	const short loopsA = (edgesInBucketA + R2J_WG) / R2J_WG;
 	const int edgesInBucketB = min(sourceIndexes[group + 4096], bktInSize);
 	const short loopsB = (edgesInBucketB + R2J_WG) / R2J_WG;
 
-	for (int i = 0; i < (8192 / R2J_WG); i++)
+	for (int i = 0; i < (4096 / R2J_WG); i++)
 		ecounters[lid + (R2J_WG * i)] = 0;
 
 	barrier(CLK_LOCAL_MEM_FENCE);
@@ -726,13 +726,13 @@ __kernel   void FluffyRound3_5(const __global uint2 * src, __global uint2 * dst,
 	const int bktOutSize = 65536;
 	const int offset = bktInSize * group;
 
-	__local u32 ecounters[8192];
+	__local u32 ecounters[4096];
 	uint2 rbuf[7];
 
 	const int edgesInBucket = min(sourceIndexes[group], bktInSize);
 	const short loops = (edgesInBucket + R310_WG) / R310_WG;
 
-	for (int i = 0; i < (8192 / R310_WG); i++)
+	for (int i = 0; i < (4096 / R310_WG); i++)
 		ecounters[lid + (R310_WG * i)] = 0;
 
 	barrier(CLK_LOCAL_MEM_FENCE);
@@ -804,13 +804,13 @@ __kernel   void FluffyRound6_10(const __global uint2 * src, __global uint2 * dst
 	const int bktOutSize = 65536;
 	const int offset = bktInSize * group;
 
-	__local u32 ecounters[8192];
+	__local u32 ecounters[4096];
 	uint2 rbuf[4];
 
 	const int edgesInBucket = min(sourceIndexes[group], bktInSize);
 	const short loops = (edgesInBucket + R310_WG) / R310_WG;
 
-	for (int i = 0; i < (8192 / R310_WG); i++)
+	for (int i = 0; i < (4096 / R310_WG); i++)
 		ecounters[lid + (R310_WG * i)] = 0;
 
 	barrier(CLK_LOCAL_MEM_FENCE);
@@ -883,13 +883,13 @@ __kernel   void FluffyRound11(const __global uint2 * src, __global uint2 * dst, 
 	const int bktOutSize = 65536;
 	const int offset = bktInSize * group;
 
-	__local u32 ecounters[8192];
+	__local u32 ecounters[4096];
 	uint2 rbuf[8];
 
 	const int edgesInBucket = min(sourceIndexes[group], bktInSize);
 	const short loops = (edgesInBucket + R11_WG) / R11_WG;
 
-	for (int i = 0; i < (8192 / R11_WG); i++)
+	for (int i = 0; i < (4096 / R11_WG); i++)
 		ecounters[lid + (R11_WG * i)] = 0;
 
 	barrier(CLK_LOCAL_MEM_FENCE);
@@ -962,13 +962,13 @@ __kernel   void FluffyRound15(const __global uint2 * src, __global uint2 * dst, 
 	const int bktOutSize = 65536;
 	const int offset = bktInSize * group;
 
-	__local u32 ecounters[8192];
+	__local u32 ecounters[4096];
 	uint2 rbuf[4];
 
 	const int edgesInBucket = min(sourceIndexes[group], bktInSize);
 	const short loops = (edgesInBucket + R11_WG) / R11_WG;
 
-	for (int i = 0; i < (8192 / R11_WG); i++)
+	for (int i = 0; i < (4096 / R11_WG); i++)
 		ecounters[lid + (R11_WG * i)] = 0;
 
 	barrier(CLK_LOCAL_MEM_FENCE);
@@ -1041,13 +1041,13 @@ __kernel   void FluffyRound23(const __global uint2 * src, __global uint2 * dst, 
 	const int bktOutSize = 65536;
 	const int offset = bktInSize * group;
 
-	__local u32 ecounters[8192];
+	__local u32 ecounters[4096];
 	uint2 rbuf;
 
 	const int edgesInBucket = min(sourceIndexes[group], bktInSize);
 	const short loops = (edgesInBucket + R11_WG) / R11_WG;
 
-	for (int i = 0; i < (8192 / R11_WG); i++)
+	for (int i = 0; i < (4096 / R11_WG); i++)
 		ecounters[lid + (R11_WG * i)] = 0;
 
 	barrier(CLK_LOCAL_MEM_FENCE);
@@ -1116,12 +1116,12 @@ __kernel   void FluffyRound80(const __global uint2 * src, __global uint2 * dst, 
 	const int bktOutSize = 65536;
 	const int offset = bktInSize * group;
 
-	__local u32 ecounters[8192];
+	__local u32 ecounters[4096];
 	uint2 rbuf;
 
 	const int edgesInBucket = min(sourceIndexes[group], bktInSize);
 
-	for (int i = 0; i < (8192 / R11_WG); i++)
+	for (int i = 0; i < (4096 / R11_WG); i++)
 		ecounters[lid + (R11_WG * i)] = 0;
 
 	barrier(CLK_LOCAL_MEM_FENCE);
