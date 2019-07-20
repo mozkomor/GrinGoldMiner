@@ -1,3 +1,5 @@
+# [OBSOLETE]
+
 ## How to compile on Windows
 You need Visual Studio 2017 with dotnet core 2.0 and CUDA 9.1 SDK installed on your system. Simply open the solution and build Release target for x64 architecture (or better publish). Grab both executables and their libraries and put them in a single folder somewhere else. Open windows power shell in that folder and run
 
