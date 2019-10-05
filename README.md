@@ -6,10 +6,6 @@ Miner supports all AMD and NVIDIA 6GB+ cards for both Linux and Winows (MacOS un
 
 GGM releases collect 1% fee for the Grin Development Fund and 1% fee for further miner development.
 
-If you disable fees or profit from the code in some way, consider donating to:
-
-BTC 37WJeFqsvSSdC9BbJUW96oCqzSe4TeESnF
-
 ## How to build
 
 Miner is written entirely in C# using new open-source .NET implementation called Dotnet Core.
