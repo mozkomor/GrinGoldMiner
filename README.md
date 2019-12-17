@@ -1,6 +1,6 @@
-# GGM - open-source Grin GPU miner
+# [DISCONTINUED] GGM - open-source Grin GPU miner
 
-**Update: GGM3 is compatible with Cuckarood29 PoW activated in 7/2019**
+**Update: GGM will not be updated for 2020 hard-fork and PoW change!**
 
 Miner supports all AMD and NVIDIA 6GB+ cards for both Linux and Winows (MacOS untested). Up to 60% faster compared to GGM2.
 
