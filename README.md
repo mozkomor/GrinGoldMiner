@@ -1,4 +1,5 @@
-# [DISCONTINUED] GGM - open-source Grin GPU miner
+# [DISCONTINUED]
+# GGM - open-source Grin GPU miner
 
 **Update: GGM will not be updated for 2020 hard-fork and PoW change!**
 
