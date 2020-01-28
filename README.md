@@ -1,7 +1,13 @@
-# [DISCONTINUED]
+# [DISCONTINUED - Does NOT work on current Grin chain!]
 # GGM - open-source Grin GPU miner
 
-**Update: GGM will not be updated for 2020 hard-fork and PoW change!**
+_The miner is no longer being udpated to work with hard-forked PoW changes!_
+
+Thanks to all miners who supported our software. We can no longer provide competitive open-source Grin miner to the community. 
+
+We recommend grin-miner (open source, nvidia, linux) or lolminer (closed source, amd, windows/linux). 
+
+-----
 
 Miner supports all AMD and NVIDIA 6GB+ cards for both Linux and Winows (MacOS untested). Up to 60% faster compared to GGM2.
 
